@@ -1,7 +1,12 @@
 import { createHighlighter, type Highlighter } from "shiki";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 
 const THEME = "tokyo-night";
 const LANGS = ["typescript", "bash"] as const;
+
+// Cloudflare Workers disallow runtime WASM instantiation (oniguruma). The JS
+// regex engine avoids WebAssembly and works in SSR/prerender and at the edge.
+const engine = createJavaScriptRegexEngine();
 
 let highlighterPromise: Promise<Highlighter> | undefined;
 
@@ -9,6 +14,7 @@ function getHighlighter(): Promise<Highlighter> {
   highlighterPromise ??= createHighlighter({
     themes: [THEME],
     langs: [...LANGS],
+    engine,
   });
   return highlighterPromise;
 }
