@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { CodeBlock } from "@/components/code-block";
 import { InstallCommand } from "@/components/install-command";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { homeCodeBlocks } from "@/lib/home-code-samples";
 
 const getHomeHighlights = createServerFn({ method: "GET" }).handler(async () => {
@@ -47,7 +46,7 @@ const features: Feature[] = [
     id: "hierarchy",
     title: "Hierarchy checks",
     blurb:
-      "Ancestor / descendant containment between two paths. Both lower to native ltree operators and return a boolean.",
+      "Check whether one path contains another. Returns true or false — useful for filtering by branch or subtree.",
     ops: [
       { method: "path.isAncestorOf(rhs)", sql: "ltree @> ltree" },
       { method: "path.isDescendantOf(rhs)", sql: "ltree <@ ltree" },
@@ -57,7 +56,7 @@ const features: Feature[] = [
     id: "pattern-matching",
     title: "Pattern matching",
     blurb:
-      "Match a path against an lquery, an array of lqueries, or a full-text ltxtquery. Patterns are validated string params.",
+      "Match paths with lquery wildcards, multiple lquery patterns, or full-text ltxtquery expressions.",
     ops: [
       { method: "path.matchesLquery(pattern)", sql: "ltree ~ lquery" },
       { method: "path.matchesLqueryArray(patterns)", sql: "ltree ? lquery[]" },
@@ -100,7 +99,7 @@ const features: Feature[] = [
     id: "array-first-match",
     title: "Array first-match",
     blurb:
-      "First-match operators over an ltree[] column (pg/ltree-array@1 codec, ADR-003). Each returns the first matching path.",
+      "Store multiple paths in an ltree[] column, then pick the first match for containment or pattern queries.",
     ops: [
       { method: "paths.firstAncestorOf(rhs)", sql: "ltree[] ?@> ltree" },
       { method: "paths.firstDescendantOf(rhs)", sql: "ltree[] ?<@ ltree" },
@@ -137,17 +136,17 @@ function Home() {
             <code>ltree</code>
           </a>{" "}
           hierarchical-tree type for Prisma Next. Model category trees, org charts, taxonomies, and
-          filesystem-like paths — then query them with type-safe, prisma-native operators.
-          Ancestor/descendant checks, <code>lquery</code>/<code>ltxtquery</code> matching, path
-          manipulation, and lowest-common-ancestor — without dropping to raw SQL.
+          filesystem-like paths — then query them with typed operators for ancestor/descendant
+          checks, <code>lquery</code>/<code>ltxtquery</code> matching, path manipulation, and
+          lowest-common-ancestor — without writing raw SQL.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a href="#setup" className={cn(buttonVariants())}>
+          <Button render={<a href="#setup" />} nativeButton={false}>
             Get started
-          </a>
-          <a href={GITHUB_URL} className={cn(buttonVariants({ variant: "outline" }))}>
+          </Button>
+          <Button variant="outline" render={<a href={GITHUB_URL} />} nativeButton={false}>
             View on GitHub
-          </a>
+          </Button>
         </div>
         <div className="mt-8 max-w-md">
           <InstallCommand />
@@ -157,12 +156,12 @@ function Home() {
       {/* Setup */}
       <section id="setup" className="scroll-mt-8 border-b border-border py-12">
         <SectionLabel>Setup</SectionLabel>
-        <h2 className="text-2xl font-medium">Three steps to a typed tree</h2>
+        <h2 className="text-2xl font-medium">Get started in two steps</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          The pack ships a baseline migration that runs{" "}
-          <code>CREATE EXTENSION IF NOT EXISTS ltree</code> — applied automatically by{" "}
-          <code>prisma-next db init</code> / <code>db update</code>. Requires Node{" "}
-          <code>&gt;=24</code> and <code>@prisma-next/*@0.14.0</code>.
+          Install the pack, add <code>ltree</code> columns to your schema, and run{" "}
+          <code>prisma-next db init</code> or <code>db update</code> to enable the PostgreSQL{" "}
+          <code>ltree</code> extension. Requires Node <code>&gt;=24</code> and{" "}
+          <code>@prisma-next/*@0.14.0</code>.
         </p>
 
         <div className="mt-8 grid gap-8 md:grid-cols-2">
@@ -188,8 +187,9 @@ function Home() {
         <SectionLabel>Operations</SectionLabel>
         <h2 className="text-2xl font-medium">Everything ltree, type-safe</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Boolean operators return <code>pg/bool@1</code>; the rest return the codec shown. Each
-          operator is verified against real Postgres via PGlite integration tests.
+          Each method maps to the native PostgreSQL operator or function shown below. Use them in{" "}
+          <code>where</code> filters and <code>select</code> projections like any other typed
+          column.
         </p>
 
         <div className="mt-10 flex flex-col gap-12">
@@ -245,10 +245,6 @@ function Home() {
             </a>
           </nav>
         </div>
-        <p className="mt-4 text-xs">
-          A full documentation site is coming. For now, this overview reflects the shipped feature
-          surface.
-        </p>
         <p className="mt-6 text-xs">
           Made by{" "}
           <a
