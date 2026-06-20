@@ -179,23 +179,25 @@ lands with unit + integration tests before expanding.
 
 ### Phase 4: Tier 2 (Concatenation + Conversion)
 
-- [ ] **Task 4.1: Concatenation + conversion ops + ADR**
+- [x] **Task 4.1: Concatenation + conversion ops + ADR** ✅
   - **Acceptance:** Add `concat` (`||`), `concatText` (`|| ({{arg0}})::ltree`), `prependText` (free-fn ADR), `toText` (`ltree2text`), `fromText` (`text2ltree`, free-fn ADR) + golden tests. ADR for free-function lowering shape.
   - **Verify:** `vp test` passes; ADR in `docs/decisions/`
   - **Dependencies:** Checkpoint 2
   - **Files:** `src/core/descriptor-meta.ts`, `src/types/operation-types.ts`, `test/operations.test.ts`, `docs/decisions/ADR-002-free-function-lowering.md`
   - **Scope:** M (4 files)
+  - **Notes:** All five SQL forms smoke-tested under PGlite first. Added a `concatOp` helper (operator-style, returns ltree) alongside `funcOp` (reused for `toText`/`toLtree`). **ADR-002 written: free functions re-root on a natural `self`; self-less ops are unreachable** — proven against `.sync/`: the ORM client model-accessor (`sql-orm-client/src/model-accessor.ts:97`) does `if (!self) continue`, dropping any op without a `self`. So `text2ltree` ships as **`text.toLtree()`** rooted on `pg/text@1` (paradedb precedent for text-rooted ops), renamed from the spec's `fromText` (a misnomer on a text receiver). `prependText` keeps the ltree column as `self` though it is the right operand (`{{self}}` placed second; renderer binds by name, not position). The self-less `Ltree.fromText()` constructor + `lca(ltree[])` stay `planned` pending a free-function call surface. Golden + type-level coverage added for all five.
 
-- [ ] **Task 4.2: Tier 2 integration tests**
+- [x] **Task 4.2: Tier 2 integration tests** ✅
   - **Acceptance:** PGlite integration tests for concat + conversion
   - **Verify:** `vp test` passes
   - **Dependencies:** Task 4.1
   - **Files:** `test/integration/tier2.integration.test.ts`
   - **Scope:** S (1 file)
+  - **Notes:** 5 cases — each Tier 2 op built via its impl, lowered through the composed adapter, executed against PGlite, value asserted. `toLtree` is driven from a text-literal `self` (added an inline `textValue` helper). Confirms `prependText` (self-not-first template) and `toLtree` (text-rooted) execute correctly. 10 files / 84 tests + type tests pass.
 
-### Checkpoint 3: Tier 2 complete
+### Checkpoint 3: Tier 2 complete ✅
 
-- [ ] `vp run ready` passes; Tier 2 → `supported` in feature-support.md
+- [x] `vp run ready` passes; Tier 2 → `supported` in feature-support.md
 
 ### Phase 5: Tier 3 (Array First-Match Ops)
 

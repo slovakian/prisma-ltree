@@ -52,18 +52,26 @@ See `docs/spec/prisma-ltree-spec.md` for the full spec. See `docs/progress/` for
 
 ## Concatenation (→ `pg/ltree@1`)
 
-| SQL    | API method | Status | Tier                      |
-| ------ | ---------- | ------ | ------------------------- | ----------------------- | --- |
-| `ltree |            | ltree` | `path.concat(rhs)`        | planned                 | 2   |
-| `ltree |            | text`  | `path.concatText(rhs)`    | planned                 | 2   |
-| `text  |            | ltree` | `ltree.prependText(text)` | planned — API shape TBD | 2   |
+| SQL                | API method                | Status    | Tier |
+| ------------------ | ------------------------- | --------- | ---- |
+| `ltree \|\| ltree` | `path.concat(rhs)`        | supported | 2    |
+| `ltree \|\| text`  | `path.concatText(label)`  | supported | 2    |
+| `text \|\| ltree`  | `path.prependText(label)` | supported | 2    |
+
+`prependText` keeps the ltree column as the receiver even though it is the right
+operand of `text || ltree` (ADR-002).
 
 ## Conversion
 
-| SQL                 | API method             | Returns      | Status                  | Tier |
-| ------------------- | ---------------------- | ------------ | ----------------------- | ---- |
-| `ltree2text(ltree)` | `path.toText()`        | `pg/text@1`  | planned                 | 2    |
-| `text2ltree(text)`  | `ltree.fromText(text)` | `pg/ltree@1` | planned — API shape TBD | 2    |
+| SQL                 | API method             | Returns      | Status                                | Tier |
+| ------------------- | ---------------------- | ------------ | ------------------------------------- | ---- |
+| `ltree2text(ltree)` | `path.toText()`        | `pg/text@1`  | supported                             | 2    |
+| `text2ltree(text)`  | `text.toLtree()`       | `pg/ltree@1` | supported (text-rooted; ADR-002)      | 2    |
+| `text2ltree(text)`  | `Ltree.fromText(text)` | `pg/ltree@1` | planned — self-less constructor (SPI) | 2    |
+
+`toLtree` is the reachable form of `text2ltree`: it is rooted on `pg/text@1` and
+surfaces as a method on text columns (ADR-002). The self-less constructor spelling
+`Ltree.fromText()` remains `planned` pending a free-function call surface.
 
 ## Array First-Match Operators (→ `pg/ltree@1`)
 
@@ -96,3 +104,4 @@ Receiver is `ltree[]`. Requires array-typed receiver support — delivered last.
 
 - 2026-06-19 — Initial matrix created from spec. All in-scope features `planned`; out-of-scope features tracked with reasons.
 - 2026-06-19 — Tier 1 complete (Checkpoint 2). Codec/contract/migration + all Tier 1 operators (hierarchy, pattern-match) and scalar functions (`nlevel`, `subltree`, `subpath`, `indexOf`, `lca`) → `supported`, each with golden + PGlite integration + type-level coverage. `lca` is a variadic method requiring ≥2 paths (ADR-001); the `ltree[]` array form remains `planned`.
+- 2026-06-19 — Tier 2 complete (Checkpoint 3). Concatenation (`concat`, `concatText`, `prependText`) and conversion (`toText`, `toLtree`) → `supported`, each with golden + PGlite integration + type-level coverage. Free-function lowering resolved by re-rooting on a natural `self` (ADR-002): `text2ltree` ships as `text.toLtree()` (text-rooted); the self-less `Ltree.fromText()` constructor stays `planned` pending a free-function call surface.
