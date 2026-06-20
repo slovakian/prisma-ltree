@@ -27,6 +27,9 @@ dist-ssr
 # Synced external references (not committed)
 .sync/
 
+# Alchemy state (infra-as-code local state)
+.alchemy/
+
 # AI agent worktrees
 .claude/worktrees/
 !.vscode/

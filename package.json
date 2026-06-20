@@ -7,9 +7,16 @@
     "ready": "vp check && vp run -r test && vp run -r build",
     "dev": "vp run website#dev",
     "prepare": "vp config",
-    "sync-docs": "bash scripts/sync.sh"
+    "sync-docs": "bash scripts/sync.sh",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy"
   },
   "devDependencies": {
+    "@effect/platform-bun": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "alchemy": "catalog:",
+    "effect": "catalog:",
+    "tslib": "catalog:",
     "vite-plus": "catalog:"
   },
   "engines": {
