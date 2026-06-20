@@ -27,3 +27,7 @@ vp run -r build
 ```bash
 vp run dev
 ```
+
+## Deployment
+
+The docs site deploys via GitHub Actions: `prod` on pushes to `main`, preview stages on pull requests. Production URL: https://prisma-ltree.procka.org
