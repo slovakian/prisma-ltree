@@ -1,10 +1,5 @@
 export const homeCodeBlocks = [
   {
-    id: "install",
-    code: `pnpm add prisma-ltree`,
-    lang: "bash",
-  },
-  {
     id: "config",
     code: `// prisma-next.config.ts
 import { defineConfig } from "@prisma-next/cli/config-types";

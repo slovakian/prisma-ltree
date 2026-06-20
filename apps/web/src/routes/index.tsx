@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { CodeBlock } from "@/components/code-block";
+import { InstallCommand } from "@/components/install-command";
 import { Button } from "@/components/ui/button";
 import { homeCodeBlocks } from "@/lib/home-code-samples";
 
@@ -144,7 +145,7 @@ function Home() {
           <Button variant="outline" render={<a href={GITHUB_URL}>View on GitHub</a>} />
         </div>
         <div className="mt-8 max-w-md">
-          <CodeBlock html={highlights.install.html} lang="bash" />
+          <InstallCommand />
         </div>
       </header>
 
