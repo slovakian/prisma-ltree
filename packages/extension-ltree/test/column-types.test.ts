@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { ltree } from "../src/exports/column-types";
+import { ltree, ltreeArray } from "../src/exports/column-types";
 
 describe("prisma-ltree column-types", () => {
   it("creates descriptor with codecId and nativeType", () => {
@@ -20,5 +20,13 @@ describe("prisma-ltree column-types", () => {
     const b = ltree();
     expect(a).not.toBe(b);
     expect(a).toEqual(b);
+  });
+
+  it("ltreeArray() creates descriptor with array codecId and nativeType", () => {
+    const descriptor = ltreeArray();
+    expect(descriptor).toMatchObject({
+      codecId: "pg/ltree-array@1",
+      nativeType: "ltree[]",
+    });
   });
 });

@@ -16,6 +16,20 @@ describe("prisma-ltree pack authoring contributions", () => {
     });
   });
 
+  it("exposes a namespaced ltree.LtreeArray type constructor", () => {
+    expect(ltreePack.authoring?.type).toMatchObject({
+      ltree: {
+        LtreeArray: {
+          kind: "typeConstructor",
+          output: {
+            codecId: "pg/ltree-array@1",
+            nativeType: "ltree[]",
+          },
+        },
+      },
+    });
+  });
+
   it("Ltree type constructor has no args (non-parameterized)", () => {
     const ltreeType = ltreePack.authoring?.type?.ltree?.Ltree as
       | { readonly args?: readonly unknown[] }

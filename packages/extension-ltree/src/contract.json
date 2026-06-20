@@ -21,12 +21,17 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "sha256:f4aea48418f1aa74ecb60b8c675eb6b65c84ac2619cf0781f5acd6b4a1fa904a",
+    "storageHash": "sha256:81cc0a29674d926c9089886b1941ba66d6ce26ec5644fc8a0b7c92a5e9e9876e",
     "types": {
       "ltree": {
         "codecId": "pg/ltree@1",
         "kind": "codec-instance",
         "nativeType": "ltree"
+      },
+      "ltreeArray": {
+        "codecId": "pg/ltree-array@1",
+        "kind": "codec-instance",
+        "nativeType": "ltree[]"
       }
     }
   },

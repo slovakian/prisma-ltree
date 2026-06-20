@@ -2,8 +2,10 @@ import { UNBOUND_NAMESPACE_ID } from "@prisma-next/framework-components/ir";
 import { assertDescriptorSelfConsistency } from "@prisma-next/migration-tools/spaces";
 import { sqlContractCanonicalizationHooks } from "@prisma-next/sql-contract/canonicalization-hooks";
 import { describe, expect, it } from "vite-plus/test";
-import { LTREE_CODEC_ID } from "../src/core/constants";
+import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "../src/core/constants";
 import {
+  LTREE_ARRAY_NATIVE_TYPE,
+  LTREE_ARRAY_STORAGE_TYPE,
   LTREE_BASELINE_MIGRATION_NAME,
   LTREE_INVARIANTS,
   LTREE_NATIVE_TYPE,
@@ -33,6 +35,10 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     expect(space!.contractJson.storage.types?.[LTREE_NATIVE_TYPE]).toMatchObject({
       codecId: LTREE_CODEC_ID,
       nativeType: LTREE_NATIVE_TYPE,
+    });
+    expect(space!.contractJson.storage.types?.[LTREE_ARRAY_STORAGE_TYPE]).toMatchObject({
+      codecId: LTREE_ARRAY_CODEC_ID,
+      nativeType: LTREE_ARRAY_NATIVE_TYPE,
     });
   });
 
@@ -91,6 +97,33 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     expect([...space.headRef.invariants].sort()).toEqual(
       [...space.migrations[0]!.metadata.providedInvariants].sort(),
     );
+  });
+
+  it("exposes query operations through the control descriptor", () => {
+    const ops = ltreeExtensionDescriptor.queryOperations!();
+    expect(Object.keys(ops)).toContain("isAncestorOf");
+  });
+
+  it("create() reports the sql/postgres family + target", () => {
+    expect(ltreeExtensionDescriptor.create()).toEqual({
+      familyId: "sql",
+      targetId: "postgres",
+    });
+  });
+
+  it("registers identical control-plane hooks for both ltree codecs", () => {
+    const hooks = ltreeExtensionDescriptor.types!.codecTypes!.controlPlaneHooks as Record<
+      string,
+      {
+        readonly expandNativeType: (arg: { readonly nativeType: string }) => string;
+        readonly resolveIdentityValue: () => unknown;
+      }
+    >;
+    for (const codecId of [LTREE_CODEC_ID, LTREE_ARRAY_CODEC_ID]) {
+      const hook = hooks[codecId]!;
+      expect(hook.expandNativeType({ nativeType: LTREE_NATIVE_TYPE })).toBe(LTREE_NATIVE_TYPE);
+      expect(hook.resolveIdentityValue()).toBeNull();
+    }
   });
 
   it("self-consistency check passes — headRef.hash matches re-derived storage hash", () => {

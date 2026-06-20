@@ -19,6 +19,18 @@ export default defineConfig({
       enabled: true,
       include: ["**/*.test-d.ts"],
     },
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.ts"],
+      exclude: ["src/**/*.d.ts", "src/contract.ts"],
+      reporter: ["text", "html"],
+      thresholds: {
+        statements: 95,
+        branches: 95,
+        functions: 95,
+        lines: 95,
+      },
+    },
   },
   lint: {
     options: {

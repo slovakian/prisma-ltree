@@ -1,9 +1,9 @@
 {
   "from": null,
-  "to": "sha256:f4aea48418f1aa74ecb60b8c675eb6b65c84ac2619cf0781f5acd6b4a1fa904a",
+  "to": "sha256:81cc0a29674d926c9089886b1941ba66d6ce26ec5644fc8a0b7c92a5e9e9876e",
   "providedInvariants": [
     "ltree:install-ltree-v1"
   ],
   "createdAt": "2026-06-19T21:42:51.612Z",
-  "migrationHash": "sha256:8972f1ef12bde91cd5a92538a131c4fbbd19724951eeac04bc665880d61a6ac4"
+  "migrationHash": "sha256:12135607df23ecea31aaf9e402703096cfcb236abf9e48a6797de2e74208700a"
 }

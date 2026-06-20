@@ -1,1 +1,1 @@
-export type { CodecTypes, Ltree } from "../types/codec-types";
+export type { CodecTypes, Ltree, LtreeArray } from "../types/codec-types";

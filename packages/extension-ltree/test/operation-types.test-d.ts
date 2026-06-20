@@ -6,6 +6,7 @@ import type { QueryOperationTypes } from "../src/exports/operation-types";
 // `CodecExpression` argument types resolve to their raw-value forms.
 type TestCT = {
   "pg/ltree@1": { input: string; output: string };
+  "pg/ltree-array@1": { input: readonly string[]; output: readonly string[] };
   "pg/text@1": { input: string; output: string };
   "pg/text-array@1": { input: string[]; output: string[] };
   "pg/int4@1": { input: number; output: number };
@@ -22,7 +23,7 @@ type IntReturn = Expression<{ readonly codecId: "pg/int4@1"; readonly nullable: 
 
 type TextReturn = Expression<{ readonly codecId: "pg/text@1"; readonly nullable: false }>;
 
-test("the full Tier 1 + Tier 2 operation set is present", () => {
+test("the full Tier 1 + Tier 2 + Tier 3 operation set is present", () => {
   expectTypeOf<keyof Ops>().toEqualTypeOf<
     | "isAncestorOf"
     | "isDescendantOf"
@@ -39,6 +40,10 @@ test("the full Tier 1 + Tier 2 operation set is present", () => {
     | "prependText"
     | "toText"
     | "toLtree"
+    | "firstAncestorOf"
+    | "firstDescendantOf"
+    | "firstMatchLquery"
+    | "firstMatchLtxtquery"
   >();
 });
 
@@ -82,6 +87,16 @@ test("conversion operators bridge ltree<->text", () => {
   // toLtree: text self -> ltree (ADR-002 — rooted on text, not ltree).
   expectTypeOf<ReturnType<Impl<"toLtree">>>().toEqualTypeOf<LtreeReturn>();
   expectTypeOf<Ops["toLtree"]["self"]["codecId"]>().toEqualTypeOf<"pg/text@1">();
+});
+
+test("Tier 3 first-match operators take array receiver and return ltree", () => {
+  expectTypeOf<Ops["firstAncestorOf"]["self"]["codecId"]>().toEqualTypeOf<"pg/ltree-array@1">();
+  expectTypeOf<ReturnType<Impl<"firstAncestorOf">>>().toEqualTypeOf<LtreeReturn>();
+  expectTypeOf<ReturnType<Impl<"firstDescendantOf">>>().toEqualTypeOf<LtreeReturn>();
+  expectTypeOf<ReturnType<Impl<"firstMatchLquery">>>().toEqualTypeOf<LtreeReturn>();
+  expectTypeOf<ReturnType<Impl<"firstMatchLtxtquery">>>().toEqualTypeOf<LtreeReturn>();
+  expectTypeOf<string>().toExtend<ArgOf<"firstAncestorOf", 1>>();
+  expectTypeOf<string>().toExtend<ArgOf<"firstMatchLquery", 1>>();
 });
 
 test("subpath length and indexOf offset are optional, lca requires >= 2 paths", () => {

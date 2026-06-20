@@ -30,6 +30,7 @@ export function createLtreeContract(): PostgresContract {
                 columns: {
                   id: { codecId: "pg/int4@1", nativeType: "int4", nullable: false },
                   path: { codecId: "pg/ltree@1", nativeType: "ltree", nullable: false },
+                  paths: { codecId: "pg/ltree-array@1", nativeType: "ltree[]", nullable: false },
                 },
                 uniques: [],
                 indexes: [],
@@ -49,6 +50,15 @@ export function ltreeColumn(col: string): AnyExpression {
   return {
     codec: { codecId: "pg/ltree@1" },
     returnType: { codecId: "pg/ltree@1", nullable: false },
+    buildAst: () => ColumnRef.of("node", col),
+  } as unknown as AnyExpression;
+}
+
+/** Wrap a `node.<col>` `ltree[]` column as the array-receiver `self` (ADR-003). */
+export function ltreeArrayColumn(col: string): AnyExpression {
+  return {
+    codec: { codecId: "pg/ltree-array@1" },
+    returnType: { codecId: "pg/ltree-array@1", nullable: false },
     buildAst: () => ColumnRef.of("node", col),
   } as unknown as AnyExpression;
 }

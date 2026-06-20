@@ -30,7 +30,7 @@ import type {
 } from '@prisma-next/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'sha256:f4aea48418f1aa74ecb60b8c675eb6b65c84ac2619cf0781f5acd6b4a1fa904a'>;
+  StorageHashBase<'sha256:81cc0a29674d926c9089886b1941ba66d6ce26ec5644fc8a0b7c92a5e9e9876e'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'sha256:9c8aa3114e84ed3b7ea2bd57526d9c2e1bf7c5292be694e9d3801f566fda7ccb'>;
@@ -65,6 +65,12 @@ type ContractBase = Omit<
         readonly kind: 'codec-instance';
         readonly codecId: 'pg/ltree@1';
         readonly nativeType: 'ltree';
+        readonly typeParams: Record<string, never>;
+      };
+      readonly ltreeArray: {
+        readonly kind: 'codec-instance';
+        readonly codecId: 'pg/ltree-array@1';
+        readonly nativeType: 'ltree[]';
         readonly typeParams: Record<string, never>;
       };
     };

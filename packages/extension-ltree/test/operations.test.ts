@@ -25,13 +25,15 @@ describe("prisma-ltree operations", () => {
   it("descriptor contributes the pg/ltree@1 codec descriptor", () => {
     const descriptors = ltreeRuntimeDescriptor.codecs();
     expect(descriptors).toBeDefined();
-    expect(descriptors.length).toBe(1);
+    expect(descriptors.length).toBe(2);
     const ltreeCodecDescriptor = descriptors.find((d) => d.codecId === "pg/ltree@1");
     expect(ltreeCodecDescriptor).toBeDefined();
     expect(ltreeCodecDescriptor?.codecId).toBe("pg/ltree@1");
+    const ltreeArrayCodecDescriptor = descriptors.find((d) => d.codecId === "pg/ltree-array@1");
+    expect(ltreeArrayCodecDescriptor).toBeDefined();
   });
 
-  it("exposes the full Tier 1 + Tier 2 operation set", () => {
+  it("exposes the full Tier 1 + Tier 2 + Tier 3 operation set", () => {
     const operations = ltreeRuntimeDescriptor.queryOperations!();
     expect(Object.keys(operations).sort()).toEqual(
       [
@@ -50,6 +52,10 @@ describe("prisma-ltree operations", () => {
         "prependText",
         "toText",
         "toLtree",
+        "firstAncestorOf",
+        "firstDescendantOf",
+        "firstMatchLquery",
+        "firstMatchLtxtquery",
       ].sort(),
     );
   });
@@ -143,6 +149,33 @@ describe("prisma-ltree operations", () => {
       expect(ast.method).toBe(method);
       expect(ast.lowering).toEqual({ targetFamily: "sql", strategy: "function", template });
       expect(ast.returns).toEqual({ codecId: returnCodecId, nullable: false });
+    },
+  );
+
+  // Tier 3 — first-match operators on `ltree[]` receiver (ADR-003).
+  const tier3Cases: ReadonlyArray<readonly [string, string, unknown]> = [
+    ["firstAncestorOf", "{{self}} ?@> {{arg0}}", "Top.Science.Astronomy"],
+    ["firstDescendantOf", "{{self}} ?<@ {{arg0}}", "Top"],
+    ["firstMatchLquery", "{{self}} ?~ ({{arg0}})::lquery", "Top.*"],
+    ["firstMatchLtxtquery", "{{self}} ?@ ({{arg0}})::ltxtquery", "Science"],
+  ];
+
+  it.each(tier3Cases)(
+    "%s builds an OperationExpr with the correct lowering template and ltree return",
+    (method, template, arg) => {
+      const operations = ltreeRuntimeDescriptor.queryOperations!();
+      const ltreeArrayCodec: CodecRef = { codecId: "pg/ltree-array@1" };
+      const op = operations[method];
+      expect(op).toBeDefined();
+      const expr = op?.impl(
+        ltreeExpr("Top.Science,Top.Hobbies", ltreeArrayCodec) as never,
+        arg as never,
+      ) as unknown as { buildAst(): OperationExpr };
+      const ast = expr.buildAst();
+      expect(ast).toBeInstanceOf(OperationExpr);
+      expect(ast.method).toBe(method);
+      expect(ast.lowering).toEqual({ targetFamily: "sql", strategy: "function", template });
+      expect(ast.returns).toEqual({ codecId: "pg/ltree@1", nullable: false });
     },
   );
 

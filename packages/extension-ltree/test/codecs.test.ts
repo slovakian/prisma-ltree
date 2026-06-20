@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vite-plus/test";
-import { ltree, ltreeDescriptor, assertValidLtree } from "../src/core/codecs";
-import { LTREE_CODEC_ID, LTREE_MAX_LABEL_LENGTH } from "../src/core/constants";
+import {
+  LtreeArrayCodec,
+  LtreeCodec,
+  ltree,
+  ltreeArray,
+  ltreeArrayDescriptor,
+  ltreeDescriptor,
+  assertValidLtree,
+} from "../src/core/codecs";
+import {
+  LTREE_ARRAY_CODEC_ID,
+  LTREE_CODEC_ID,
+  LTREE_MAX_LABEL_LENGTH,
+  LTREE_MAX_LABELS,
+} from "../src/core/constants";
 
 type AsyncLtreeCodec = {
   readonly encode: (value: string) => Promise<string>;
@@ -9,6 +22,15 @@ type AsyncLtreeCodec = {
 
 function asAsyncCodec(): AsyncLtreeCodec {
   return ltreeDescriptor.factory()({ name: "test" }) as unknown as AsyncLtreeCodec;
+}
+
+type AsyncLtreeArrayCodec = {
+  readonly encode: (value: readonly string[]) => Promise<readonly string[]>;
+  readonly decode: (wire: readonly string[]) => Promise<readonly string[]>;
+};
+
+function asAsyncArrayCodec(): AsyncLtreeArrayCodec {
+  return ltreeArrayDescriptor.factory()({ name: "test" }) as unknown as AsyncLtreeArrayCodec;
 }
 
 describe("prisma-ltree codecs", () => {
@@ -52,6 +74,74 @@ describe("prisma-ltree codecs", () => {
     const encoded = await codec.encode("my_label.hyphen-label.123");
     expect(encoded).toBe("my_label.hyphen-label.123");
   });
+
+  it("has ltree-array codec registered with correct metadata", () => {
+    expect(ltreeArrayDescriptor.codecId).toBe(LTREE_ARRAY_CODEC_ID);
+    expect(ltreeArrayDescriptor.targetTypes).toEqual(["ltree[]"]);
+    expect(ltreeArrayDescriptor.traits).toEqual(["equality"]);
+  });
+
+  it("encodes a valid ltree[] unchanged with per-element validation", async () => {
+    const codec = asAsyncArrayCodec();
+    const value = ["Top.Science", "Top.Hobbies"] as const;
+    const encoded = await codec.encode(value);
+    expect(encoded).toEqual(value);
+  });
+
+  it("rejects invalid paths inside an ltree[] on encode", async () => {
+    const codec = asAsyncArrayCodec();
+    await expect(codec.encode(["Top.Science", "bad path"])).rejects.toThrow("invalid characters");
+  });
+
+  it("decodes an ltree[] wire array unchanged", async () => {
+    const codec = asAsyncArrayCodec();
+    const wire = ["Top.Science", "Top.Hobbies.Amateurs_Astronomy"] as const;
+    expect(await codec.decode(wire)).toEqual(wire);
+  });
+});
+
+describe("prisma-ltree codec JSON serialization", () => {
+  it("round-trips a single path through encodeJson/decodeJson", () => {
+    const value = "Top.Science.Astronomy";
+    const json = new LtreeCodec(ltreeDescriptor).encodeJson(value);
+    expect(json).toBe(value);
+    expect(new LtreeCodec(ltreeDescriptor).decodeJson(json)).toBe(value);
+  });
+
+  it("rejects invalid paths in encodeJson/decodeJson", () => {
+    const codec = new LtreeCodec(ltreeDescriptor);
+    expect(() => codec.encodeJson("bad path")).toThrow("invalid characters");
+    expect(() => codec.decodeJson("bad path")).toThrow("invalid characters");
+  });
+
+  it("round-trips an ltree[] through encodeJson/decodeJson", () => {
+    const codec = new LtreeArrayCodec(ltreeArrayDescriptor);
+    const value = ["Top.Science", "Top.Hobbies"] as const;
+    const json = codec.encodeJson(value);
+    expect(json).toEqual([...value]);
+    expect(codec.decodeJson(json)).toEqual([...value]);
+  });
+
+  it("rejects invalid entries in array encodeJson/decodeJson", () => {
+    const codec = new LtreeArrayCodec(ltreeArrayDescriptor);
+    expect(() => codec.encodeJson(["ok", "bad path"])).toThrow("invalid characters");
+    expect(() => codec.decodeJson(["bad path"])).toThrow("invalid characters");
+  });
+
+  it("decodeJson returns an empty array for non-array JSON", () => {
+    const codec = new LtreeArrayCodec(ltreeArrayDescriptor);
+    expect(codec.decodeJson("not-an-array")).toEqual([]);
+  });
+});
+
+describe("prisma-ltree codec descriptors render output types", () => {
+  it("renders the scalar ltree output type as string", () => {
+    expect(ltreeDescriptor.renderOutputType()).toBe("string");
+  });
+
+  it("renders the ltree[] output type as readonly string[]", () => {
+    expect(ltreeArrayDescriptor.renderOutputType()).toBe("readonly string[]");
+  });
 });
 
 describe("prisma-ltree codec validation", () => {
@@ -87,6 +177,11 @@ describe("prisma-ltree codec validation", () => {
     await expect(codec.encode(longLabel)).rejects.toThrow("exceeds max length");
   });
 
+  it("rejects a path exceeding the max number of labels", () => {
+    const tooManyLabels = Array.from({ length: LTREE_MAX_LABELS + 1 }, () => "a").join(".");
+    expect(() => assertValidLtree(tooManyLabels)).toThrow("exceeds max labels");
+  });
+
   it("accepts a label at exactly the max length", async () => {
     const codec = asAsyncCodec();
     const maxLabel = "a".repeat(LTREE_MAX_LABEL_LENGTH);
@@ -114,5 +209,13 @@ describe("ltree column helper", () => {
     const spec = ltree();
     const codec = spec.codecFactory({ name: "path" }) as unknown as AsyncLtreeCodec;
     expect(await codec.encode("Top.Child")).toBe("Top.Child");
+  });
+});
+
+describe("ltreeArray column helper", () => {
+  it("produces a ColumnSpec with the array codec id and ltree[] nativeType", () => {
+    const spec = ltreeArray();
+    expect(spec.codecId).toBe(LTREE_ARRAY_CODEC_ID);
+    expect(spec.nativeType).toBe("ltree[]");
   });
 });

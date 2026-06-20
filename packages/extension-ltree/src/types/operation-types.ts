@@ -123,5 +123,34 @@ export type QueryOperationTypes<CT extends CodecTypesBase> = SqlQueryOperationTy
         self: CodecExpression<"pg/text@1", boolean, CT>,
       ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
     };
+    // Tier 3 — array first-match operators on `pg/ltree-array@1` (ADR-003).
+    readonly firstAncestorOf: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        other: CodecExpression<"pg/ltree@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
+    };
+    readonly firstDescendantOf: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        other: CodecExpression<"pg/ltree@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
+    };
+    readonly firstMatchLquery: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        pattern: CodecExpression<"pg/text@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
+    };
+    readonly firstMatchLtxtquery: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        query: CodecExpression<"pg/text@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
+    };
   }
 >;

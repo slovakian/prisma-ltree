@@ -9,8 +9,8 @@ import {
 import type { CodecTypes } from "../types/codec-types";
 import type { QueryOperationTypes } from "../types/operation-types";
 import { ltreeAuthoringTypes } from "./authoring";
-import { LTREE_CODEC_ID } from "./constants";
-import { LTREE_NATIVE_TYPE } from "./contract-space-constants";
+import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./constants";
+import { LTREE_ARRAY_NATIVE_TYPE, LTREE_NATIVE_TYPE } from "./contract-space-constants";
 import { ltreeCodecRegistry } from "./registry";
 
 type CodecTypesBase = Record<string, { readonly input: unknown; readonly output: unknown }>;
@@ -118,6 +118,27 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       returns: LTREE_RETURN,
       lowering: { targetFamily: "sql", strategy: "function", template },
     });
+
+  // Tier 3 — first-match operators on an `ltree[]` receiver (ADR-003).
+  const firstMatchOp = (
+    method: string,
+    operator: string,
+    self: CodecExpression<typeof LTREE_ARRAY_CODEC_ID, boolean, CT>,
+    arg: unknown,
+    argCodecId: typeof LTREE_CODEC_ID | typeof TEXT_CODEC_ID,
+    castType?: string,
+  ): LtreeReturn => {
+    const selfCodec = codecOf(self);
+    const template = castType
+      ? `{{self}} ${operator} ({{arg0}})::${castType}`
+      : `{{self}} ${operator} {{arg0}}`;
+    return buildOperation({
+      method,
+      args: [toExpr(self, selfCodec), toExpr(arg, { codecId: argCodecId })],
+      returns: LTREE_RETURN,
+      lowering: { targetFamily: "sql", strategy: "function", template },
+    });
+  };
 
   return {
     isAncestorOf: {
@@ -244,6 +265,25 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       impl: (self): LtreeReturn =>
         funcOp("toLtree", "text2ltree", LTREE_RETURN, [toExpr(self, codecOf(self))]),
     },
+    // Tier 3 — array first-match operators (ADR-003).
+    firstAncestorOf: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, other) => firstMatchOp("firstAncestorOf", "?@>", self, other, LTREE_CODEC_ID),
+    },
+    firstDescendantOf: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, other) => firstMatchOp("firstDescendantOf", "?<@", self, other, LTREE_CODEC_ID),
+    },
+    firstMatchLquery: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, pattern) =>
+        firstMatchOp("firstMatchLquery", "?~", self, pattern, TEXT_CODEC_ID, "lquery"),
+    },
+    firstMatchLtxtquery: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, query) =>
+        firstMatchOp("firstMatchLtxtquery", "?@", self, query, TEXT_CODEC_ID, "ltxtquery"),
+    },
   };
 }
 
@@ -290,6 +330,12 @@ const ltreePackMetaBase = {
         familyId: "sql",
         targetId: "postgres",
         nativeType: LTREE_NATIVE_TYPE,
+      },
+      {
+        typeId: LTREE_ARRAY_CODEC_ID,
+        familyId: "sql",
+        targetId: "postgres",
+        nativeType: LTREE_ARRAY_NATIVE_TYPE,
       },
     ],
   },

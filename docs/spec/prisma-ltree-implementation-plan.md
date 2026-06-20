@@ -201,46 +201,49 @@ lands with unit + integration tests before expanding.
 
 ### Phase 5: Tier 3 (Array First-Match Ops)
 
-- [ ] **Task 5.1: ADR — array receiver design**
+- [x] **Task 5.1: ADR — array receiver design**
   - **Acceptance:** ADR deciding how `ltree[]`-typed `self` is represented (array codec vs array-of-ltree expressions vs `ltree[]` column codec), grounded in `.sync/prisma-next/` SPI research
   - **Verify:** ADR reviewed; design viable against framework SPI
   - **Dependencies:** Checkpoint 3
   - **Files:** `docs/decisions/ADR-003-array-receiver.md`
   - **Scope:** S (1 file, research-heavy)
+  - **Notes:** **ADR-003 written: dedicated `pg/ltree-array@1` codec** mirroring core `pg/text-array@1`. Verified against `.sync/`: model-accessor registers ops by exact `self.codecId`; no SQL-side element-codec SPI. All four Tier 3 SQL forms smoke-tested under PGlite before coding.
 
-- [ ] **Task 5.2: Array receiver + 4 first-match ops + golden tests**
+- [x] **Task 5.2: Array receiver + 4 first-match ops + golden tests**
   - **Acceptance:** Implement `firstAncestorOf` (`?@>`), `firstDescendantOf` (`?<@`), `firstMatchLquery` (`?~`), `firstMatchLtxtquery` (`?@`) on `ltree[]` receiver + golden tests
   - **Verify:** `vp test` passes
   - **Dependencies:** Task 5.1
   - **Files:** `src/core/{codecs.ts, descriptor-meta.ts}`, `src/types/operation-types.ts`, `test/operations.test.ts`
   - **Scope:** M (4 files)
 
-- [ ] **Task 5.3: Tier 3 integration tests**
+- [x] **Task 5.3: Tier 3 integration tests**
   - **Acceptance:** PGlite integration tests for first-match ops
   - **Verify:** `vp test` passes
   - **Dependencies:** Task 5.2
   - **Files:** `test/integration/tier3.integration.test.ts`
   - **Scope:** S (1 file)
 
-### Checkpoint 4: Tier 3 complete
+### Checkpoint 4: Tier 3 complete ✅
 
-- [ ] `vp run ready` passes; Tier 3 → `supported` in feature-support.md
+- [x] `vp run ready` passes; Tier 3 → `supported` in feature-support.md
 
 ### Phase 6: Polish
 
-- [ ] **Task 6.1: Coverage threshold + gap fill**
+- [x] **Task 6.1: Coverage threshold + gap fill** ✅
   - **Acceptance:** coverage threshold set in the `test` block of `vite.config.ts` (90%→ ramp toward 95%); run coverage, fill gaps in `src/`
   - **Verify:** `vp test --coverage` meets threshold
   - **Dependencies:** Checkpoint 4
   - **Files:** `vite.config.ts` (test block), targeted `src/` + `test/` files
   - **Scope:** M
+  - **Notes:** Added `@vitest/coverage-v8@4.1.8` (matches the `vite-plus-test` peer dep). `coverage` block scoped to `src/**/*.ts` (excludes `*.d.ts` + authoring-only `contract.ts`), thresholds **95%** on all four axes. Filled the two gaps unit-side: `codecs.ts` array-codec `decode`/`encodeJson`/`decodeJson` + scalar JSON paths + `renderOutputType` + max-labels guard; `control.ts` `queryOperations()`/`create()`/control-plane hooks. **100% statements/branches/functions/lines** (139/22/54/136), 116 tests pass, no type errors. Added `coverage/` to `.gitignore`. (Vite+'s re-versioned vitest fork emits a cosmetic "mixed versions" warning — `0.1.24` vs provider `4.x` can never string-match; coverage executes + enforces correctly.)
 
-- [ ] **Task 6.2: Finalize docs**
+- [x] **Task 6.2: Finalize docs** ✅
   - **Acceptance:** `docs/feature-support.md` statuses accurate (supported/out-of-scope); `docs/progress/` logs complete; README for the package
   - **Verify:** docs review; matrix matches shipped features
   - **Dependencies:** Task 6.1
   - **Files:** `docs/feature-support.md`, `docs/progress/*.md`, `packages/extension-ltree/README.md`
   - **Scope:** M
+  - **Notes:** Wrote `packages/extension-ltree/README.md` (install, config, contract/runtime/query usage, full operation tables grounded in the feature matrix, types, dev workflow). Created per-tier progress logs (`docs/progress/{tier1,tier2,tier3,polish}.md`) sourced from the recorded task notes. `feature-support.md` verified accurate against the shipped surface (no status changes needed — already current through Tier 3).
 
 - [ ] **Task 6.3: Replace npm stub (ASK FIRST)**
   - **Acceptance:** Bump `prisma-ltree` version (e.g. `0.1.0`), build, publish to npm replacing the `0.0.1` stub
@@ -265,7 +268,7 @@ lands with unit + integration tests before expanding.
 1. ~~Node `>=24`~~ — **resolved** (shell is v24.17.0).
 2. lquery/ltxtquery cast-in-template vs param codec — decide at Task 3.1 (try cast-in-template first).
 3. Free-function API shape — ADR at Tasks 3.2/4.1.
-4. Array receiver — ADR at Task 5.1.
+4. Array receiver — ADR at Task 5.1. **Resolved (ADR-003): `pg/ltree-array@1`.**
 5. `resolveIdentityValue` — resolve at Task 2.3.
 6. `prisma-next` CLI invocation — confirm at Checkpoint 0.
 7. Coverage threshold start — decide at Task 6.1.
