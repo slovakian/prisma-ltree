@@ -9,6 +9,8 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -37,3 +39,6 @@ jobs:
           pnpm run check-pins
           vp test
           vp run build
+
+      - name: Publish preview package
+        run: pnpm exec pkg-pr-new publish './packages/extension-ltree' --commentWithSha --packageManager=pnpm

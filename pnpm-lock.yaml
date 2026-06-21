@@ -24,6 +24,9 @@ catalogs:
     effect:
       specifier: 4.0.0-beta.84
       version: 4.0.0-beta.84
+    pkg-pr-new:
+      specifier: ^0.0.75
+      version: 0.0.75
     shiki:
       specifier: ^4.2.0
       version: 4.2.0
@@ -57,6 +60,9 @@ importers:
       effect:
         specifier: 'catalog:'
         version: 4.0.0-beta.84
+      pkg-pr-new:
+        specifier: 'catalog:'
+        version: 0.0.75
       tslib:
         specifier: 'catalog:'
         version: 2.8.1
@@ -5676,6 +5682,10 @@ packages:
   pkce-challenge@5.0.1:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
     engines: {node: '>=16.20.0'}
+
+  pkg-pr-new@0.0.75:
+    resolution: {integrity: sha512-u9mdErTewKSMsr+ceCt8VcNuNP0ro5AXiPXhUVApuEyqr2Zlvt+DdCFBcm+yGWN8mhOdZJ27meIDbnoZgfzpOw==}
+    hasBin: true
 
   pkg-types@2.3.1:
     resolution: {integrity: sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg==}
@@ -12602,6 +12612,8 @@ snapshots:
       pngjs: 7.0.0
 
   pkce-challenge@5.0.1: {}
+
+  pkg-pr-new@0.0.75: {}
 
   pkg-types@2.3.1:
     dependencies:

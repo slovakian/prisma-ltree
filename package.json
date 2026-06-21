@@ -16,6 +16,7 @@
     "@effect/platform-node": "catalog:",
     "alchemy": "catalog:",
     "effect": "catalog:",
+    "pkg-pr-new": "catalog:",
     "tslib": "catalog:",
     "vite-plus": "catalog:"
   },
