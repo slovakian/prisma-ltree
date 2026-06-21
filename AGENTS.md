@@ -63,14 +63,15 @@ this clone for **reference implementations, SPI types, and test patterns**.
 
 ## Key Documentation (consult these before coding)
 
-| Doc                         | Path                                                    | When                                                                   |
-| --------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Extension architecture hub  | `docs/prisma-next/ecosystem-extensions-and-packs.md`    | Understanding the four-slice model (contract, lanes, runtime, migrate) |
-| Naming & layout conventions | `docs/prisma-next/extension-packs-naming-and-layout.md` | Setting up package exports, source layout, package.json metadata       |
-| Extensions glossary         | `docs/prisma-next/extensions-glossary.md`               | Terminology: codecs, contract spaces, invariantIds, branded types      |
-| Codec authoring guide       | `docs/prisma-next/codec-authoring-guide.md`             | How to write encode/decode, descriptor classes, column helpers         |
-| Core vs pack catalog        | `docs/prisma-next/core-vs-pack-entity-catalog.md`       | Which features are core vs extension-provided                          |
-| PostgreSQL ltree reference  | `docs/ltree/postgresql-ltree-reference.md`              | ltree types, operators, functions, indexes, SQL syntax                 |
+| Doc                            | Path                                                    | When                                                                      |
+| ------------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Extension architecture hub     | `docs/prisma-next/ecosystem-extensions-and-packs.md`    | Understanding the four-slice model (contract, lanes, runtime, migrate)    |
+| **Versioning & compatibility** | `docs/prisma-next/versioning-and-compatibility.md`      | Framework pins, upgrade workflow, consumer constraints, release checklist |
+| Naming & layout conventions    | `docs/prisma-next/extension-packs-naming-and-layout.md` | Setting up package exports, source layout, package.json metadata          |
+| Extensions glossary            | `docs/prisma-next/extensions-glossary.md`               | Terminology: codecs, contract spaces, invariantIds, branded types         |
+| Codec authoring guide          | `docs/prisma-next/codec-authoring-guide.md`             | How to write encode/decode, descriptor classes, column helpers            |
+| Core vs pack catalog           | `docs/prisma-next/core-vs-pack-entity-catalog.md`       | Which features are core vs extension-provided                             |
+| PostgreSQL ltree reference     | `docs/ltree/postgresql-ltree-reference.md`              | ltree types, operators, functions, indexes, SQL syntax                    |
 
 ## Extension Pack Architecture (Four Slices)
 
@@ -184,3 +185,11 @@ Mirror tests from postgis (`operations.test.ts` pattern: descriptor metadata, op
 2. `vp check` — format, lint, typecheck
 3. `vp test` — run tests
 4. `vp run build` — build packages
+5. `vp run ready` — full validation (includes `check-pins` for exact `@prisma-next/*` alignment)
+
+### Upgrading prisma-next
+
+Do **not** bump `@prisma-next/*` pins casually. Follow
+`docs/prisma-next/versioning-and-compatibility.md` and the upstream
+`prisma-next-extension-upgrade` skill (`.sync/prisma-next/skills/extension-author/` after
+`pnpm run sync-docs`). One minor per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.

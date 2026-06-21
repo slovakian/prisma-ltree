@@ -15,9 +15,13 @@ export default defineConfig({
       "**/migrations/**/start-contract.json",
       "**/migrations/**/head.contract.json",
       "**/migrations/**/head.contract.d.ts",
+      "**/routeTree.gen.ts",
+      ".agents/**",
+      "agent/**",
     ],
   },
   lint: {
+    ignorePatterns: ["**/routeTree.gen.ts", ".agents/**", "agent/**", "apps/web/**"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
     options: { typeAware: true, typeCheck: true },

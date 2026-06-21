@@ -1,11 +1,23 @@
 {
   "version": 1,
   "skills": {
+    "prisma-next-extension-upgrade": {
+      "source": "prisma/prisma-next",
+      "sourceType": "github",
+      "skillPath": "skills/extension-author/prisma-next-extension-upgrade/SKILL.md",
+      "computedHash": "4be1af7c9832b7a212756aef4e8566509375ef5a54cd24147454a3d90d934408"
+    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
       "skillPath": "skills/shadcn/SKILL.md",
       "computedHash": "ac9d0d69caac7de1d1e5647f3db3bcd2f13af355d6b3a78780fbf7fc80e8dca0"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "computedHash": "5ea13a6d9f0d4bb694405d79acd00cadec0d21bb138c4dd10fcf3c500cb835c2"
     }
   }
 }

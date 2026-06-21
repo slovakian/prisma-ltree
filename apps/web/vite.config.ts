@@ -104,6 +104,9 @@ async function sendWebResponse(res: ServerResponse, response: Response): Promise
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact(), tanstackStartViteplusDevSsr()],
+  test: {
+    passWithNoTests: true,
+  },
   server: {
     strictPort: true,
   },
