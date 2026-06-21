@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { CodeBlock } from "@/components/code-block";
+import { LtreeDemo } from "@/components/home/ltree-demo";
 import { InstallCommand } from "@/components/install-command";
 import { Button } from "@/components/ui/button";
 import { homeCodeBlocks } from "@/lib/home-code-samples";
+import { demoCodeBlocks } from "@/lib/ltree-demo-data";
 
 const getHomeHighlights = createServerFn({ method: "GET" }).handler(async () => {
   const { highlightCodeBlocks } = await import("@/lib/shiki.server");
-  return { highlights: await highlightCodeBlocks(homeCodeBlocks) };
+  return { highlights: await highlightCodeBlocks([...homeCodeBlocks, ...demoCodeBlocks]) };
 });
 
 export const Route = createFileRoute("/")({
@@ -152,6 +154,18 @@ function Home() {
           <InstallCommand />
         </div>
       </header>
+
+      {/* Interactive demo */}
+      <section className="border-b border-border py-12">
+        <SectionLabel>See it work</SectionLabel>
+        <h2 className="text-2xl font-medium">A query is a shape over the tree</h2>
+        <p className="mt-3 mb-8 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Records form a hierarchy in PostgreSQL. Each operator selects a different slice of it —
+          pick one below (or watch it cycle) and see which nodes light up, plus the typed call and
+          the SQL it lowers to.
+        </p>
+        <LtreeDemo codeHighlights={highlights} />
+      </section>
 
       {/* Setup */}
       <section id="setup" className="scroll-mt-8 border-b border-border py-12">
