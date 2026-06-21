@@ -17,20 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11.7.0
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: voidzero-dev/setup-vp@v1
         with:
           node-version: "24"
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          cache: true
+          run-install: |
+            args: ['--frozen-lockfile']
 
       - name: Validate extension
         run: |
