@@ -10,23 +10,28 @@
 
 ## 🔧 What's Next (Actions Required)
 
-### 1. Configure NPM_TOKEN Secret
+### 1. Configure npm Trusted Publishing (OIDC)
 
-The `version.yml` workflow needs access to publish packages to npm:
+The `version.yml` workflow uses **Trusted Publishing** — a secure, token-free approach using OpenID Connect.
 
-1. Generate an npm access token:
+**On npm.org:**
 
-   ```bash
-   npm login
-   npm token create --read-and-write --access-only
-   # Note: --access-only limits scope to this package
-   ```
+1. Go to: https://www.npmjs.com/settings/[your-username]/packages/prisma-ltree/settings
+2. Scroll to "Publishing access" section
+3. Add GitHub OIDC provider:
+   - Repository: `slovakian/prisma-ltree`
+   - Repository owner: `slovakian`
+   - Repository branch: `main`
+4. Save
 
-2. Add to GitHub:
-   - Go to: https://github.com/slovakian/prisma-ltree/settings/secrets/actions
-   - Click "New repository secret"
-   - Name: `NPM_TOKEN`
-   - Value: (paste the token from npm)
+**That's it!** No secrets to configure. The workflow automatically uses GitHub's OIDC token to authenticate.
+
+> **Why Trusted Publishing?**
+>
+> - No tokens stored as GitHub secrets
+> - Automatic token rotation
+> - Auditable via npm activity logs
+> - More secure than static tokens
 
 ### 2. Test the Workflow (Optional but Recommended)
 

@@ -132,11 +132,15 @@ The `ci.yml` publishes preview packages via pkg.pr.new. If it's not showing up:
 
 ### Publishing fails
 
-The `version.yml` workflow needs `NPM_TOKEN` secret configured:
+The `version.yml` workflow uses npm Trusted Publishing (OIDC) — no secrets needed:
 
-1. Go to npm.org → Access Tokens → Create token
-2. Go to GitHub repo settings → Secrets and variables → Actions
-3. Add `NPM_TOKEN` secret with the token value
+1. Go to: https://www.npmjs.com/settings/[your-username]/packages/prisma-ltree/settings
+2. Under "Publishing access", add GitHub OIDC provider with:
+   - Repository: `slovakian/prisma-ltree`
+   - Branch: `main`
+3. Save
+
+If you still see errors, check the version.yml workflow logs in GitHub Actions.
 
 ## Links
 
