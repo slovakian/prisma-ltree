@@ -3,8 +3,6 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 
-import { ModeToggle } from "@/components/mode-toggle";
-
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -45,9 +43,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <RootProvider>
-          <div className="fixed top-4 right-4 z-50">
-            <ModeToggle />
-          </div>
           {children}
           <TanStackDevtools
             config={{
