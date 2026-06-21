@@ -9,9 +9,11 @@
     "prepare": "vp config",
     "sync-docs": "bash scripts/sync.sh",
     "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy"
+    "destroy": "alchemy destroy",
+    "changeset": "changeset"
   },
   "devDependencies": {
+    "@changesets/cli": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@effect/platform-node": "catalog:",
     "alchemy": "catalog:",
