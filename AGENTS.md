@@ -31,7 +31,7 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 # Prisma Next LTREE Extension Development
 
-This project builds `@prisma-next/extension-ltree`, an extension pack for PostgreSQL's `ltree` (hierarchical tree) data type, following the prisma-next extension architecture.
+This project builds `prisma-ltree`, an extension pack for PostgreSQL's `ltree` (hierarchical tree) data type, following the prisma-next extension architecture.
 
 ## Project Layout
 

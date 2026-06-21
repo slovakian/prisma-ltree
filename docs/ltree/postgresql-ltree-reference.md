@@ -137,8 +137,8 @@ CREATE EXTENSION IF NOT EXISTS ltree;
 ### Contract
 
 ```typescript
-import { ltree } from "@prisma-next/extension-ltree/column-types";
-import ltreePack from "@prisma-next/extension-ltree/pack";
+import { ltree } from "prisma-ltree/column-types";
+import ltreePack from "prisma-ltree/pack";
 
 path: field.column(ltree());
 extensionPacks: {
