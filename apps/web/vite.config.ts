@@ -3,6 +3,7 @@ import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import fumadocsMdx from "fumadocs-mdx/vite";
 import { isRunnableDevEnvironment } from "vite-plus";
 import type { Plugin } from "vite-plus";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -103,7 +104,14 @@ async function sendWebResponse(res: ServerResponse, response: Response): Promise
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact(), tanstackStartViteplusDevSsr()],
+  plugins: [
+    devtools(),
+    tailwindcss(),
+    tanstackStart(),
+    fumadocsMdx(),
+    viteReact(),
+    tanstackStartViteplusDevSsr(),
+  ],
   test: {
     passWithNoTests: true,
   },
