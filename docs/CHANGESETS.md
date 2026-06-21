@@ -70,7 +70,7 @@ git commit -m "docs: update readme [skip-version]"
 
 ## GitHub Actions Workflows
 
-### `version.yml` (Main → Version PR)
+### `publish.yml` (Main → Version PR)
 
 Runs on every push to `main`:
 
@@ -117,7 +117,7 @@ The Version workflow will:
 
 ### "No changesets found"
 
-If `version.yml` runs but doesn't create a PR, check:
+If `publish.yml` runs but doesn't create a PR, check:
 
 - Did you run `pnpm exec changeset` to create the `.changeset/*.md` file?
 - Did you commit and push that file?
@@ -132,7 +132,7 @@ The `ci.yml` publishes preview packages via pkg.pr.new. If it's not showing up:
 
 ### Publishing fails
 
-The `version.yml` workflow uses npm Trusted Publishing (OIDC) — no secrets needed:
+The `publish.yml` workflow uses npm Trusted Publishing (OIDC) — no secrets needed:
 
 1. Go to: https://www.npmjs.com/settings/[your-username]/packages/prisma-ltree/settings
 2. Under "Publishing access", add GitHub OIDC provider with:
@@ -140,7 +140,7 @@ The `version.yml` workflow uses npm Trusted Publishing (OIDC) — no secrets nee
    - Branch: `main`
 3. Save
 
-If you still see errors, check the version.yml workflow logs in GitHub Actions.
+If you still see errors, check the publish.yml workflow logs in GitHub Actions.
 
 ## Links
 

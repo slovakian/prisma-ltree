@@ -4,7 +4,7 @@
 
 - [x] @changesets/cli installed
 - [x] `.changeset/config.json` configured for public npm publishing
-- [x] `.github/workflows/version.yml` created for automated versioning
+- [x] `.github/workflows/publish.yml` created for automated versioning
 - [x] `docs/CHANGESETS.md` documentation written
 - [x] `pnpm run changeset` script added
 
@@ -12,7 +12,7 @@
 
 ### 1. Configure npm Trusted Publishing (OIDC)
 
-The `version.yml` workflow uses **Trusted Publishing** — a secure, token-free approach using OpenID Connect.
+The `publish.yml` workflow uses **Trusted Publishing** — a secure, token-free approach using OpenID Connect.
 
 **On npm.org:**
 
@@ -53,7 +53,7 @@ Then:
 1. Open a PR
 2. Verify pkg.pr.new publishes preview package
 3. Merge to main
-4. Watch GitHub Actions → version.yml creates a version PR
+4. Watch GitHub Actions → publish.yml creates a version PR
 5. Review and merge the version PR to publish to npm
 
 ### 3. Update Package Metadata (Optional)
@@ -91,7 +91,7 @@ pkg.pr.new publishes preview package
   ↓
 Merge to main
   ↓
-version.yml runs
+publish.yml runs
   ↓
 Creates "Version Packages" PR with:
   - Version bumps
