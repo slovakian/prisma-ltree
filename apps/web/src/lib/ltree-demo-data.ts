@@ -80,7 +80,7 @@ export function matchesLquery(path: string, pattern: string): boolean {
   const m = labels.length;
   const n = tokens.length;
   const dp: boolean[][] = Array.from({ length: m + 1 }, () =>
-    new Array<boolean>(n + 1).fill(false),
+    Array.from({ length: n + 1 }, () => false),
   );
   dp[0][0] = true;
   for (let j = 1; j <= n; j++) {
