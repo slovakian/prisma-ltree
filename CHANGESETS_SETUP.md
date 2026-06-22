@@ -110,6 +110,7 @@ NPM package published automatically! 🎉
 - **[skip-version] flag:** For doc-only changes, add this to commit message
 - **Package versioning is automatic:** Don't manually bump package.json versions
 - **Multiple changesets are OK:** If you make multiple changes, create multiple changeset files
+- **Version PR automation:** Repo workflow permissions must allow GHA to create PRs (`Settings → Actions → Workflow permissions`: read/write + allow PR creation). See `docs/CHANGESETS.md` troubleshooting if the Version workflow fails after merge.
 
 ## 🔗 Quick Links
 

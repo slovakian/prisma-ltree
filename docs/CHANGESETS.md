@@ -142,6 +142,22 @@ The `publish.yml` workflow uses npm Trusted Publishing (OIDC) — no secrets nee
 
 If you still see errors, check the publish.yml workflow logs in GitHub Actions.
 
+### Version PR not created automatically
+
+If `publish.yml` runs `changeset version` successfully but fails with:
+
+```
+GitHub Actions is not permitted to create or approve pull requests
+```
+
+the version branch (`changeset-release/main`) was still pushed — open the PR manually from that branch. To fix automation:
+
+1. Repo **Settings → Actions → General → Workflow permissions** → **Read and write permissions**
+2. Enable **Allow GitHub Actions to create and approve pull requests**
+3. Re-run the failed Version workflow (or push an empty commit to `main` with a new changeset)
+
+The `publish.yml` workflow already requests `pull-requests: write`; the repo/org setting above must also allow it.
+
 ## Links
 
 - [Changesets docs](https://github.com/changesets/changesets)

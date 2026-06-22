@@ -15,7 +15,9 @@ env:
 
 jobs:
   deploy:
-    if: ${{ github.event.action != 'closed' }}
+    # Version PRs only bump package.json/CHANGELOG — skip preview deploy (avoids
+    # Cloudflare assets-binding errors on no-op doc changes).
+    if: ${{ github.event.action != 'closed' && (github.event_name != 'pull_request' || !startsWith(github.head_ref, 'changeset-release/')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

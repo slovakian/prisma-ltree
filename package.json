@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ready": "vp check packages/extension-ltree && vp run --filter ./packages/extension-ltree check-pins && vp run --filter ./packages/extension-ltree test && vp run --filter ./packages/extension-ltree build",
+    "ready": "vp run --filter ./packages/extension-ltree check-pins && vp run --filter ./packages/extension-ltree build && vp check packages/extension-ltree && vp run --filter ./packages/extension-ltree test",
     "dev": "vp run web#dev",
     "prepare": "vp config",
     "sync-docs": "bash scripts/sync.sh",

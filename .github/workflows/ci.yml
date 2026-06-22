@@ -27,10 +27,10 @@ jobs:
       - name: Validate extension
         run: |
           cd packages/extension-ltree
-          vp check
           vp run check-pins
-          vp test
           vp run build
+          vp check
+          vp test
 
       - name: Publish preview package
         if: ${{ github.event_name == 'pull_request' }}

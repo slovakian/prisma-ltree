@@ -21,7 +21,15 @@
     "declarationMap": true,
     "sourceMap": true,
     "rootDir": ".",
-    "outDir": "dist-tsc"
+    "outDir": "dist-tsc",
+    "paths": {
+      "prisma-ltree/pack": ["./src/exports/pack.ts"],
+      "prisma-ltree/control": ["./src/exports/control.ts"],
+      "prisma-ltree/runtime": ["./src/exports/runtime.ts"],
+      "prisma-ltree/column-types": ["./src/exports/column-types.ts"],
+      "prisma-ltree/codec-types": ["./src/exports/codec-types.ts"],
+      "prisma-ltree/operation-types": ["./src/exports/operation-types.ts"]
+    }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "prisma-next.config.ts"],
   "exclude": ["dist", "dist-tsc"]
