@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
-import { closeDb, connectDb, db } from "../../src/prisma/db";
+import { afterAll, describe, expect, it } from "vite-plus/test";
+import { closeDb, db } from "../../src/prisma/db.server";
 import {
   getGenerationHandler as getGenerationQuery,
   getLineageHandler as getLineageQuery,
@@ -32,10 +32,6 @@ const HOMINIDAE = "Catarrhini.Hominoidea.Hominidae";
 const HOMO = "Catarrhini.Hominoidea.Hominidae.Homininae.Hominini.Homo";
 
 const graftedIds: string[] = [];
-
-beforeAll(async () => {
-  await connectDb();
-});
 
 afterAll(async () => {
   for (const id of graftedIds) {

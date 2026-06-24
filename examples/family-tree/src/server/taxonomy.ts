@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { createServerFn } from "@tanstack/react-start";
 import type { Char } from "@prisma-next/target-postgres/codec-types";
-import { connectDb, db } from "../prisma/db";
+import { db } from "../prisma/db.server";
 import { validateTaxonLabel } from "../lib/taxon-label";
 
 /**
@@ -26,14 +26,12 @@ export type TaxonRow = {
 };
 
 export async function getTaxaHandler(): Promise<TaxonRow[]> {
-  await connectDb();
   return db.orm.public.Taxon.orderBy((t) => t.path.asc()).all();
 }
 
 export const getTaxa = createServerFn({ method: "GET" }).handler(getTaxaHandler);
 
 export async function getLineageHandler(path: string): Promise<TaxonRow[]> {
-  await connectDb();
   return db.orm.public.Taxon.where((t) => t.path.isAncestorOf(path))
     .orderBy((t) => t.path.asc())
     .all();
@@ -44,7 +42,6 @@ export const getLineage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => getLineageHandler(data));
 
 export async function getSubtreeHandler(path: string): Promise<TaxonRow[]> {
-  await connectDb();
   return db.orm.public.Taxon.where((t) => t.path.isDescendantOf(path))
     .orderBy((t) => t.path.asc())
     .all();
@@ -55,7 +52,6 @@ export const getSubtree = createServerFn({ method: "POST" })
   .handler(async ({ data }) => getSubtreeHandler(data));
 
 export async function searchLqueryHandler(pattern: string): Promise<TaxonRow[]> {
-  await connectDb();
   return db.orm.public.Taxon.where((t) => t.path.matchesLquery(pattern))
     .orderBy((t) => t.path.asc())
     .all();
@@ -66,7 +62,6 @@ export const searchLquery = createServerFn({ method: "POST" })
   .handler(async ({ data }) => searchLqueryHandler(data));
 
 export async function searchLqueryArrayHandler(patterns: string[]): Promise<TaxonRow[]> {
-  await connectDb();
   return db.orm.public.Taxon.where((t) => t.path.matchesLqueryArray(patterns as never))
     .orderBy((t) => t.path.asc())
     .all();
@@ -77,7 +72,6 @@ export const searchLqueryArray = createServerFn({ method: "POST" })
   .handler(async ({ data }) => searchLqueryArrayHandler(data));
 
 export async function searchLtxtqueryHandler(query: string): Promise<TaxonRow[]> {
-  await connectDb();
   return db.orm.public.Taxon.where((t) => t.path.matchesLtxtquery(query))
     .orderBy((t) => t.path.asc())
     .all();
@@ -88,7 +82,6 @@ export const searchLtxtquery = createServerFn({ method: "POST" })
   .handler(async ({ data }) => searchLtxtqueryHandler(data));
 
 export async function getGenerationHandler(depth: number): Promise<TaxonRow[]> {
-  await connectDb();
   return db.orm.public.Taxon.where((t) => t.path.nlevel().eq(depth))
     .orderBy((t) => t.path.asc())
     .all();
@@ -103,7 +96,6 @@ export async function lineageSliceHandler(
   from: number,
   to?: number,
 ): Promise<string | null> {
-  await connectDb();
   const plan = db.sql.public.taxon
     .select("slice", (f, fns) =>
       to === undefined ? fns.subpath(f.path, from) : fns.subpath(f.path, from, to),
@@ -124,7 +116,6 @@ export async function lineageSubtreeHandler(
   start: number,
   end: number,
 ): Promise<string | null> {
-  await connectDb();
   const plan = db.sql.public.taxon
     .select("slice", (f, fns) => fns.subltree(f.path, start, end))
     .where((f, fns) => fns.eq(f.path, path))
@@ -139,7 +130,6 @@ export const lineageSubtree = createServerFn({ method: "POST" })
   .handler(async ({ data }) => lineageSubtreeHandler(data.path, data.start, data.end));
 
 export async function indexOfBranchHandler(a: string, b: string, offset?: number): Promise<number> {
-  await connectDb();
   const plan = db.sql.public.taxon
     .select("idx", (f, fns) =>
       offset === undefined ? fns.indexOf(f.path, b) : fns.indexOf(f.path, b, offset),
@@ -156,7 +146,6 @@ export const indexOfBranch = createServerFn({ method: "POST" })
   .handler(async ({ data }) => indexOfBranchHandler(data.a, data.b, data.offset));
 
 export async function getMrcaViaLcaHandler(a: string, b: string): Promise<TaxonRow | null> {
-  await connectDb();
   const plan = db.sql.public.taxon
     .select("mrca", (f, fns) => fns.lca(f.path, b))
     .where((f, fns) => fns.eq(f.path, a))
@@ -173,7 +162,6 @@ export const getMrcaViaLca = createServerFn({ method: "POST" })
   .handler(async ({ data }) => getMrcaViaLcaHandler(data.a, data.b));
 
 export async function getMrcaViaOpsHandler(a: string, b: string): Promise<TaxonRow | null> {
-  await connectDb();
   const rows = await db.orm.public.Taxon.where((t) => t.path.isAncestorOf(a))
     .where((t) => t.path.isAncestorOf(b))
     .orderBy((t) => t.path.nlevel().desc())
@@ -195,7 +183,6 @@ export type GraftInput = {
 };
 
 export async function graftTaxonHandler(input: GraftInput): Promise<TaxonRow> {
-  await connectDb();
   // Re-validate server-side: the client form blocks invalid labels, but the
   // server is the trust boundary — never insert a label the rule rejects.
   const labelError = validateTaxonLabel(input.label);
@@ -236,7 +223,6 @@ export const graftTaxon = createServerFn({ method: "POST" })
   .handler(async ({ data }) => graftTaxonHandler(data));
 
 export async function pruneUserTaxaHandler(): Promise<number> {
-  await connectDb();
   const all = await db.orm.public.Taxon.orderBy((t) => t.path.asc()).all();
   const grafted = all.filter((t) => t.wikiUrl === "");
   if (grafted.length === 0) return 0;

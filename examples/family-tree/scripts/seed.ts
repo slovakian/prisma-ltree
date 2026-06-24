@@ -16,17 +16,10 @@
  * thumbnail from scratch (we never trust cached values across runs).
  */
 import "dotenv/config";
-import { closeDb, connectDb, db } from "../src/prisma/db";
+import { closeDb, db } from "../src/prisma/db.server";
 import { taxa } from "../src/seed-data";
 
 async function main() {
-  const url = process.env["DATABASE_URL"];
-  if (!url) {
-    throw new Error("DATABASE_URL is required (copy .env.example to .env)");
-  }
-
-  await connectDb();
-
   // Taxon authoring-style fields (camelCase) are mapped to snake_case
   // columns via `@map` in contract.prisma. `db.sql.*.insert()` consumes the
   // raw column names, so translate one to the other here.
