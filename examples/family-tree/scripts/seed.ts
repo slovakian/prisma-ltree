@@ -16,7 +16,7 @@
  * thumbnail from scratch (we never trust cached values across runs).
  */
 import "dotenv/config";
-import { db } from "../src/prisma/db";
+import { closeDb, connectDb, db } from "../src/prisma/db";
 import { taxa } from "../src/seed-data";
 
 async function main() {
@@ -24,6 +24,8 @@ async function main() {
   if (!url) {
     throw new Error("DATABASE_URL is required (copy .env.example to .env)");
   }
+
+  await connectDb();
 
   // Taxon authoring-style fields (camelCase) are mapped to snake_case
   // columns via `@map` in contract.prisma. `db.sql.*.insert()` consumes the
@@ -43,13 +45,12 @@ async function main() {
     })),
   );
 
-  const runtime = await db.connect({ url });
   try {
-    await runtime.execute(db.sql.public.taxon.insert(rows).build());
+    await db.runtime().execute(db.sql.public.taxon.insert(rows).build());
     const withThumb = rows.filter((r) => r.thumbnail_url !== null).length;
     console.log(`Seeded ${rows.length} taxa (${withThumb} with thumbnails)`);
   } finally {
-    await runtime.close();
+    await closeDb();
   }
 }
 

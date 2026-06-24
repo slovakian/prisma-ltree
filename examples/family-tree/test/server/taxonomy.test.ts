@@ -1,24 +1,22 @@
 import "dotenv/config";
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
-import { db } from "../../src/prisma/db";
-import { getRuntime } from "../../src/server/runtime";
+import { closeDb, connectDb, db } from "../../src/prisma/db";
 import {
-  closeRuntime,
-  getGenerationQuery,
-  getLineageQuery,
-  getMrcaViaLcaQuery,
-  getMrcaViaOpsQuery,
-  getSubtreeQuery,
-  getTaxaQuery,
-  graftTaxonQuery,
-  indexOfBranchQuery,
-  lineageSliceQuery,
-  lineageSubtreeQuery,
-  pruneUserTaxaQuery,
-  searchLqueryArrayQuery,
-  searchLqueryQuery,
-  searchLtxtqueryQuery,
-} from "../../src/server/taxonomy.server";
+  getGenerationHandler as getGenerationQuery,
+  getLineageHandler as getLineageQuery,
+  getMrcaViaLcaHandler as getMrcaViaLcaQuery,
+  getMrcaViaOpsHandler as getMrcaViaOpsQuery,
+  getSubtreeHandler as getSubtreeQuery,
+  getTaxaHandler as getTaxaQuery,
+  graftTaxonHandler as graftTaxonQuery,
+  indexOfBranchHandler as indexOfBranchQuery,
+  lineageSliceHandler as lineageSliceQuery,
+  lineageSubtreeHandler as lineageSubtreeQuery,
+  pruneUserTaxaHandler as pruneUserTaxaQuery,
+  searchLqueryHandler as searchLqueryQuery,
+  searchLqueryArrayHandler as searchLqueryArrayQuery,
+  searchLtxtqueryHandler as searchLtxtqueryQuery,
+} from "../../src/server/taxonomy";
 
 // H. sapiens and H. neanderthalensis nest under H. heidelbergensis, modeled as
 // their last common ancestor (mainstream paleoanthropology). So both sit at
@@ -36,7 +34,7 @@ const HOMO = "Catarrhini.Hominoidea.Hominidae.Homininae.Hominini.Homo";
 const graftedIds: string[] = [];
 
 beforeAll(async () => {
-  await getRuntime();
+  await connectDb();
 });
 
 afterAll(async () => {
@@ -47,7 +45,7 @@ afterAll(async () => {
       .build();
     await db.runtime().execute(plan);
   }
-  await closeRuntime();
+  await closeDb();
 });
 
 describe("getTaxa — baseline", () => {
@@ -288,7 +286,7 @@ describe("getMrcaViaOps — isAncestorOf + nlevel().desc()", () => {
 
 describe("graftTaxon — concatText (||) insert", () => {
   it("inserts a new taxon under Homo with the concatenated path", async () => {
-    const inserted = await graftTaxonQuery(HOMO, "Homo_long_lived");
+    const inserted = await graftTaxonQuery({ parentPath: HOMO, label: "Homo_long_lived" });
     graftedIds.push(inserted.id);
     expect(inserted.path).toBe(`${HOMO}.Homo_long_lived`);
     expect(inserted.scientificName).toBe("Homo long lived");
@@ -300,7 +298,9 @@ describe("graftTaxon — concatText (||) insert", () => {
   });
 
   it("carries the optional common name, rank, and extinct flag", async () => {
-    const inserted = await graftTaxonQuery(HOMO, "Homo_mythicus", {
+    const inserted = await graftTaxonQuery({
+      parentPath: HOMO,
+      label: "Homo_mythicus",
       commonName: "Mythical human",
       rank: "subspecies",
       extinct: true,
@@ -314,7 +314,7 @@ describe("graftTaxon — concatText (||) insert", () => {
   });
 
   it("rejects an invalid ltree label before inserting", async () => {
-    await expect(graftTaxonQuery(HOMO, "1nvalid label")).rejects.toThrow();
+    await expect(graftTaxonQuery({ parentPath: HOMO, label: "1nvalid label" })).rejects.toThrow();
     const verify = await getSubtreeQuery(HOMO);
     expect(verify.some((t) => t.scientificName === "1nvalid label")).toBe(false);
   });
@@ -322,7 +322,7 @@ describe("graftTaxon — concatText (||) insert", () => {
 
 describe("pruneUserTaxa — restore seeded state", () => {
   it("removes only grafted rows and leaves the 46 seeded taxa intact", async () => {
-    const grafted = await graftTaxonQuery(HOMO, "Homo_ephemerus");
+    const grafted = await graftTaxonQuery({ parentPath: HOMO, label: "Homo_ephemerus" });
     // Pruned below, so it never needs the afterAll id-cleanup.
     const before = await getTaxaQuery();
     expect(before.some((t) => t.path === grafted.path)).toBe(true);
