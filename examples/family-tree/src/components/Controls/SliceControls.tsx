@@ -1,5 +1,4 @@
-import { type ReactNode, useMemo, useState } from "react";
-import { GitFork, Layers, Scissors } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { TaxonRow } from "../../server/taxonomy";
 import {
   getGeneration,
@@ -8,9 +7,7 @@ import {
   lineageSubtree,
 } from "../../server/taxonomy.functions";
 import { type HighlightState, matchHighlight } from "~/lib/highlight";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -18,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { ControlSection, OperatorTag, controlInputClass } from "./primitives";
 
 /**
  * Depth + slice showcase. Three ltree functions, each over the real column:
@@ -45,23 +43,25 @@ export function SliceControls({ allTaxa, onApply, onRecenter }: SliceControlsPro
   );
 
   return (
-    <Card className="gap-2 py-3">
-      <CardHeader className="px-3">
-        <CardTitle className="text-sm">Depth &amp; slices</CardTitle>
-        <CardDescription className="text-xs">
-          <code className="font-mono">nlevel</code>, <code className="font-mono">subpath</code>,{" "}
-          <code className="font-mono">subltree</code>, and{" "}
-          <code className="font-mono">indexOf</code> over the path column.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 px-3">
+    <ControlSection
+      title="Depth &amp; slices"
+      hint={
+        <>
+          <code className="font-mono not-italic">nlevel</code>,{" "}
+          <code className="font-mono not-italic">subpath</code>,{" "}
+          <code className="font-mono not-italic">subltree</code>, and{" "}
+          <code className="font-mono not-italic">indexOf</code> over the path column.
+        </>
+      }
+    >
+      <div className="space-y-3">
         <GenerationSection maxDepth={maxDepth} onApply={onApply} />
         <hr className="border-border/60" />
         <SliceSection allTaxa={allTaxa} onRecenter={onRecenter} />
         <hr className="border-border/60" />
         <BranchPointSection allTaxa={allTaxa} />
-      </CardContent>
-    </Card>
+      </div>
+    </ControlSection>
   );
 }
 
@@ -89,8 +89,8 @@ function GenerationSection({
   }
 
   return (
-    <div className="space-y-1.5">
-      <SectionHeading icon={<Layers className="size-3.5" />} op="nlevel" sql="nlevel(path) = $1" />
+    <div className="space-y-2">
+      <OperatorTag name="nlevel" sql="nlevel(path) = $1" />
       <div className="flex items-center gap-2">
         <input
           type="range"
@@ -99,11 +99,11 @@ function GenerationSection({
           value={depth}
           onChange={(e) => setDepth(Number(e.target.value))}
           aria-label="Generation depth"
-          className="h-1.5 flex-1 cursor-pointer accent-[var(--search-foreground)]"
+          className="h-1.5 flex-1 cursor-pointer accent-[var(--primary)]"
         />
-        <Badge variant="secondary" className="w-8 justify-center tabular-nums">
+        <span className="w-8 text-center font-mono text-xs tabular-nums text-foreground">
           {depth}
-        </Badge>
+        </span>
       </div>
       <Button size="sm" className="w-full" onClick={() => void run()} disabled={pending}>
         {pending ? "Highlighting…" : `Highlight generation ${depth}`}
@@ -156,12 +156,8 @@ function SliceSection({
   }
 
   return (
-    <div className="space-y-1.5">
-      <SectionHeading
-        icon={<Scissors className="size-3.5" />}
-        op="subpath"
-        sql="subpath(path, $1, $2)"
-      />
+    <div className="space-y-2">
+      <OperatorTag name="subpath" sql="subpath(path, $1, $2)" />
       <Select
         value={path ?? undefined}
         onValueChange={(v) => {
@@ -254,7 +250,7 @@ function SliceCrumbs({
             <button
               type="button"
               onClick={() => onRecenter(abs)}
-              className="rounded px-1 py-0.5 font-medium italic transition-colors hover:bg-muted"
+              className="rounded px-1 py-0.5 font-heading italic text-foreground/80 transition-colors outline-none hover:bg-primary/10 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/40"
               title={`Recenter on ${lbl}`}
             >
               {lbl}
@@ -292,8 +288,8 @@ function BranchPointSection({ allTaxa }: { allTaxa: TaxonRow[] }) {
   }
 
   return (
-    <div className="space-y-1.5">
-      <SectionHeading icon={<GitFork className="size-3.5" />} op="indexOf" sql="index(path, $1)" />
+    <div className="space-y-2">
+      <OperatorTag name="indexOf" sql="index(path, $1)" />
       <TaxonSelect
         value={path}
         onChange={(v) => {
@@ -314,7 +310,7 @@ function BranchPointSection({ allTaxa }: { allTaxa: TaxonRow[] }) {
           placeholder="sub-path, e.g. Homo"
           spellCheck={false}
           aria-label="Sub-path to locate"
-          className="h-7 flex-1 rounded-md border bg-background px-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          className={`${controlInputClass} h-7 flex-1`}
         />
         <Button size="sm" variant="outline" onClick={() => void run()} disabled={!ready || pending}>
           Locate
@@ -335,25 +331,13 @@ function BranchPointSection({ allTaxa }: { allTaxa: TaxonRow[] }) {
   );
 }
 
-function SectionHeading({ icon, op, sql }: { icon: ReactNode; op: string; sql: string }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-muted-foreground">{icon}</span>
-      <Badge variant="secondary" className="font-mono text-[0.7rem]">
-        {op}
-      </Badge>
-      <code className="font-mono text-[0.7rem] text-muted-foreground">{sql}</code>
-    </div>
-  );
-}
-
 function OffsetInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
     <input
       type="number"
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="h-7 w-12 rounded-md border bg-background px-1.5 text-center font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+      className={`${controlInputClass} h-7 w-12 px-1.5 text-center`}
     />
   );
 }

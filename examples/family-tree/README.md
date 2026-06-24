@@ -179,7 +179,7 @@ examples/family-tree/
 │   │   └── taxonomy.ts           # client-safe surface — createServerFn wrappers + TaxonRow type
 │   ├── components/
 │   │   ├── TreeCanvas.tsx        # React Flow wrapper, highlight folding, focusNode handle
-│   │   ├── TaxonNode.tsx         # custom node (avatar, badges, highlight ring)
+│   │   ├── TaxonNode.tsx         # custom node (circular tip portraits, diamond clade markers, highlight ring)
 │   │   ├── SidePanel.tsx         # per-node inspector (ancestry / subtree / slice / branch point)
 │   │   ├── Controls/
 │   │   │   ├── LineageControls.tsx   # selection legend + global reset

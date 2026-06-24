@@ -1,5 +1,5 @@
 import { cn } from "~/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { ControlSection } from "./primitives";
 
 /**
  * The showcase matrix as a live legend. Every ltree operator/function the viewer
@@ -50,17 +50,14 @@ const GROUPS: Group[] = [
 
 export function OperatorLegend({ activeOps }: OperatorLegendProps) {
   return (
-    <Card className="gap-2 py-3">
-      <CardHeader className="px-3">
-        <CardTitle className="text-sm">Operator matrix</CardTitle>
-        <CardDescription className="text-xs">
-          Every control lowers to one of these ltree primitives. Active ones glow.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2.5 px-3">
+    <ControlSection
+      title="Operator matrix"
+      hint="Every control lowers to one of these ltree primitives. Active ones glow."
+    >
+      <div className="space-y-2.5">
         {GROUPS.map((group) => (
           <div key={group.title} className="space-y-1">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground">
               {group.title}
             </p>
             <ul className="space-y-0.5">
@@ -70,14 +67,21 @@ export function OperatorLegend({ activeOps }: OperatorLegendProps) {
                   <li
                     key={e.op}
                     className={cn(
-                      "flex items-center gap-2 rounded px-1.5 py-0.5 text-xs transition-colors",
+                      "flex items-center gap-2 rounded-sm px-1.5 py-0.5 text-xs transition-colors",
                       active
-                        ? "bg-search text-search-foreground ring-1 ring-[var(--search-foreground)]"
+                        ? "bg-primary/10 text-primary ring-1 ring-primary/25"
                         : "text-foreground/80",
                     )}
                   >
-                    <span className={cn("font-medium", active && "font-semibold")}>{e.op}</span>
-                    <code className="ml-auto font-mono text-[0.7rem] text-muted-foreground">
+                    <span className={cn("font-mono text-[0.72rem]", active && "font-medium")}>
+                      {e.op}
+                    </span>
+                    <code
+                      className={cn(
+                        "ml-auto font-mono text-[0.7rem]",
+                        active ? "text-primary/70" : "text-muted-foreground",
+                      )}
+                    >
                       {e.sql}
                     </code>
                   </li>
@@ -86,7 +90,7 @@ export function OperatorLegend({ activeOps }: OperatorLegendProps) {
             </ul>
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </ControlSection>
   );
 }

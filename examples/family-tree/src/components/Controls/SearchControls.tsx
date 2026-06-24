@@ -3,7 +3,6 @@ import { Search } from "lucide-react";
 import { searchLquery, searchLqueryArray, searchLtxtquery } from "../../server/taxonomy.functions";
 import { type HighlightState, matchHighlight } from "~/lib/highlight";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -11,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { ControlSection, OperatorTag, controlInputClass } from "./primitives";
 
 /**
  * Pattern-search showcase: the three ltree match operators, each over the real
@@ -100,55 +100,53 @@ export function SearchControls({ onApply }: SearchControlsProps) {
   }
 
   return (
-    <Card className="gap-2 py-3">
-      <CardHeader className="px-3">
-        <CardTitle className="text-sm">Pattern search</CardTitle>
-        <CardDescription className="text-xs">
-          Match taxa with ltree’s <code className="font-mono">~</code>,{" "}
-          <code className="font-mono">?</code>, and <code className="font-mono">@</code> operators.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2 px-3">
-        <div className="flex items-center gap-2">
-          <Select value={mode} onValueChange={(v) => changeMode(v as Mode)}>
-            <SelectTrigger size="sm" className="w-[7.5rem] shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(MODES) as Mode[]).map((m) => (
-                <SelectItem key={m} value={m}>
-                  {MODES[m].label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <code className="truncate font-mono text-[0.7rem] text-muted-foreground" title={meta.sql}>
-            {meta.sql}
-          </code>
-        </div>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void run();
-          }}
-          placeholder={meta.placeholder}
-          spellCheck={false}
-          aria-label={`${meta.label} pattern`}
-          className="h-8 w-full rounded-md border bg-background px-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-        />
-        <Button size="sm" className="w-full" onClick={() => void run()} disabled={pending}>
-          <Search />
-          {pending ? "Searching…" : "Highlight matches"}
-        </Button>
-        {error ? <p className="text-xs text-destructive">{error}</p> : null}
-        {count != null && !error ? (
-          <p className="text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">{count}</span> taxa matched.
-          </p>
-        ) : null}
-      </CardContent>
-    </Card>
+    <ControlSection
+      title="Pattern search"
+      hint={
+        <>
+          Match taxa with ltree’s <code className="font-mono not-italic">~</code>,{" "}
+          <code className="font-mono not-italic">?</code>, and{" "}
+          <code className="font-mono not-italic">@</code> operators.
+        </>
+      }
+    >
+      <div className="flex items-center gap-2">
+        <Select value={mode} onValueChange={(v) => changeMode(v as Mode)}>
+          <SelectTrigger size="sm" className="w-[7.5rem] shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(MODES) as Mode[]).map((m) => (
+              <SelectItem key={m} value={m}>
+                {MODES[m].label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <OperatorTag name={meta.op} sql={meta.sql} className="min-w-0" />
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") void run();
+        }}
+        placeholder={meta.placeholder}
+        spellCheck={false}
+        aria-label={`${meta.label} pattern`}
+        className={controlInputClass}
+      />
+      <Button size="sm" className="w-full" onClick={() => void run()} disabled={pending}>
+        <Search />
+        {pending ? "Searching…" : "Highlight matches"}
+      </Button>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {count != null && !error ? (
+        <p className="text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground">{count}</span> taxa matched.
+        </p>
+      ) : null}
+    </ControlSection>
   );
 }

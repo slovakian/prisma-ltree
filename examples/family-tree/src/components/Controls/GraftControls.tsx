@@ -4,7 +4,6 @@ import type { TaxonRow } from "../../server/taxonomy";
 import { graftTaxon, pruneUserTaxa } from "../../server/taxonomy.functions";
 import { validateTaxonLabel } from "~/lib/taxon-label";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { ControlSection, OperatorTag, controlInputClass } from "./primitives";
 
 /**
  * Graft-a-taxon: the viewer's one *mutating* control. Pick any existing taxon as
@@ -101,113 +101,116 @@ export function GraftControls({ allTaxa, onGrafted, onPruned }: GraftControlsPro
   }
 
   return (
-    <Card className="gap-2 py-3">
-      <CardHeader className="px-3">
-        <CardTitle className="text-sm">Graft a taxon</CardTitle>
-        <CardDescription className="text-xs">
-          Insert a child via ltree’s <code className="font-mono">||</code> (
-          <code className="font-mono">concatText</code>).
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2 px-3">
-        <Select value={parentPath ?? undefined} onValueChange={setParentPath}>
-          <SelectTrigger size="sm" className="w-full">
-            <SelectValue placeholder="Parent taxon…" />
+    <ControlSection
+      title="Graft a taxon"
+      hint={
+        <>
+          Insert a child via ltree’s <code className="font-mono not-italic">||</code> (
+          <code className="font-mono not-italic">concatText</code>).
+        </>
+      }
+    >
+      <OperatorTag name="concatText" sql="path || $label::ltree" />
+      <Select value={parentPath ?? undefined} onValueChange={setParentPath}>
+        <SelectTrigger size="sm" className="w-full">
+          <SelectValue placeholder="Parent taxon…" />
+        </SelectTrigger>
+        <SelectContent>
+          {allTaxa.map((t) => (
+            <SelectItem key={t.path} value={t.path}>
+              {t.scientificName}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <input
+        type="text"
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") void graft();
+        }}
+        placeholder="New label, e.g. Homo_longaevus"
+        spellCheck={false}
+        aria-label="New taxon label"
+        aria-invalid={labelError != null}
+        className={`${controlInputClass} aria-[invalid=true]:border-destructive`}
+      />
+
+      <input
+        type="text"
+        value={commonName}
+        onChange={(e) => setCommonName(e.target.value)}
+        placeholder="Common name (optional)"
+        aria-label="Common name"
+        className={`${controlInputClass} font-sans text-sm`}
+      />
+
+      <div className="flex items-center gap-2">
+        <Select value={rank} onValueChange={setRank}>
+          <SelectTrigger size="sm" className="w-[7.5rem] shrink-0 capitalize">
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {allTaxa.map((t) => (
-              <SelectItem key={t.path} value={t.path}>
-                {t.scientificName}
+            {RANKS.map((r) => (
+              <SelectItem key={r} value={r} className="capitalize">
+                {r}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={extinct}
+            onChange={(e) => setExtinct(e.target.checked)}
+            className="size-3.5 accent-[var(--primary)]"
+          />
+          Extinct
+        </label>
+      </div>
 
-        <input
-          type="text"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void graft();
-          }}
-          placeholder="New label, e.g. Homo_longaevus"
-          spellCheck={false}
-          aria-label="New taxon label"
-          aria-invalid={labelError != null}
-          className="h-8 w-full rounded-md border bg-background px-2 font-mono text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 aria-[invalid=true]:border-destructive"
-        />
+      {labelError ? <p className="text-xs text-destructive">{labelError}</p> : null}
 
-        <input
-          type="text"
-          value={commonName}
-          onChange={(e) => setCommonName(e.target.value)}
-          placeholder="Common name (optional)"
-          aria-label="Common name"
-          className="h-8 w-full rounded-md border bg-background px-2 text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-        />
-
-        <div className="flex items-center gap-2">
-          <Select value={rank} onValueChange={setRank}>
-            <SelectTrigger size="sm" className="w-[7.5rem] shrink-0 capitalize">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {RANKS.map((r) => (
-                <SelectItem key={r} value={r} className="capitalize">
-                  {r}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={extinct}
-              onChange={(e) => setExtinct(e.target.checked)}
-              className="size-3.5 accent-[var(--primary)]"
-            />
-            Extinct
-          </label>
-        </div>
-
-        {labelError ? <p className="text-xs text-destructive">{labelError}</p> : null}
-
-        {/* Dry-run preview: the exact lowering + the path the insert will build. */}
-        <div className="space-y-1 rounded-md bg-muted/60 p-2">
-          <code className="block font-mono text-[0.7rem] text-muted-foreground">{LOWERING}</code>
-          <code className="block truncate font-mono text-[0.7rem]" title={previewPath ?? undefined}>
-            {previewPath ?? "Pick a parent and label to preview the new path."}
-          </code>
-        </div>
-
-        <Button
-          size="sm"
-          className="w-full"
-          onClick={() => void graft()}
-          disabled={!ready || pending}
+      {/* Dry-run preview: the exact lowering + the path the insert will build. */}
+      <div className="space-y-1 rounded-sm border border-border/60 bg-primary/[0.035] p-2.5">
+        <code className="block font-mono text-[0.7rem] text-muted-foreground">{LOWERING}</code>
+        <code
+          className="block truncate font-mono text-[0.7rem] text-foreground"
+          title={previewPath ?? undefined}
         >
-          <Sprout />
-          {pending ? "Grafting…" : "Graft"}
-        </Button>
+          {previewPath ?? "Pick a parent and label to preview the new path."}
+        </code>
+      </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full"
-          onClick={() => void prune()}
-          disabled={pruning || graftedCount === 0}
-        >
-          <Eraser />
-          {pruning
-            ? "Pruning…"
-            : graftedCount > 0
-              ? `Prune grafted taxa (${graftedCount})`
-              : "Prune grafted taxa"}
-        </Button>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => void graft()}
+        disabled={!ready || pending}
+      >
+        <Sprout />
+        {pending ? "Grafting…" : "Graft"}
+      </Button>
 
-        {error ? <p className="text-xs text-destructive">{error}</p> : null}
-        {status && !error ? <p className="text-xs text-muted-foreground">{status}</p> : null}
-      </CardContent>
-    </Card>
+      <Button
+        size="sm"
+        variant="outline"
+        className="w-full"
+        onClick={() => void prune()}
+        disabled={pruning || graftedCount === 0}
+      >
+        <Eraser />
+        {pruning
+          ? "Pruning…"
+          : graftedCount > 0
+            ? `Prune grafted taxa (${graftedCount})`
+            : "Prune grafted taxa"}
+      </Button>
+
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {status && !error ? <p className="text-xs text-muted-foreground">{status}</p> : null}
+    </ControlSection>
   );
 }

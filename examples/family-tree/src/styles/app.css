@@ -264,3 +264,17 @@
     transform: none;
   }
 }
+
+/* Floating-chrome settle (Phase 5 polish). A gentle rise for the title overlay
+   and corner hint on first paint — its own keyframe, kept distinct from the
+   panel's `panelIn` so the two never double up. CSS keyframes only. */
+@keyframes overlayRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -3,9 +3,7 @@ import { ExternalLink, GitMerge } from "lucide-react";
 import type { TaxonRow } from "../../server/taxonomy";
 import { getLineage, getMrcaViaLca } from "../../server/taxonomy.functions";
 import { type HighlightState, mrcaHighlight } from "~/lib/highlight";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -13,12 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { ControlSection, OperatorTag, resultBlockClass } from "./primitives";
 
 /**
  * MRCA picker: two taxa → `lca()` most-recent-common-ancestor. On "Find common
  * ancestor" it resolves the MRCA server-side, fetches both leaves' lineages to
  * paint their converging paths, then asks the canvas to recenter on the result.
- * The card surfaces the resolved clade (name + rank + Wiki) and the depth at
+ * The section surfaces the resolved clade (name + rank + Wiki) and the depth at
  * which the two paths split — the graphical "why" behind the MRCA.
  */
 
@@ -65,49 +64,43 @@ export function MrcaControls({ allTaxa, onApply }: MrcaControlsProps) {
   const splitDepth = result ? result.path.split(".").length : null;
 
   return (
-    <Card className="gap-2 py-3">
-      <CardHeader className="px-3">
-        <CardTitle className="text-sm">Common ancestor</CardTitle>
-        <CardDescription className="text-xs">
-          Most-recent-common-ancestor via <code className="font-mono">lca()</code>.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2 px-3">
-        <TaxonSelect value={a} onChange={setA} placeholder="First taxon…" taxa={allTaxa} />
-        <TaxonSelect value={b} onChange={setB} placeholder="Second taxon…" taxa={allTaxa} />
-        <Button size="sm" className="w-full" onClick={findAncestor} disabled={!ready || pending}>
-          <GitMerge />
-          {pending ? "Finding…" : "Find common ancestor"}
-        </Button>
-        {error ? <p className="text-xs text-destructive">{error}</p> : null}
-        {result ? (
-          <div className="space-y-1 rounded-md bg-muted/60 p-2 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold italic">{result.scientificName}</span>
-              {result.wikiUrl ? (
-                <a
-                  href={result.wikiUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="text-muted-foreground hover:text-primary"
-                  aria-label={`Wikipedia: ${result.scientificName}`}
-                >
-                  <ExternalLink className="size-3" />
-                </a>
-              ) : null}
-              <Badge variant="outline" className="ml-auto capitalize">
-                {result.rank}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground">
-              Paths split at depth{" "}
-              <span className="font-semibold text-foreground">{splitDepth}</span> (
-              {lastLabel(result.path)}).
-            </p>
+    <ControlSection title="Common ancestor" hint="Most-recent-common-ancestor of two taxa.">
+      <OperatorTag name="lca" sql="lca($a, $b)" />
+      <TaxonSelect value={a} onChange={setA} placeholder="First taxon…" taxa={allTaxa} />
+      <TaxonSelect value={b} onChange={setB} placeholder="Second taxon…" taxa={allTaxa} />
+      <Button size="sm" className="w-full" onClick={findAncestor} disabled={!ready || pending}>
+        <GitMerge />
+        {pending ? "Finding…" : "Find common ancestor"}
+      </Button>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {result ? (
+        <div className={`${resultBlockClass} space-y-1`}>
+          <div className="flex items-center gap-1.5">
+            <span className="font-heading text-[15px] font-medium italic">
+              {result.scientificName}
+            </span>
+            {result.wikiUrl ? (
+              <a
+                href={result.wikiUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-muted-foreground transition-colors hover:text-primary"
+                aria-label={`Wikipedia: ${result.scientificName}`}
+              >
+                <ExternalLink className="size-3" />
+              </a>
+            ) : null}
+            <span className="ml-auto font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">
+              {result.rank}
+            </span>
           </div>
-        ) : null}
-      </CardContent>
-    </Card>
+          <p className="font-heading text-[13px] leading-snug text-muted-foreground">
+            Paths split at depth <span className="font-medium text-foreground">{splitDepth}</span> (
+            {lastLabel(result.path)}).
+          </p>
+        </div>
+      ) : null}
+    </ControlSection>
   );
 }
 
