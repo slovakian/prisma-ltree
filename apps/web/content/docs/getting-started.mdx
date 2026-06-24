@@ -9,7 +9,7 @@ This guide wires the `prisma-ltree` extension pack into a **Prisma Next** Postgr
 
 <InstallCommand />
 
-`prisma-ltree` pins exact `@prisma-next/*` versions — align your framework packages with the extension's peer dependency before continuing.
+`prisma-ltree` pins exact `@prisma-next/*` versions. Align your framework packages with the extension's peer dependency before continuing.
 
 ## Configuration
 
@@ -32,7 +32,7 @@ Projects using the verbose multi-import config shape use the same control import
 
 ## Contract
 
-Declare `ltree` columns in either authoring lane — `contract.prisma` (PSL) or `contract.ts` (TypeScript). Both emit the same compiled contract; see [Authoring Contracts](/docs/authoring) for the PSL surface (`ltree.Ltree()` / `ltree.LtreeArray()`) and a side-by-side comparison.
+Declare `ltree` columns in either authoring lane: `contract.prisma` (PSL) or `contract.ts` (TypeScript). Both emit the same compiled contract. See [Authoring Contracts](/docs/authoring) for the PSL surface (`ltree.Ltree()` and `ltree.LtreeArray()`) and a side-by-side comparison.
 
 This guide uses the **TypeScript contract** with `ltree()` from `prisma-ltree/column-types`.
 
@@ -83,7 +83,7 @@ export const db = postgres<Contract>({
 });
 ```
 
-Control and contract wiring alone are not enough — queries fail or lack ltree methods without `prisma-ltree/runtime` in `extensions`.
+Control and contract wiring alone are not enough. Queries fail or lack ltree methods without `prisma-ltree/runtime` in `extensions`.
 
 ## Database setup
 

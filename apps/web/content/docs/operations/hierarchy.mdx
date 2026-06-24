@@ -37,15 +37,15 @@ const rows = await db.runtime().execute(plan);
 
 Given `electronics.computers` as the argument:
 
-- `electronics` — matches (ancestor)
-- `electronics.computers` — matches (`@>` is inclusive of equality)
-- `electronics.computers.laptops` — does NOT match (descendant, not an ancestor)
+- `electronics`: matches (ancestor)
+- `electronics.computers`: matches (`@>` is inclusive of equality)
+- `electronics.computers.laptops`: does NOT match (descendant, not an ancestor)
 
 **SQL equivalent:** `path @> $1::ltree`
 
 ## isDescendantOf()
 
-Returns rows whose path is a descendant of the argument — the usual choice for "everything under this prefix."
+Returns rows whose path is a descendant of the argument. This is the usual choice for "everything under this prefix."
 
 ```typescript
 const plan = db.sql
@@ -59,9 +59,9 @@ const rows = await db.runtime().execute(plan);
 
 Given `electronics` as the argument:
 
-- `electronics` — matches (equal; `<@` is inclusive)
-- `electronics.computers` — matches (child)
-- `electronics.computers.laptops` — matches (grandchild)
+- `electronics`: matches (equal; `<@` is inclusive)
+- `electronics.computers`: matches (child)
+- `electronics.computers.laptops`: matches (grandchild)
 
 **SQL equivalent:** `path <@ $1::ltree`
 

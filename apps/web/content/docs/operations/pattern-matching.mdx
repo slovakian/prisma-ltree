@@ -3,7 +3,7 @@ title: Pattern Matching Operators
 description: Query paths using lquery and ltxtquery patterns
 ---
 
-Pattern matching operators filter `ltree` paths using PostgreSQL `lquery` and `ltxtquery` syntax. Pattern arguments are **strings** (or `string[]` for array matching) passed through `param()` — they are not separate column types.
+Pattern matching operators filter `ltree` paths using PostgreSQL `lquery` and `ltxtquery` syntax. Pattern arguments are **strings** (or `string[]` for array matching) passed through `param()`. They are not separate column types.
 
 ```typescript
 import { db } from "../prisma/db";
@@ -28,10 +28,10 @@ await db.runtime().execute(plan);
 
 Common `lquery` syntax:
 
-- `*` — matches exactly one label
-- `*{n}` / `*{n,m}` — quantifiers on wildcard labels
-- `{a,b,c}` — matches any one of the labels at that position
-- `|` — alternation within a label
+- `*`: matches exactly one label
+- `*{n}` / `*{n,m}`: quantifiers on wildcard labels
+- `{a,b,c}`: matches any one of the labels at that position
+- `|`: alternation within a label
 
 **SQL equivalent:** `path ~ $1::lquery`
 
@@ -100,13 +100,13 @@ await db.runtime().execute(plan);
 
 ## Pattern syntax reference
 
-| Syntax               | Meaning            | Example                                            |
-| -------------------- | ------------------ | -------------------------------------------------- |
-| `*`                  | One label          | `a.*.c` matches `a.b.c`                            |
-| `*` with quantifiers | Bounded wildcards  | `Top.Science.*{1}` — one label under `Top.Science` |
-| `{a,b}`              | Label alternatives | `{a,b}.c` matches `a.c` or `b.c`                   |
-| `\|` (ltxtquery)     | Boolean OR         | `computer \| phone`                                |
-| `&` (ltxtquery)      | Boolean AND        | `computer & laptop`                                |
+| Syntax               | Meaning            | Example                                           |
+| -------------------- | ------------------ | ------------------------------------------------- |
+| `*`                  | One label          | `a.*.c` matches `a.b.c`                           |
+| `*` with quantifiers | Bounded wildcards  | `Top.Science.*{1}`: one label under `Top.Science` |
+| `{a,b}`              | Label alternatives | `{a,b}.c` matches `a.c` or `b.c`                  |
+| `\|` (ltxtquery)     | Boolean OR         | `computer \| phone`                               |
+| `&` (ltxtquery)      | Boolean AND        | `computer & laptop`                               |
 
 Refer to [PostgreSQL ltree documentation](https://www.postgresql.org/docs/current/ltree.html) for full pattern syntax.
 

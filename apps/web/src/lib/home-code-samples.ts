@@ -40,6 +40,23 @@ export const contract = defineContract({
 });`,
     lang: "typescript",
   },
+  {
+    id: "query",
+    code: `// Find every category under "electronics"
+import { param } from "@prisma-next/sql-query/param";
+import { db } from "./prisma/db";
+
+const category = db.schema.tables.category;
+
+const plan = db.sql
+  .from(category)
+  .select({ id: category.columns.id, path: category.columns.path })
+  .where(category.columns.path.isDescendantOf(param("prefix")))
+  .build({ params: { prefix: "electronics" } });
+
+const rows = await db.runtime().execute(plan);`,
+    lang: "typescript",
+  },
 ] as const;
 
 export type HomeCodeBlockId = (typeof homeCodeBlocks)[number]["id"];

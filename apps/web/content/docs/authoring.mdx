@@ -1,19 +1,16 @@
 ---
 title: Authoring Contracts
-description: Declare ltree columns in the PSL lane or the TypeScript lane — both produce the same contract
+description: Declare ltree columns in the PSL lane or the TypeScript lane; both produce the same contract
 ---
 
-Prisma Next has two consumer-facing surfaces for authoring your data contract, and
-`prisma-ltree` supports both:
+Prisma Next gives you two ways to author your data contract, and `prisma-ltree`
+supports both:
 
-- the **PSL lane** — `contract.prisma`, the canonical surface the official extensions
-  document, and
-- the **TypeScript lane** — `contract.ts` via `defineContract`.
+- the **PSL lane**: `contract.prisma`, the surface the official extensions document
+- the **TypeScript lane**: `contract.ts` via `defineContract`
 
-Both lower to the same compiled contract. The PSL-emitted and TS-emitted `contract.json`
-are **byte-identical** (including `profileHash`/`storageHash`), so you can pick whichever
-surface fits your project and get exactly the same result. This parity is guarded by an
-automated test in the extension package.
+Both produce the same compiled contract. Pick whichever surface fits your project and
+get exactly the same result.
 
 ## Composing the extension
 
@@ -35,7 +32,7 @@ fails emit with `PSL_EXTENSION_NAMESPACE_NOT_COMPOSED`.
 
 ## Declaring ltree columns
 
-The extension exposes two named-type constructors — `ltree.Ltree()` for a single `ltree`
+The extension gives you two named-type constructors: `ltree.Ltree()` for a single `ltree`
 path (codec `pg/ltree@1`) and `ltree.LtreeArray()` for an `ltree[]` array (codec
 `pg/ltree-array@1`). Author them in either lane:
 

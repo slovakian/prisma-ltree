@@ -48,8 +48,7 @@ const features: Feature[] = [
   {
     id: "hierarchy",
     title: "Hierarchy checks",
-    blurb:
-      "Check whether one path contains another. Returns true or false — useful for filtering by branch or subtree.",
+    blurb: "Filter by branch or subtree with ancestor and descendant checks.",
     ops: [
       { method: "path.isAncestorOf(rhs)", sql: "ltree @> ltree" },
       { method: "path.isDescendantOf(rhs)", sql: "ltree <@ ltree" },
@@ -70,7 +69,7 @@ const features: Feature[] = [
     id: "scalar-functions",
     title: "Scalar functions",
     blurb:
-      "Derive depth, slice subpaths, find a label's index, or compute the lowest common ancestor of two or more paths.",
+      "Derive depth, slice subpaths, find a label's index, or compute the lowest common ancestor.",
     ops: [
       { method: "path.nlevel()", sql: "nlevel(ltree)" },
       {
@@ -102,7 +101,7 @@ const features: Feature[] = [
     id: "array-first-match",
     title: "Array first-match",
     blurb:
-      "Store multiple paths in an ltree[] column, then pick the first match for containment or pattern queries.",
+      "Store multiple paths in an ltree[] column, then pick the first match for containment or patterns.",
     ops: [
       { method: "paths.firstAncestorOf(rhs)", sql: "ltree[] ?@> ltree" },
       { method: "paths.firstDescendantOf(rhs)", sql: "ltree[] ?<@ ltree" },
@@ -138,10 +137,8 @@ function Home() {
           >
             <code>ltree</code>
           </a>{" "}
-          hierarchical-tree type for Prisma Next. Model category trees, org charts, taxonomies, and
-          filesystem-like paths — then query them with typed operators for ancestor/descendant
-          checks, <code>lquery</code>/<code>ltxtquery</code> matching, path manipulation, and
-          lowest-common-ancestor — without writing raw SQL.
+          hierarchical-tree type for Prisma Next. Model category trees, org charts, and taxonomies,
+          then query them with typed operators. No raw SQL.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button render={<a href="/docs/getting-started" />} nativeButton={false}>
@@ -161,37 +158,37 @@ function Home() {
         <SectionLabel>See it work</SectionLabel>
         <h2 className="text-2xl font-medium">A query is a shape over the tree</h2>
         <p className="mt-3 mb-8 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Records form a hierarchy in PostgreSQL. Each operator selects a different slice of it —
-          pick one below (or watch it cycle) and see which nodes light up, plus the typed call and
-          the SQL it lowers to.
+          Each operator selects a different slice of the tree. Pick one below to see which nodes
+          match, the typed call, and the SQL it runs.
         </p>
         <LtreeDemo codeHighlights={highlights} />
       </section>
 
-      {/* Setup */}
+      {/* Quickstart */}
       <section id="setup" className="scroll-mt-8 border-b border-border py-12">
-        <SectionLabel>Setup</SectionLabel>
-        <h2 className="text-2xl font-medium">Get started in two steps</h2>
+        <SectionLabel>Quickstart</SectionLabel>
+        <h2 className="text-2xl font-medium">Three steps to your first query</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Install the pack, declare ltree columns in <code>contract.prisma</code> (PSL) or{" "}
-          <code>contract.ts</code> (TypeScript) — both lanes emit the same contract — then run{" "}
-          <code>prisma-next db init</code> or <code>db update</code> to enable the PostgreSQL{" "}
-          <code>ltree</code> extension. Requires Node <code>&gt;=24</code> and{" "}
-          <code>@prisma-next/*@0.14.0</code>.
+          Requires Node <code>&gt;=24</code> and <code>@prisma-next/*@0.14.0</code>. Full setup in
+          the{" "}
+          <a href="/docs/getting-started" className="underline underline-offset-4">
+            Getting Started guide
+          </a>
+          .
         </p>
 
         <div className="mt-8 grid gap-8 md:grid-cols-2">
           <div>
             <h3 className="mb-2 text-sm font-medium">1. Register the pack</h3>
             <p className="mb-3 text-sm text-muted-foreground">
-              Add <code>prisma-ltree/control</code> to your config&apos;s extension packs.
+              Add <code>prisma-ltree/control</code> to your config.
             </p>
             <CodeBlock html={highlights.config.html} />
           </div>
           <div>
             <h3 className="mb-2 text-sm font-medium">2. Declare ltree columns</h3>
             <p className="mb-3 text-sm text-muted-foreground">
-              Use <code>ltree.Ltree()</code> in PSL or <code>ltree()</code> in TypeScript.{" "}
+              Use <code>ltree()</code> in TypeScript or <code>ltree.Ltree()</code> in PSL.{" "}
               <a href="/docs/authoring" className="underline underline-offset-4">
                 See both lanes
               </a>
@@ -200,16 +197,22 @@ function Home() {
             <CodeBlock html={highlights.contract.html} />
           </div>
         </div>
+
+        <div className="mt-8">
+          <h3 className="mb-2 text-sm font-medium">3. Query the tree</h3>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Operators attach to ltree column references in the query builder.
+          </p>
+          <CodeBlock html={highlights.query.html} />
+        </div>
       </section>
 
       {/* Operations */}
       <section className="py-12">
         <SectionLabel>Operations</SectionLabel>
-        <h2 className="text-2xl font-medium">Everything ltree, type-safe</h2>
+        <h2 className="text-2xl font-medium">Every ltree operator, type-safe</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Each method maps to a native PostgreSQL operator or function. Use them in{" "}
-          <code>where</code> filters and <code>select</code> projections like any other typed
-          column. Full reference in the{" "}
+          Each method maps to a native PostgreSQL operator or function. Full reference in the{" "}
           <a href="/docs" className="underline underline-offset-4">
             docs
           </a>
