@@ -72,6 +72,12 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* Canvas chrome tones (Phase 2 dendrogram). `--canvas-radial` is a gradient,
+     not a color, so it is consumed directly via var() and not mapped here. */
+  --color-canvas-link: var(--canvas-link);
+  --color-canvas-axis: var(--canvas-axis);
+  --color-canvas-divider: var(--canvas-divider);
+
   --color-lineage: var(--lineage);
   --color-lineage-foreground: var(--lineage-foreground);
   --color-subtree: var(--subtree);

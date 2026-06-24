@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Background,
-  BackgroundVariant,
-  Controls,
   type Edge,
   type NodeMouseHandler,
   type NodeTypes,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { Minus, Plus } from "lucide-react";
 import type { TaxonRow } from "../server/taxonomy";
 import { buildTree } from "~/lib/layout";
 import { type HighlightState, edgeKind, isActive, nodeKind } from "~/lib/highlight";
 import { NODE_HEIGHT, NODE_WIDTH, type TaxonFlowNode } from "~/lib/nodes";
+import { cn } from "~/lib/utils";
 import { TaxonNode } from "./TaxonNode";
 
 /**
@@ -34,11 +34,16 @@ import { TaxonNode } from "./TaxonNode";
  */
 const nodeTypes: NodeTypes = { taxon: TaxonNode };
 
-/** Saturated stroke per edge kind (the `-foreground` token is the dark hue). */
+/**
+ * Active-edge stroke per kind. The lineage path is the rust accent (spec §3.3
+ * "active lineage … is the rust accent, slightly heavier"); subtree/search keep
+ * their semantic highlight hues. Inactive links stay the `--canvas-link`
+ * hairline set in `lib/nodes.ts`.
+ */
 const EDGE_STROKE = {
-  lineage: "var(--lineage-foreground)",
-  subtree: "var(--subtree-foreground)",
-  search: "var(--search-foreground)",
+  lineage: { stroke: "var(--primary)", strokeWidth: 2.5 },
+  subtree: { stroke: "var(--subtree-foreground)", strokeWidth: 2 },
+  search: { stroke: "var(--search-foreground)", strokeWidth: 2 },
 } as const;
 
 export type CanvasHandle = {
@@ -106,7 +111,7 @@ function Flow({ taxa, highlight, onSelectTaxon, onReady }: TreeCanvasProps) {
         return {
           ...e,
           animated: kind === "lineage",
-          style: { stroke: EDGE_STROKE[kind], strokeWidth: 2.5 },
+          style: EDGE_STROKE[kind],
           className: "transition-opacity",
         };
       }),
@@ -135,21 +140,66 @@ function Flow({ taxa, highlight, onSelectTaxon, onReady }: TreeCanvasProps) {
   );
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      nodeTypes={nodeTypes}
-      onNodeClick={onNodeClick}
-      fitView
-      fitViewOptions={{ padding: 0.15 }}
-      minZoom={0.2}
-      maxZoom={1.75}
-      proOptions={{ hideAttribution: true }}
-      nodesDraggable={false}
-      nodesConnectable={false}
-    >
-      <Background variant={BackgroundVariant.Dots} gap={28} size={1} color="var(--border)" />
-      <Controls showInteractive={false} />
-    </ReactFlow>
+    // The radial cream/walnut field replaces React Flow's dotted `<Background>`;
+    // the canvas pane is transparent so the gradient reads through (spec §3.2).
+    <div className="size-full" style={{ background: "var(--canvas-radial)" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodeClick={onNodeClick}
+        fitView
+        fitViewOptions={{ padding: 0.15 }}
+        minZoom={0.2}
+        maxZoom={1.75}
+        proOptions={{ hideAttribution: true }}
+        nodesDraggable={false}
+        nodesConnectable={false}
+      >
+        <CanvasControls />
+      </ReactFlow>
+    </div>
+  );
+}
+
+/**
+ * Minimal zoom/fit controls on the paper surface (spec §3.4), replacing React
+ * Flow's default `<Controls>`. Pan/zoom/fit behavior is unchanged — these just
+ * drive the same `useReactFlow` imperative API in a hairline, parchment skin.
+ * Sits bottom-right so the Phase 3 title overlay (top-left) won't collide.
+ */
+function CanvasControls() {
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const btn =
+    "flex h-8 w-9 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-ring";
+  return (
+    <Panel position="bottom-right">
+      <div className="flex flex-col divide-y divide-border overflow-hidden rounded-sm border border-border bg-card/90 backdrop-blur-sm">
+        <button
+          type="button"
+          className={btn}
+          onClick={() => void zoomIn({ duration: 200 })}
+          aria-label="Zoom in"
+        >
+          <Plus className="size-4" />
+        </button>
+        <button
+          type="button"
+          className={btn}
+          onClick={() => void zoomOut({ duration: 200 })}
+          aria-label="Zoom out"
+        >
+          <Minus className="size-4" />
+        </button>
+        <button
+          type="button"
+          className={cn(btn, "font-mono text-[0.6rem] uppercase tracking-[0.14em]")}
+          onClick={() => void fitView({ padding: 0.15, duration: 400 })}
+          aria-label="Fit tree to view"
+        >
+          Fit
+        </button>
+      </div>
+    </Panel>
   );
 }

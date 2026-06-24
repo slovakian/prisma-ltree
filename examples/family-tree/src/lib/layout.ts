@@ -46,8 +46,10 @@ export function buildTree(taxa: TaxonRow[]): TreeLayout {
   const edges: Edge[] = [];
 
   for (const node of root.descendants()) {
-    // Swap: d3's x (breadth) → canvas y, d3's y (depth) → canvas x.
-    nodes.push(toFlowNode(node.data, node.y ?? 0, node.x ?? 0));
+    // Swap: d3's x (breadth) → canvas y, d3's y (depth) → canvas x. A node with
+    // no children is a tip (circular portrait); otherwise an internal clade.
+    const isLeaf = !node.children || node.children.length === 0;
+    nodes.push(toFlowNode(node.data, node.y ?? 0, node.x ?? 0, isLeaf));
     const parent = parentPath(node.data.path);
     if (parent !== null) {
       edges.push(toFlowEdge(parent, node.data.path));

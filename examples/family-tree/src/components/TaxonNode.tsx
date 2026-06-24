@@ -1,18 +1,17 @@
 import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { ExternalLink } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 import { NODE_HEIGHT, NODE_WIDTH, type TaxonFlowNode } from "~/lib/nodes";
 
 /**
- * Custom React Flow node for a single taxon.
- *
- * The label body sits on a solid `bg-card` surface with a soft drop-shadow
- * halo so it stays legible across crossing dendrogram edges and the warm
- * canvas — never bare floating text (spec "Label legibility"). Registered on
- * the canvas via the `nodeTypes` map declared in `TreeCanvas.tsx`; the mapping
- * object must live outside the component per React Flow guidance.
+ * Custom React Flow node for a single taxon, styled as a natural-history plate
+ * label (spec §3.3). Tips read as circular portraits with a serif common name +
+ * italic mono scientific name; internal clades read as a small rotated-square
+ * (diamond) marker with a mono uppercase clade label. The label body sits on a
+ * solid `bg-card` surface with a hairline border (no halo) so it stays legible
+ * across crossing dendrogram links. Registered via the `nodeTypes` map in
+ * `TreeCanvas.tsx`; that mapping must live outside the component per React Flow.
  */
 
 /** Two-letter clade glyph for taxa without a Wikipedia page image. */
@@ -26,67 +25,119 @@ function cladeGlyph(scientificName: string): string {
 /** Per-highlight ring + surface tint applied to the node body. */
 const HIGHLIGHT_CLASS: Record<NonNullable<TaxonFlowNode["data"]["highlight"]>, string> = {
   selected: "ring-2 ring-primary ring-offset-2 ring-offset-background",
-  lineage: "ring-2 ring-[var(--lineage-foreground)] bg-lineage text-lineage-foreground",
-  subtree: "ring-2 ring-[var(--subtree-foreground)] bg-subtree text-subtree-foreground",
+  lineage: "ring-1 ring-[var(--lineage-foreground)] bg-lineage text-lineage-foreground",
+  subtree: "ring-1 ring-[var(--subtree-foreground)] bg-subtree text-subtree-foreground",
   mrca: "ring-2 ring-[var(--mrca)] bg-mrca text-mrca-foreground",
-  search: "ring-2 ring-[var(--search-foreground)] bg-search text-search-foreground",
+  search: "ring-1 ring-[var(--search-foreground)] bg-search text-search-foreground",
 };
 
+/** Mono uppercase apparatus kicker (rank label). */
+const KICKER = "font-mono text-[0.55rem] uppercase leading-none tracking-[0.18em]";
+
 export function TaxonNode({ data }: NodeProps<TaxonFlowNode>) {
-  const { taxon, highlight } = data;
+  const { taxon, isLeaf, highlight } = data;
   return (
     <div
       className={cn(
-        "group flex cursor-pointer items-center gap-2.5 rounded-lg border bg-card px-2.5 py-1.5 text-card-foreground",
-        "shadow-[0_1px_3px_rgba(0,0,0,0.12),0_0_0_4px_var(--card)]",
-        "transition-shadow hover:shadow-[0_2px_8px_rgba(0,0,0,0.18),0_0_0_4px_var(--card)]",
+        "group flex cursor-pointer items-center gap-2.5 rounded-sm border bg-card px-2.5 py-1.5 text-card-foreground",
+        "transition-colors hover:border-primary/60",
         taxon.extinct && "border-dashed opacity-90",
         highlight && HIGHLIGHT_CLASS[highlight],
       )}
       style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
     >
-      <Handle type="target" position={Position.Left} className="!border-0 !bg-border" />
+      <Handle type="target" position={Position.Left} className="!border-0 !bg-canvas-link" />
 
-      <Avatar size="lg" className="shrink-0">
-        {taxon.thumbnailUrl ? (
-          <AvatarImage src={taxon.thumbnailUrl} alt={taxon.scientificName} />
-        ) : null}
-        <AvatarFallback className="text-[0.7rem] font-semibold">
-          {cladeGlyph(taxon.scientificName)}
-        </AvatarFallback>
-      </Avatar>
+      {isLeaf ? <TipPortrait taxon={taxon} /> : <CladeMarker highlighted={Boolean(highlight)} />}
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1">
-          <span className="truncate text-sm font-semibold italic leading-tight">
-            {taxon.scientificName}
-          </span>
-          {taxon.wikiUrl ? (
-            <a
-              href={taxon.wikiUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              onClick={(e) => e.stopPropagation()}
-              className="shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-primary group-hover:opacity-100"
-              aria-label={`Wikipedia: ${taxon.scientificName}`}
-            >
-              <ExternalLink className="size-3" />
-            </a>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Badge variant="outline" className="capitalize">
-            {taxon.rank}
-          </Badge>
-          {taxon.commonName ? (
-            <span className="truncate text-xs text-muted-foreground">{taxon.commonName}</span>
-          ) : taxon.extinct ? (
-            <span className="truncate text-xs text-muted-foreground">extinct</span>
-          ) : null}
-        </div>
+        {isLeaf ? <TipLabel taxon={taxon} /> : <CladeLabel taxon={taxon} />}
       </div>
 
-      <Handle type="source" position={Position.Right} className="!border-0 !bg-border" />
+      {taxon.wikiUrl ? (
+        <a
+          href={taxon.wikiUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 self-start text-muted-foreground opacity-0 transition-opacity hover:text-primary group-hover:opacity-100 focus-visible:opacity-100"
+          aria-label={`Wikipedia: ${taxon.scientificName}`}
+        >
+          <ExternalLink className="size-3" />
+        </a>
+      ) : null}
+
+      <Handle type="source" position={Position.Right} className="!border-0 !bg-canvas-link" />
     </div>
+  );
+}
+
+/** Circular portrait for a tip taxon. */
+function TipPortrait({ taxon }: { taxon: TaxonFlowNode["data"]["taxon"] }) {
+  return (
+    <Avatar size="lg" className="shrink-0 ring-1 ring-border ring-offset-1 ring-offset-card">
+      {taxon.thumbnailUrl ? (
+        <AvatarImage src={taxon.thumbnailUrl} alt={taxon.scientificName} />
+      ) : null}
+      <AvatarFallback className="font-mono text-[0.7rem] font-medium tracking-tight">
+        {cladeGlyph(taxon.scientificName)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+/** Tip label: serif common name over an italic mono scientific name. */
+function TipLabel({ taxon }: { taxon: TaxonFlowNode["data"]["taxon"] }) {
+  const hasCommon = taxon.commonName != null && taxon.commonName.length > 0;
+  return (
+    <>
+      <div className={cn(KICKER, "text-primary/80")}>
+        {taxon.rank}
+        {taxon.extinct ? " · extinct" : ""}
+      </div>
+      <div className="truncate font-heading text-sm font-semibold leading-tight">
+        {hasCommon ? taxon.commonName : <span className="italic">{taxon.scientificName}</span>}
+      </div>
+      {hasCommon ? (
+        <div className="truncate font-mono text-[0.7rem] italic leading-tight text-muted-foreground">
+          {taxon.scientificName}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** Diamond marker for an internal clade node. */
+function CladeMarker({ highlighted }: { highlighted: boolean }) {
+  return (
+    <span className="flex w-10 shrink-0 justify-center" aria-hidden>
+      <span
+        className={cn(
+          "size-3 rotate-45 border",
+          highlighted ? "border-current bg-current" : "border-canvas-axis bg-canvas-divider",
+        )}
+      />
+    </span>
+  );
+}
+
+/** Clade label: mono uppercase clade name over an italic mono scientific name. */
+function CladeLabel({ taxon }: { taxon: TaxonFlowNode["data"]["taxon"] }) {
+  const hasCommon = taxon.commonName != null && taxon.commonName.length > 0;
+  return (
+    <>
+      <div className={cn(KICKER, "text-primary/80")}>
+        {taxon.rank}
+        {taxon.extinct ? " · extinct" : ""}
+      </div>
+      <div className="truncate font-mono text-[0.78rem] font-medium uppercase leading-tight tracking-[0.12em]">
+        {hasCommon ? taxon.commonName : taxon.scientificName}
+      </div>
+      {hasCommon ? (
+        <div className="truncate font-mono text-[0.7rem] italic leading-tight text-muted-foreground">
+          {taxon.scientificName}
+        </div>
+      ) : null}
+    </>
   );
 }

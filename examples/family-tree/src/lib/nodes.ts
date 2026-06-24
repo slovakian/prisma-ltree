@@ -29,6 +29,12 @@ export const COL_GAP = NODE_WIDTH + 110;
 
 export type TaxonNodeData = {
   taxon: TaxonRow;
+  /**
+   * Whether this taxon is a tip (no children in the laid-out tree). Tips render
+   * as circular portraits; internal clades render as diamond markers (spec §3.3).
+   * Resolved structurally by `lib/layout.ts` from the d3 hierarchy.
+   */
+  isLeaf: boolean;
   /** On-canvas highlight kind; `null` = neutral, `undefined` = no highlight active. */
   highlight?: HighlightKind | null;
 };
@@ -40,12 +46,12 @@ export type TaxonFlowNode = Node<TaxonNodeData, typeof TAXON_NODE_TYPE>;
  * coordinates. The node id is the ltree `path` — globally unique by
  * construction, so a taxon can never render twice.
  */
-export function toFlowNode(taxon: TaxonRow, x: number, y: number): TaxonFlowNode {
+export function toFlowNode(taxon: TaxonRow, x: number, y: number, isLeaf: boolean): TaxonFlowNode {
   return {
     id: taxon.path,
     type: TAXON_NODE_TYPE,
     position: { x, y },
-    data: { taxon },
+    data: { taxon, isLeaf },
     // String literals match the `Position` enum values ("right"/"left"); kept
     // as type-only imports so this geometry module pulls no React Flow runtime
     // (and the node-env layout test stays clean).
@@ -60,8 +66,10 @@ export function toFlowEdge(parentPath: string, childPath: string): Edge {
     id: `${parentPath}->${childPath}`,
     source: parentPath,
     target: childPath,
-    type: "smoothstep",
+    // `step` = sharp orthogonal right-angle connectors (spec §3.3 "orthogonal
+    // links"), drawn as a hairline in the muted dendrogram link tone.
+    type: "step",
     selectable: false,
-    style: { stroke: "var(--border)", strokeWidth: 1.5 },
+    style: { stroke: "var(--canvas-link)", strokeWidth: 1.5 },
   };
 }
