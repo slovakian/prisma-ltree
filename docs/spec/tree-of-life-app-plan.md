@@ -344,14 +344,14 @@ checkpoint below. Server data-layer + validator criteria are green via
 
 **Acceptance criteria:**
 
-- [ ] README rewritten for the phylogeny viewer; documents setup, the showcase matrix, every operator control, the two local-machine gotchas from the prior handoff (mandatory `db:plan`, ECR Docker mirror), and the deferred Tier-3 first-match controls (if any).
-- [ ] `test/e2e/showcase.e2e.test.ts` exists OR a `KNOWN_LIMITATIONS.md` under the example documents why an e2e was infeasible (it could well be feasible — Playwright + dev server against dockerized DB — but `@prisma-next/test-utils` is unpublished to npm, so tests must not import it).
-- [ ] Top-of-app "Operator showcase" legend is visible and accessible (keyboard-navigable, ARIA labelled); the canvas is keyboard-pannable via React Flow's built-in controls.
-- [ ] Responsive: layout degrades gracefully on tablet width — controls stack below the canvas; on phone, a tabbed interface (Tree | Controls) replaces the side-by-side grid.
-- [ ] No taxon renders twice; no node edit ages (highlight stays in sync after operations).
-- [ ] `pnpm typecheck`, `vp check`, `vp test`, `pnpm build` (where DB-independent) all green.
-- [ ] The deleted `family-tree-example-handoff.md` is not referenced anywhere in the repo (grep).
-- [ ] Open Questions in the spec are resolved or freshly ADR'd in `examples/family-tree/docs/decisions/`.
+- [x] README rewritten for the phylogeny viewer; documents setup, the showcase matrix, every operator control, the two local-machine gotchas from the prior handoff (mandatory `db:plan`, ECR Docker mirror), and the deferred Tier-3 first-match controls (if any).
+- [x] `test/e2e/showcase.e2e.test.ts` exists OR a `KNOWN_LIMITATIONS.md` under the example documents why an e2e was infeasible (it could well be feasible — Playwright + dev server against dockerized DB — but `@prisma-next/test-utils` is unpublished to npm, so tests must not import it).
+- [x] Top-of-app "Operator showcase" legend is visible and accessible (keyboard-navigable, ARIA labelled); the canvas is keyboard-pannable via React Flow's built-in controls.
+- [x] Responsive: layout degrades gracefully on tablet width — controls stack below the canvas; on phone, a tabbed interface (Tree | Controls) replaces the side-by-side grid.
+- [x] No taxon renders twice; no node edit ages (highlight stays in sync after operations).
+- [x] `pnpm typecheck`, `vp check`, `vp test`, `pnpm build` (where DB-independent) all green.
+- [x] The deleted `family-tree-example-handoff.md` is not referenced anywhere in the repo (grep).
+- [x] Open Questions in the spec are resolved or freshly ADR'd in `examples/family-tree/docs/decisions/`.
 
 **Verification:**
 

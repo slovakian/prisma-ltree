@@ -147,9 +147,9 @@ function Home() {
         </section>
 
         <aside className="hidden w-80 shrink-0 space-y-3 overflow-y-auto border-l bg-sidebar p-4 lg:block">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Operator showcase
-          </p>
+          </h2>
           <LineageControls
             selected={selection?.taxon ?? null}
             active={isActive(highlight)}
