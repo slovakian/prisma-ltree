@@ -188,7 +188,7 @@ examples/family-tree/
 │   │   │   ├── SliceControls.tsx     # nlevel generation, subpath/subltree slice, indexOf locate
 │   │   │   ├── GraftControls.tsx     # concatText graft + prune
 │   │   │   └── OperatorLegend.tsx    # live showcase-matrix legend
-│   │   ├── ui/                      # shadcn primitives (avatar, badge, button, card, select)
+│   │   ├── ui/                      # shadcn primitives (avatar, button, select)
 │   │   ├── DefaultCatchBoundary.tsx
 │   │   └── NotFound.tsx
 │   ├── lib/
