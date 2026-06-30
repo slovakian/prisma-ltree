@@ -13,6 +13,7 @@
 > - Decision record (root cause, alternatives, forward-compat): [`docs/decisions/ADR-005-gist-index-support.md`](../decisions/ADR-005-gist-index-support.md)
 > - Feature matrix (Indexes section): [`docs/feature-support.md`](../feature-support.md)
 > - Commits on this branch: `feat(ltree)` → `test(ltree)` → `docs(ltree)` → `docs(web)` → `chore(release)`
+> - Upstream follow-up handoff (issue/PR in `prisma-next`): [`docs/spec/psl-index-types-upstream-handoff.md`](./psl-index-types-upstream-handoff.md)
 
 ## What the task was
 
