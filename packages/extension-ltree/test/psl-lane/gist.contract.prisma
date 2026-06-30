@@ -1,0 +1,16 @@
+// use prisma-next
+
+types {
+  Path = ltree.Ltree()
+}
+
+/// PSL-lane GiST authoring fixture. Whether this emits depends on the prisma
+/// config threading the extension's index-type registration into the PSL
+/// interpreter (see gist-authoring.test.ts).
+model Page {
+  id   String @id @default(uuid())
+  path Path
+
+  @@index([path], type: "gist", map: "page_path_gist_idx")
+  @@map("page")
+}
