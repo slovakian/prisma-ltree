@@ -1,0 +1,111 @@
+---
+title: Limitations
+description: What prisma-ltree does not cover and known workarounds
+---
+
+prisma-ltree ships the operators and functions most applications need for hierarchical
+tree data in PostgreSQL. This page lists deliberate gaps, platform constraints, and
+practical workarounds. The authoritative matrix lives in
+[`docs/feature-support.md`](https://github.com/slovakian/prisma-ltree/blob/main/docs/feature-support.md)
+in the repository.
+
+## What is fully covered
+
+For **scalar `ltree` columns**, the extension implements every specialized PostgreSQL
+operator and function in the ltree module except test-only variants:
+
+- Hierarchy: `@>`, `<@`
+- Pattern match: `~`, `?`, `@` (with `lquery`, `lquery[]`, `ltxtquery` args)
+- Functions: `nlevel`, `subltree`, `subpath`, `index`, `lca` (2–8 paths)
+- Concatenation: `||` (ltree/ltree, ltree/text, text/ltree)
+- Conversion: `ltree2text`, `text2ltree`
+
+For **`ltree[]` columns**, all four **first-match** operators are supported
+(`?@>`, `?<@`, `?~`, `?@`).
+
+Standard **comparison** (`=`, `<`, `>`, …) on `ltree` works through prisma-next core
+because the `pg/ltree@1` codec declares `equality` and `order` traits.
+
+## Planned (not shipped yet)
+
+| PostgreSQL | Planned API | Notes |
+| ---------- | ----------- | ----- |
+| `lca(ltree[])` | `paths.lca()` | Array codec exists; method deferred |
+| `text2ltree(text)` (free function) | `Ltree.fromText(text)` | Today use `text.toLtree()` on a text column (ADR-002) |
+
+## Deliberately out of scope
+
+### Boolean `ltree[]` operators
+
+PostgreSQL can ask "does **any** element of this array match?" and return a boolean:
+
+```sql
+-- Examples not exposed by prisma-ltree
+paths @> 'Top.Science'        -- any ancestor in array?
+paths <@ 'Top.Science'        -- any descendant in array?
+paths ~ '*.Science.*'         -- any path matches lquery?
+```
+
+**Workaround:** use first-match methods (`firstAncestorOf`, `firstDescendantOf`,
+`firstMatchLquery`, `firstMatchLtxtquery`) and check for non-null, or unnest the
+array in SQL.
+
+### Cross-side scalar vs array booleans
+
+PostgreSQL also allows a scalar `ltree` column on the left:
+
+```sql
+path <@ paths   -- equivalent to paths @> path
+path @> paths   -- equivalent to paths <@ path
+```
+
+These are not exposed on either codec. Same workarounds as above.
+
+### Reversed pattern operands
+
+SQL allows `lquery ~ ltree` as well as `ltree ~ lquery`. The extension only surfaces
+column-centric methods (`path.matchesLquery(...)`), which is equivalent for typical
+queries.
+
+### GiST and specialized indexes
+
+Hierarchy and pattern filters (`@>`, `<@`, `~`, `?`, `@`) are much faster with a
+**GiST** index (`gist_ltree_ops`, optional `siglen=…`). prisma-ltree does not emit
+GiST DDL — custom opclasses and signature length are part of Prisma Next's index
+system, which extensions cannot hook into today.
+
+**Workaround:** declare indexes through prisma-next's index APIs when GiST support
+lands upstream, or add raw migration SQL for `CREATE INDEX … USING GIST (path)`.
+
+B-tree indexes for sort/range comparisons on `ltree` are a **core** concern (the codec
+has `order`); hash indexes are similarly outside this pack.
+
+### Column types and authoring
+
+| Gap | Workaround |
+| --- | ---------- |
+| `lquery` / `ltxtquery` as stored column types | Pass patterns as `string` / `string[]` params; SQL casts at runtime |
+| `@db.Ltree` in PSL | Use `ltree.Ltree()` / `ltree.LtreeArray()` namespace constructors (ADR-004) |
+| Non-Postgres databases | `ltree` is Postgres-only |
+
+### Validation differences
+
+- **Label charset:** the codec validates `[A-Za-z0-9_-]` per label. PostgreSQL may
+  accept additional characters depending on database locale.
+- **Empty paths:** the codec rejects empty strings at encode time.
+- **Pattern syntax:** `lquery` / `ltxtquery` strings are not validated until
+  PostgreSQL executes the query.
+
+### API ergonomics
+
+- `lca` requires at least two paths (`path.lca(other, …)`); there is no single-arg form.
+- `text2ltree` surfaces as `.toLtree()` on **text** columns, not on ltree columns.
+- `prependText` keeps the ltree column as the method receiver even though SQL places
+  it on the right of `text || ltree`.
+
+## Not applicable
+
+- **Non-index operators** (`^<@`, `^@>`, `^@`, `^~`) — PostgreSQL testing helpers only.
+- **`ltree_plpython3u`** — separate PL/Python transform module.
+- **Example SQL helpers** (e.g. PostgreSQL's `ins_label` function) — compose from
+  `subpath`, `concat`, and related shipped ops in application code.
