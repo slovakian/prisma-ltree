@@ -1,6 +1,6 @@
 {
   "name": "prisma-ltree",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Prisma Next extension pack for PostgreSQL's ltree hierarchical tree data type.",
   "homepage": "https://prisma-ltree.procka.org",
   "license": "Apache-2.0",
