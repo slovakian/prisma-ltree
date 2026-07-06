@@ -1,5 +1,11 @@
 # prisma-ltree
 
+## 0.2.2
+
+### Patch Changes
+
+- 891bafa: Add `paths.lcaAll()` — the lowest common ancestor of an `ltree[]` column (`lca(ltree[])`). Complements the existing scalar `path.lca(other, ...)`.
+
 ## 0.2.1
 
 ### Patch Changes
