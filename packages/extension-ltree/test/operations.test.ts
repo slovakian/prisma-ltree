@@ -56,7 +56,7 @@ describe("prisma-ltree operations", () => {
         "firstDescendantOf",
         "firstMatchLquery",
         "firstMatchLtxtquery",
-        "commonAncestor",
+        "lcaAll",
       ].sort(),
     );
   });
@@ -159,7 +159,7 @@ describe("prisma-ltree operations", () => {
     ["firstDescendantOf", "{{self}} ?<@ {{arg0}}", "Top"],
     ["firstMatchLquery", "{{self}} ?~ ({{arg0}})::lquery", "Top.*"],
     ["firstMatchLtxtquery", "{{self}} ?@ ({{arg0}})::ltxtquery", "Science"],
-    ["commonAncestor", "lca({{self}})", undefined],
+    ["lcaAll", "lca({{self}})", undefined],
   ];
 
   it.each(tier3Cases)(

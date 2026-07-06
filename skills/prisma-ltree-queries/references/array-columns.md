@@ -57,4 +57,4 @@ Workaround: use first-match ops when you need one path back, or unnest/array log
 
 ## Planned
 
-- `paths.commonAncestor()` — `lca(ltree[])` on array columns (zero-arg)
+- `paths.lcaAll()` — `lca(ltree[])` on array columns (zero-arg)

@@ -104,7 +104,7 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
     ).toBe("Top.Science");
   });
 
-  it("commonAncestor: lca(paths) returns the proper lowest common ancestor", async () => {
+  it("lcaAll: lca(paths) returns the proper lowest common ancestor", async () => {
     await db.exec(`
       INSERT INTO node (id, path, paths) VALUES (
         2,
@@ -112,9 +112,7 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
         ARRAY['Top.Science.Biology','Top.Science.Physics']::ltree[]
       );
     `);
-    expect(await projectFor(2, opExpr("commonAncestor", ltreeArrayColumn("paths")))).toBe(
-      "Top.Science",
-    );
+    expect(await projectFor(2, opExpr("lcaAll", ltreeArrayColumn("paths")))).toBe("Top.Science");
   });
 
   it("firstAncestorOf against a non-matching rhs returns null", async () => {
