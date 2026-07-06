@@ -212,8 +212,9 @@ const plan = sql
 Use `ltreeArray()` for `ltree[]` columns that expose these methods.
 
 `lcaAll` is the array form of `lca`. It is not named `lca` because prisma-next
-requires globally unique operation names across the composed stack; scalar columns already
-expose `path.lca(other, ...)`.
+keys operations by name only and rejects duplicates; scalar columns already
+expose `path.lca(other, ...)` (see ADR-005). Note it returns SQL NULL for an
+empty `ltree[]`, matching the first-match ops' `nullable: false` convention.
 
 ## Types
 

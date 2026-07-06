@@ -87,8 +87,9 @@ Receiver is `ltree[]` via `pg/ltree-array@1` (ADR-003).
 | `ltree[] ?@ ltxtquery` | `paths.firstMatchLtxtquery(query)` | supported | 3    |
 | `lca(ltree[])`         | `paths.lcaAll()`           | supported | 3    |
 
-Named `lcaAll` (not `lca`) because prisma-next requires globally unique
-operation names; `lca` is already the variadic scalar method (ADR-001).
+Named `lcaAll` (not `lca`) because prisma-next keys operations by name only and
+rejects duplicates; `lca` is already the variadic scalar method (ADR-001). See
+ADR-005 for the naming decision and the shared `nullable: false` gap.
 
 ## Out-of-Scope (Tracked)
 
@@ -112,5 +113,5 @@ operation names; `lca` is already the variadic scalar method (ADR-001).
 - 2026-06-19 — Tier 1 complete (Checkpoint 2). Codec/contract/migration + all Tier 1 operators (hierarchy, pattern-match) and scalar functions (`nlevel`, `subltree`, `subpath`, `indexOf`, `lca`) → `supported`, each with golden + PGlite integration + type-level coverage. `lca` is a variadic method requiring ≥2 paths (ADR-001); the `ltree[]` array form remains `planned`.
 - 2026-06-19 — Tier 2 complete (Checkpoint 3). Concatenation (`concat`, `concatText`, `prependText`) and conversion (`toText`, `toLtree`) → `supported`, each with golden + PGlite integration + type-level coverage. Free-function lowering resolved by re-rooting on a natural `self` (ADR-002): `text2ltree` ships as `text.toLtree()` (text-rooted); the self-less `Ltree.fromText()` constructor stays `planned` pending a free-function call surface.
 - 2026-06-19 — Tier 3 complete (Checkpoint 4). Array receiver resolved via dedicated `pg/ltree-array@1` codec + `ltreeArray()` column helper (ADR-003). All four first-match operators → `supported` with golden + PGlite integration + type-level coverage. `lca(ltree[])` deferred pending array-receiver method.
-- 2026-07-06 — `lca(ltree[])` → `paths.lcaAll()` shipped on `pg/ltree-array@1`. Distinct name required: prisma-next operation registry keys are globally unique (ADR-113/214); scalar `path.lca(...)` already occupies `lca`.
+- 2026-07-06 — `lca(ltree[])` → `paths.lcaAll()` shipped on `pg/ltree-array@1` (ADR-005). Distinct name required: prisma-next's operation registry keys by name only and rejects duplicates; scalar `path.lca(...)` already occupies `lca`. Return stays `nullable: false` for parity with first-match ops despite PG's empty-array NULL (family-wide gap, pinned by an integration test).
 - 2026-06-19 — Phase 6 polish. Coverage threshold set to 95% in `vite.config.ts`; gaps filled to **100%** statements/branches/functions/lines (116 tests). Package `README.md` and per-tier `docs/progress/` logs written. Matrix verified accurate against shipped surface (no status changes). Pending: npm publish over the `0.0.1` stub (Task 6.3, awaiting approval).

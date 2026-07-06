@@ -115,6 +115,17 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
     expect(await projectFor(2, opExpr("lcaAll", ltreeArrayColumn("paths")))).toBe("Top.Science");
   });
 
+  // `lca(ltree[])` yields SQL NULL for an empty array — reachable even on a
+  // `ltree[] NOT NULL` column (`'{}'` is non-null but empty). The op declares
+  // `nullable: false` for parity with the first-match ops (which likewise
+  // return NULL on no match); this test pins the documented runtime behavior.
+  it("lcaAll: an empty ltree[] yields SQL NULL", async () => {
+    await db.exec(`
+      INSERT INTO node (id, path, paths) VALUES (3, 'Top', ARRAY[]::ltree[]);
+    `);
+    expect(await projectFor(3, opExpr("lcaAll", ltreeArrayColumn("paths")))).toBeNull();
+  });
+
   it("firstAncestorOf against a non-matching rhs returns null", async () => {
     expect(
       await projectFor(1, opExpr("firstAncestorOf", ltreeArrayColumn("paths"), "Other.Branch")),

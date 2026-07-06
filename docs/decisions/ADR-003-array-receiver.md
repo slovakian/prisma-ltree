@@ -113,9 +113,9 @@ emits `::ltree`). Pattern args bind as text and cast in-template, identical to T
 - `lca(ltree[])` remained **`planned`** for the Tier 3 slice — Tier 3 scope was the four
   first-match operators only; the array-receiver _mechanism_ is what ADR-003 resolves.
 - **Follow-up (2026-07-06):** `lca(ltree[])` shipped as `paths.lcaAll()` on
-  `pg/ltree-array@1`. Not `paths.lca()` — prisma-next's flat operation registry forbids
-  duplicate method names (ADR-113/214); scalar `path.lca(other, ...)` already registers
-  `lca`.
+  `pg/ltree-array@1` (ADR-005). Not `paths.lca()` — prisma-next's flat operation registry
+  keys by name only and rejects duplicates, and scalar `path.lca(other, ...)` already
+  registers `lca`.
 - Pack codec count goes from 1 → 2; runtime registry, contract storage types, and
   control-plane hooks (`expandNativeType`, `resolveIdentityValue`) cover both ids.
 - Golden tests assert `self` binds with `pg/ltree-array@1`; PGlite integration tests

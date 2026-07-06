@@ -152,8 +152,10 @@ export type QueryOperationTypes<CT extends CodecTypesBase> = SqlQueryOperationTy
         query: CodecExpression<"pg/text@1", boolean, CT>,
       ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
     };
-    // `lca(ltree[])` — ships as `lcaAll()` (ADR-001); not `lca()` because
-    // prisma-next operation names are globally unique across the composed stack.
+    // `lca(ltree[])` — ships as `lcaAll()` (ADR-001, ADR-005); not `lca()`
+    // because prisma-next operation names are globally unique across the composed
+    // stack. `nullable: false` mirrors the first-match ops (PG can return NULL for
+    // an empty/NULL array — a shared Tier 3 gap, tracked separately).
     readonly lcaAll: {
       readonly self: { readonly codecId: "pg/ltree-array@1" };
       readonly impl: (

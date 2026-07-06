@@ -284,9 +284,13 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       impl: (self, query) =>
         firstMatchOp("firstMatchLtxtquery", "?@", self, query, TEXT_CODEC_ID, "ltxtquery"),
     },
-    // `lca(ltree[])` — array-receiver form (ADR-001). Named `lcaAll` because
-    // prisma-next requires globally unique operation names (ADR-113/214); `lca` is
-    // already taken by the variadic scalar method on `pg/ltree@1`.
+    // `lca(ltree[])` — array-receiver form (ADR-001, ADR-005). Named `lcaAll`
+    // because prisma-next keys operations by name only (`createOperationRegistry`
+    // throws on a duplicate); `lca` is already the variadic scalar method on
+    // `pg/ltree@1`. Declares `nullable: false` for parity with the Tier 3
+    // first-match ops even though PG returns NULL for an empty/NULL `ltree[]`
+    // (see the empty-array integration test) — a family-wide gap, not specific
+    // to `lcaAll`.
     lcaAll: {
       self: { codecId: LTREE_ARRAY_CODEC_ID },
       impl: (self): LtreeReturn =>
