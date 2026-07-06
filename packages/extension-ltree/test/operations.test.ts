@@ -56,6 +56,7 @@ describe("prisma-ltree operations", () => {
         "firstDescendantOf",
         "firstMatchLquery",
         "firstMatchLtxtquery",
+        "commonAncestor",
       ].sort(),
     );
   });
@@ -158,6 +159,7 @@ describe("prisma-ltree operations", () => {
     ["firstDescendantOf", "{{self}} ?<@ {{arg0}}", "Top"],
     ["firstMatchLquery", "{{self}} ?~ ({{arg0}})::lquery", "Top.*"],
     ["firstMatchLtxtquery", "{{self}} ?@ ({{arg0}})::ltxtquery", "Science"],
+    ["commonAncestor", "lca({{self}})", undefined],
   ];
 
   it.each(tier3Cases)(
@@ -169,7 +171,7 @@ describe("prisma-ltree operations", () => {
       expect(op).toBeDefined();
       const expr = op?.impl(
         ltreeExpr("Top.Science,Top.Hobbies", ltreeArrayCodec) as never,
-        arg as never,
+        ...(arg === undefined ? [] : [arg as never]),
       ) as unknown as { buildAst(): OperationExpr };
       const ast = expr.buildAst();
       expect(ast).toBeInstanceOf(OperationExpr);

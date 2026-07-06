@@ -57,7 +57,8 @@ pathA.lca(pathB, pathC); // up to 8 paths in PostgreSQL
 
 Example: `lca('1.2.3', '1.2.4', '1.2.5.6')` → `'1.2'`.
 
-**Not available:** `lca(ltree[])` / `paths.lca()` on array columns — planned separately.
+**Array LCA:** `paths.commonAncestor()` lowers to `lca(ltree[])`. Scalar paths use
+`path.lca(other, ...rest)` (≥2 paths).
 
 ## Concatenation (building paths)
 

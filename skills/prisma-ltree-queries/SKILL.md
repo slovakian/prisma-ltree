@@ -4,8 +4,8 @@ description: >-
   Write prisma-ltree queries in Prisma Next — isAncestorOf, isDescendantOf,
   matchesLquery, matchesLqueryArray, matchesLtxtquery, nlevel, subltree,
   subpath, indexOf, lca, concat, concatText, prependText, toText, toLtree,
-  firstAncestorOf, firstDescendantOf, firstMatchLquery, firstMatchLtxtquery on
-  ltree and ltree[] columns. Use for "find descendants", "subtree query",
+  firstAncestorOf, firstDescendantOf, firstMatchLquery, firstMatchLtxtquery,
+  commonAncestor on ltree and ltree[] columns. Use for "find descendants", "subtree query",
   "ancestor of", "category under prefix", "path pattern", "lquery", "ltxtquery",
   "path depth", "lowest common ancestor", "append path segment", "materialized
   path query", and SQL-builder or ORM filters on ltree fields. Load reference
@@ -111,7 +111,7 @@ Predicate helpers (`and`, `or`, ranges) follow `prisma-next-queries` — ltree m
 ## What prisma-ltree doesn't do yet
 
 - **Raw SQL escape hatch for ltree** — use extension methods or file a gap if the SQL builder cannot express your shape. PN raw SQL story is framework-level (`prisma-next-queries`).
-- **`paths.lca()` on `ltree[]`** — planned; use variadic `path.lca(other, ...)` on scalar paths today.
+- **`paths.commonAncestor()` on `ltree[]`** — `lca(ltree[])`; scalar paths use `path.lca(other, ...)`.
 - **`Ltree.fromText()` static constructor** — use `text.toLtree()` on text columns.
 - **Automatic path maintenance on insert** — you build/store path strings; triggers or app logic maintain hierarchy.
 - **GiST index helpers** — not in this extension.

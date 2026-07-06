@@ -103,15 +103,19 @@ emits `::ltree`). Pattern args bind as text and cast in-template, identical to T
   not match user schemas storing `ltree[]`; casts in-template would paper over a codec
   mismatch and break DDL/introspection fidelity.
 - **Unblocks ADR-001/002 follow-ups non-breakingly.** Once `pg/ltree-array@1` exists,
-  `lca(ltree[])` can ship as `paths.lca()` (array-receiver method) without changing
-  the Tier 1 variadic `path.lca(...others)` form.
+  `lca(ltree[])` can ship as an array-receiver method without changing the Tier 1
+  variadic `path.lca(...others)` form.
 
 ## Consequences
 
 - `docs/feature-support.md`: add `pg/ltree-array@1` codec + `ltreeArray()` column helper
   as `supported`; Tier 3 first-match ops → `supported`.
-- `lca(ltree[])` remains **`planned`** for this slice — Tier 3 scope is the four
+- `lca(ltree[])` remained **`planned`** for the Tier 3 slice — Tier 3 scope was the four
   first-match operators only; the array-receiver _mechanism_ is what ADR-003 resolves.
+- **Follow-up (2026-07-06):** `lca(ltree[])` shipped as `paths.commonAncestor()` on
+  `pg/ltree-array@1`. Not `paths.lca()` — prisma-next's flat operation registry forbids
+  duplicate method names (ADR-113/214); scalar `path.lca(other, ...)` already registers
+  `lca`.
 - Pack codec count goes from 1 → 2; runtime registry, contract storage types, and
   control-plane hooks (`expandNativeType`, `resolveIdentityValue`) cover both ids.
 - Golden tests assert `self` binds with `pg/ltree-array@1`; PGlite integration tests

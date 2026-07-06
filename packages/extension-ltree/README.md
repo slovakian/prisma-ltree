@@ -207,8 +207,13 @@ const plan = sql
 | `paths.firstDescendantOf(rhs)`     | `ltree[] ?<@ ltree`    |
 | `paths.firstMatchLquery(pattern)`  | `ltree[] ?~ lquery`    |
 | `paths.firstMatchLtxtquery(query)` | `ltree[] ?@ ltxtquery` |
+| `paths.commonAncestor()`           | `lca(ltree[])`         |
 
 Use `ltreeArray()` for `ltree[]` columns that expose these methods.
+
+`commonAncestor` is the array form of `lca`. It is not named `lca` because prisma-next
+requires globally unique operation names across the composed stack; scalar columns already
+expose `path.lca(other, ...)`.
 
 ## Types
 

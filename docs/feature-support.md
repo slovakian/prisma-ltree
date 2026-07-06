@@ -5,7 +5,7 @@ Doc-writing agents read this file to accurately reflect the extension's surface.
 
 **Status values:** `supported` · `in-progress` · `planned` · `out-of-scope` (tracked, not built)
 **Scope decision:** "Everything reasonable" — Tier 1 + Tier 2 + Tier 3 (first-match array ops)
-**Last updated:** 2026-06-19
+**Last updated:** 2026-07-06
 
 See `packages/extension-ltree/README.md` for usage documentation and `docs/decisions/` for design ADRs.
 
@@ -51,7 +51,6 @@ See `packages/extension-ltree/README.md` for usage documentation and `docs/decis
 | `index(a, b)`                 | `path.indexOf(other)`         | `pg/int4@1`  | supported                                                  | 1    |
 | `index(a, b, offset)`         | `path.indexOf(other, offset)` | `pg/int4@1`  | supported                                                  | 1    |
 | `lca(ltree, ltree, ...)`      | `path.lca(other, ...rest)`    | `pg/ltree@1` | supported (≥2 paths; ADR-001)                              | 1    |
-| `lca(ltree[])`                | `paths.lca()`                 | `pg/ltree@1` | planned — array receiver exists (ADR-003); method deferred | 1    |
 
 ## Concatenation (→ `pg/ltree@1`)
 
@@ -86,6 +85,10 @@ Receiver is `ltree[]` via `pg/ltree-array@1` (ADR-003).
 | `ltree[] ?<@ ltree`    | `paths.firstDescendantOf(rhs)`     | supported | 3    |
 | `ltree[] ?~ lquery`    | `paths.firstMatchLquery(pattern)`  | supported | 3    |
 | `ltree[] ?@ ltxtquery` | `paths.firstMatchLtxtquery(query)` | supported | 3    |
+| `lca(ltree[])`         | `paths.commonAncestor()`           | supported | 3    |
+
+Named `commonAncestor` (not `lca`) because prisma-next requires globally unique
+operation names; `lca` is already the variadic scalar method (ADR-001).
 
 ## Out-of-Scope (Tracked)
 
@@ -108,5 +111,6 @@ Receiver is `ltree[]` via `pg/ltree-array@1` (ADR-003).
 - 2026-06-19 — Initial matrix created from spec. All in-scope features `planned`; out-of-scope features tracked with reasons.
 - 2026-06-19 — Tier 1 complete (Checkpoint 2). Codec/contract/migration + all Tier 1 operators (hierarchy, pattern-match) and scalar functions (`nlevel`, `subltree`, `subpath`, `indexOf`, `lca`) → `supported`, each with golden + PGlite integration + type-level coverage. `lca` is a variadic method requiring ≥2 paths (ADR-001); the `ltree[]` array form remains `planned`.
 - 2026-06-19 — Tier 2 complete (Checkpoint 3). Concatenation (`concat`, `concatText`, `prependText`) and conversion (`toText`, `toLtree`) → `supported`, each with golden + PGlite integration + type-level coverage. Free-function lowering resolved by re-rooting on a natural `self` (ADR-002): `text2ltree` ships as `text.toLtree()` (text-rooted); the self-less `Ltree.fromText()` constructor stays `planned` pending a free-function call surface.
-- 2026-06-19 — Tier 3 complete (Checkpoint 4). Array receiver resolved via dedicated `pg/ltree-array@1` codec + `ltreeArray()` column helper (ADR-003). All four first-match operators → `supported` with golden + PGlite integration + type-level coverage. `lca(ltree[])` remains `planned` as `paths.lca()` — mechanism unblocked, method not in Tier 3 scope.
+- 2026-06-19 — Tier 3 complete (Checkpoint 4). Array receiver resolved via dedicated `pg/ltree-array@1` codec + `ltreeArray()` column helper (ADR-003). All four first-match operators → `supported` with golden + PGlite integration + type-level coverage. `lca(ltree[])` deferred pending array-receiver method.
+- 2026-07-06 — `lca(ltree[])` → `paths.commonAncestor()` shipped on `pg/ltree-array@1`. Distinct name required: prisma-next operation registry keys are globally unique (ADR-113/214); scalar `path.lca(...)` already occupies `lca`.
 - 2026-06-19 — Phase 6 polish. Coverage threshold set to 95% in `vite.config.ts`; gaps filled to **100%** statements/branches/functions/lines (116 tests). Package `README.md` and per-tier `docs/progress/` logs written. Matrix verified accurate against shipped surface (no status changes). Pending: npm publish over the `0.0.1` stub (Task 6.3, awaiting approval).

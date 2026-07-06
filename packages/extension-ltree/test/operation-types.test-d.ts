@@ -44,6 +44,7 @@ test("the full Tier 1 + Tier 2 + Tier 3 operation set is present", () => {
     | "firstDescendantOf"
     | "firstMatchLquery"
     | "firstMatchLtxtquery"
+    | "commonAncestor"
   >();
 });
 
@@ -97,6 +98,12 @@ test("Tier 3 first-match operators take array receiver and return ltree", () => 
   expectTypeOf<ReturnType<Impl<"firstMatchLtxtquery">>>().toEqualTypeOf<LtreeReturn>();
   expectTypeOf<string>().toExtend<ArgOf<"firstAncestorOf", 1>>();
   expectTypeOf<string>().toExtend<ArgOf<"firstMatchLquery", 1>>();
+});
+
+test("commonAncestor is a zero-arg array-receiver method returning ltree", () => {
+  expectTypeOf<Ops["commonAncestor"]["self"]["codecId"]>().toEqualTypeOf<"pg/ltree-array@1">();
+  expectTypeOf<ReturnType<Impl<"commonAncestor">>>().toEqualTypeOf<LtreeReturn>();
+  expectTypeOf<Impl<"commonAncestor">>().toBeCallableWith(undefined as never);
 });
 
 test("subpath length and indexOf offset are optional, lca requires >= 2 paths", () => {

@@ -152,5 +152,13 @@ export type QueryOperationTypes<CT extends CodecTypesBase> = SqlQueryOperationTy
         query: CodecExpression<"pg/text@1", boolean, CT>,
       ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
     };
+    // `lca(ltree[])` — ships as `commonAncestor()` (ADR-001); not `lca()` because
+    // prisma-next operation names are globally unique across the composed stack.
+    readonly commonAncestor: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
+    };
   }
 >;
