@@ -57,4 +57,4 @@ Workaround: use first-match ops when you need one path back, or unnest/array log
 
 ## Planned
 
-- `paths.lca()` for `lca(ltree[])` SQL form — array receiver exists; method not shipped yet.
+- `paths.lcaAll()` — `lca(ltree[])` on array columns (zero-arg)

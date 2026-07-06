@@ -207,8 +207,14 @@ const plan = sql
 | `paths.firstDescendantOf(rhs)`     | `ltree[] ?<@ ltree`    |
 | `paths.firstMatchLquery(pattern)`  | `ltree[] ?~ lquery`    |
 | `paths.firstMatchLtxtquery(query)` | `ltree[] ?@ ltxtquery` |
+| `paths.lcaAll()`                   | `lca(ltree[])`         |
 
 Use `ltreeArray()` for `ltree[]` columns that expose these methods.
+
+`lcaAll` is the array form of `lca`. It is not named `lca` because prisma-next
+keys operations by name only and rejects duplicates; scalar columns already
+expose `path.lca(other, ...)` (see ADR-005). Note it returns SQL NULL for an
+empty `ltree[]`, matching the first-match ops' `nullable: false` convention.
 
 ## Types
 

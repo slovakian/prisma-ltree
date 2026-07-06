@@ -1,3 +1,4 @@
 {
-  "title": "Operations"
+  "title": "Operations",
+  "pages": ["hierarchy", "pattern-matching", "lca"]
 }
