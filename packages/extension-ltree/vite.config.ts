@@ -9,6 +9,7 @@ export default defineConfig({
       "src/exports/operation-types.ts",
       "src/exports/column-types.ts",
       "src/exports/pack.ts",
+      "src/exports/index-types.ts",
     ],
     dts: { tsgo: true },
     exports: true,

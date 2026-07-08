@@ -8,6 +8,7 @@ import {
 } from "@prisma-next/sql-relational-core/expression";
 import type { CodecTypes } from "../types/codec-types";
 import type { QueryOperationTypes } from "../types/operation-types";
+import { ltreeIndexTypes } from "../types/index-types";
 import { ltreeAuthoringTypes } from "./authoring";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./constants";
 import { LTREE_ARRAY_NATIVE_TYPE, LTREE_NATIVE_TYPE } from "./contract-space-constants";
@@ -308,8 +309,10 @@ const ltreePackMetaBase = {
   capabilities: {
     postgres: {
       "ltree.path": true,
+      "ltree/gist": true,
     },
   },
+  indexTypes: ltreeIndexTypes,
   authoring: {
     type: ltreeAuthoringTypes,
   },
