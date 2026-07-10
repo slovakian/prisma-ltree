@@ -22,7 +22,7 @@ Each label in the path is matched left-to-right:
 | `Top.*`           | Anything under `Top`                    |
 | `*.Astronomy`     | Any path ending with `.Astronomy`       |
 | `Top.*.Astronomy` | `Top`, any depth, `Astronomy`           |
-| `*.*.Astronomy`   | Exactly three levels, last is Astronomy |
+| `*{1}.*{1}.Astronomy` | Exactly three levels, last is Astronomy |
 
 Quantifiers on `*`: `*{n}`, `*{n,m}`, `*{,m}` — same idea as PostgreSQL docs.
 

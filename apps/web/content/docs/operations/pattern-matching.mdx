@@ -28,8 +28,8 @@ await db.runtime().execute(plan);
 
 Common `lquery` syntax:
 
-- `*`: matches exactly one label
-- `*{n}` / `*{n,m}`: quantifiers on wildcard labels
+- `*`: matches zero or more labels (default quantifier `{,}`)
+- `*{1}`: exactly one label; `*{n}` / `*{n,m}` / `*{n,}` / `*{,m}`: other quantifiers on wildcard labels
 - `{a,b,c}`: matches any one of the labels at that position
 - `|`: alternation within a label
 
@@ -43,7 +43,7 @@ Common `lquery` syntax:
 db.sql
   .from(category)
   .where(category.columns.path.matchesLquery(param("pat")))
-  .build({ params: { pat: "*.*" } });
+  .build({ params: { pat: "*{1}.*{1}" } });
 ```
 
 **Paths under `electronics` at any depth:**
@@ -102,8 +102,8 @@ await db.runtime().execute(plan);
 
 | Syntax               | Meaning            | Example                                           |
 | -------------------- | ------------------ | ------------------------------------------------- |
-| `*`                  | One label          | `a.*.c` matches `a.b.c`                           |
-| `*` with quantifiers | Bounded wildcards  | `Top.Science.*{1}`: one label under `Top.Science` |
+| `*`                  | Zero or more labels | `a.*.c` matches `a.c`, `a.b.c`, …                 |
+| `*{1}` / `*{n,m}`    | Bounded wildcards   | `Top.Science.*{1}`: one label under `Top.Science` |
 | `{a,b}`              | Label alternatives | `{a,b}.c` matches `a.c` or `b.c`                  |
 | `\|` (ltxtquery)     | Boolean OR         | `computer \| phone`                               |
 | `&` (ltxtquery)      | Boolean AND        | `computer & laptop`                               |
