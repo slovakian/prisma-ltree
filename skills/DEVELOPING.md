@@ -8,7 +8,7 @@ Skills here are **for application developers** who consume `prisma-ltree` in a P
 
 ## Cluster shape
 
-Follow the upstream Prisma Next cluster conventions (see `.sync/prisma-next/skills/DEVELOPING.md` after `pnpm run sync-docs`):
+Follow the upstream Prisma Next cluster conventions (see `vendor/prisma-next/skills/DEVELOPING.md`):
 
 - **One user goal per skill** — do not merge adoption and queries into a mega-skill.
 - **Router skill** (`prisma-ltree`) only disambiguates; it does not answer workflow questions itself.

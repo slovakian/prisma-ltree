@@ -8,6 +8,7 @@
     "ready": "vp run --filter ./packages/extension-ltree check-pins && vp run --filter ./packages/extension-ltree build && vp check packages/extension-ltree && vp run --filter ./packages/extension-ltree test",
     "dev": "vp run web#dev",
     "prepare": "vp config",
+    "sync-prisma-next": "bash scripts/sync.sh",
     "sync-docs": "bash scripts/sync.sh",
     "deploy": "alchemy deploy",
     "destroy": "alchemy destroy",

@@ -1,0 +1,32 @@
+export type {
+  PrimaryKeyInput,
+  SqlAnnotations,
+  SqlCheckConstraintIRInput,
+  SqlColumnDefaultIRInput,
+  SqlColumnIRInput,
+  SqlForeignKeyIRInput,
+  SqlIndexIRInput,
+  SqlReferentialAction,
+  SqlSchemaIRInput,
+  SqlTableIRInput,
+  SqlTypeMetadata,
+  SqlTypeMetadataRegistry,
+  SqlUniqueIRInput,
+} from '../types';
+
+export {
+  assertNode,
+  PrimaryKey,
+  RelationalSchemaNodeKind,
+  relationalNodeEntityKind,
+  relationalNodeGranularity,
+  SqlCheckConstraintIR,
+  SqlColumnDefaultIR,
+  SqlColumnIR,
+  SqlForeignKeyIR,
+  SqlIndexIR,
+  SqlSchemaIR,
+  SqlSchemaIRNode,
+  SqlTableIR,
+  SqlUniqueIR,
+} from '../types';

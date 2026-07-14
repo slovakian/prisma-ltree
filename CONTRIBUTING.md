@@ -20,12 +20,12 @@ workflow. By participating you agree to abide by our [Code of Conduct](CODE_OF_C
 git clone https://github.com/slovakian/prisma-ltree.git
 cd prisma-ltree
 pnpm install          # install dependencies
-pnpm run sync-docs    # clone the prisma-next reference into .sync/ (gitignored)
 ```
 
-`pnpm run sync-docs` is required before extension work — it provides the prisma-next
-reference implementations, SPI types, and test patterns that agents and contributors
-consult (see [`AGENTS.md`](AGENTS.md) for the path map).
+Upstream prisma-next is already at [`vendor/prisma-next/`](vendor/prisma-next/)
+(git subtree). Agents and contributors consult it for reference implementations,
+SPI types, and test patterns (see [`AGENTS.md`](AGENTS.md) for the path map).
+Refresh with `pnpm run sync-prisma-next` when you need a newer upstream snapshot.
 
 ## Validating changes
 
