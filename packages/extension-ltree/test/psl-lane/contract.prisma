@@ -14,5 +14,7 @@ model Page {
   path        Path
   breadcrumbs Paths
 
+  @@index([path], type: "gist", map: "page_path_gist_idx")
+  @@index([breadcrumbs], type: "gist", map: "page_breadcrumbs_gist_idx")
   @@map("page")
 }

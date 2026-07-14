@@ -27,9 +27,21 @@ export const contract = defineContract(
     return {
       types,
       models: {
-        Page: Page.sql({
+        Page: Page.sql(({ cols, constraints }) => ({
           table: "page",
-        }),
+          indexes: [
+            constraints.index([cols.breadcrumbs], {
+              type: "gist",
+              options: {},
+              name: "page_breadcrumbs_gist_idx",
+            }),
+            constraints.index([cols.path], {
+              type: "gist",
+              options: {},
+              name: "page_path_gist_idx",
+            }),
+          ],
+        })),
       },
     };
   },
