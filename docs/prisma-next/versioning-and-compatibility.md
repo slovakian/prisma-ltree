@@ -68,8 +68,10 @@ Each minor transition has a directory:
   *.ts               # Optional codemods
 ```
 
-Some transitions have **empty** `changes[]` (no extension-author action — e.g. `0.14→0.15` at time
-of writing). Others are substantial (e.g. `0.13→0.14` migration op factories, namespace entries).
+Some transitions have **empty** `changes[]` (no extension-author action). Others are substantial
+(e.g. `0.13→0.14` migration op factories; `0.14→0.15` namespace factory / schema-diff SPI churn).
+Always read the current `instructions.md` for the step you are applying — the skill tracks
+prisma-next `main` and is refreshed with `pnpm dlx skills add prisma/prisma-next/skills/extension-author --all`.
 
 Install the extension-author skill for upgrade work:
 

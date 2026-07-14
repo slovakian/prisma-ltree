@@ -37,10 +37,10 @@ Before 0.10, seed snapshots looked like this:
       "Embedding1536": {
         "codecId": "pg/vector@1",
         "nativeType": "vector",
-        "typeParams": { "length": 1536 },
-      },
-    },
-  },
+        "typeParams": { "length": 1536 }
+      }
+    }
+  }
 }
 ```
 
@@ -54,10 +54,10 @@ Starting at 0.10 the same entries must look like this:
         "kind": "codec-instance",
         "codecId": "pg/vector@1",
         "nativeType": "vector",
-        "typeParams": { "length": 1536 },
-      },
-    },
-  },
+        "typeParams": { "length": 1536 }
+      }
+    }
+  }
 }
 ```
 
@@ -86,13 +86,13 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
 - **Codec-triple literal passed to `new SqlStorage({...})` or a builder that flattens to it** (e.g. `types: { Embedding1536: { codecId: 'pg/vector@1', nativeType: 'vector', typeParams: { length: 1536 } } }`): wrap each value with `toStorageTypeInstance(...)`:
 
   ```ts
-  import { toStorageTypeInstance } from "@prisma-next/sql-contract";
+  import { toStorageTypeInstance } from '@prisma-next/sql-contract';
 
   const storage = new SqlStorage({
     types: {
       Embedding1536: toStorageTypeInstance({
-        codecId: "pg/vector@1",
-        nativeType: "vector",
+        codecId: 'pg/vector@1',
+        nativeType: 'vector',
         typeParams: { length: 1536 },
       }),
     },
@@ -105,14 +105,14 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
 - **Postgres-enum literal** (e.g. `types: { user_type: { codecId: 'pg/enum@1', nativeType: 'user_type', typeParams: { values: ['admin', 'user'] } } }`): the canonical fix is to replace with a `PostgresEnumType` class instance from `@prisma-next/postgres`:
 
   ```ts
-  import { PostgresEnumType } from "@prisma-next/postgres";
+  import { PostgresEnumType } from '@prisma-next/postgres';
 
   const storage = new SqlStorage({
     types: {
       user_type: new PostgresEnumType({
-        name: "user_type",
-        nativeType: "user_type",
-        values: ["admin", "user"],
+        name: 'user_type',
+        nativeType: 'user_type',
+        values: ['admin', 'user'],
       }),
     },
     // …
@@ -127,10 +127,10 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
   const fixtureStorage: SqlStorageInput = {
     types: {
       user_type: {
-        kind: "codec-instance",
-        codecId: "pg/enum@1",
-        nativeType: "user_type",
-        typeParams: { values: ["admin", "user"] },
+        kind: 'codec-instance',
+        codecId: 'pg/enum@1',
+        nativeType: 'user_type',
+        typeParams: { values: ['admin', 'user'] },
       },
     },
     // …

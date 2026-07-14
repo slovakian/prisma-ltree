@@ -50,7 +50,7 @@ There is no codemod — extension authors construct `MigrationMetadata` in too m
 
 If your extension also carries seed-migration manifests (the common case for extensions that ship a `migrations/` directory), the `strip-inline-contracts-from-migration-manifests` change above handles those at the JSON layer. Run that script first; the source-code change above only covers TypeScript that produces / consumes `MigrationMetadata` programmatically.
 
-While at it, scan any seed `migration.ts` doc-comments in your extension for stale references to `metadata.toContract` (e.g. _"preserving the full `toContract` so `MigrationCLI.run` re-attests it"_). Those references were accurate under 0.8 and are no longer accurate under 0.9 — the `MigrationCLI.run` re-attestation now reads the destination contract from sibling `end-contract.json`, not from `metadata.toContract`. Update or remove the stale prose. This is documentation hygiene, not a structural break.
+While at it, scan any seed `migration.ts` doc-comments in your extension for stale references to `metadata.toContract` (e.g. *"preserving the full `toContract` so `MigrationCLI.run` re-attests it"*). Those references were accurate under 0.8 and are no longer accurate under 0.9 — the `MigrationCLI.run` re-attestation now reads the destination contract from sibling `end-contract.json`, not from `metadata.toContract`. Update or remove the stale prose. This is documentation hygiene, not a structural break.
 
 ### Validation
 

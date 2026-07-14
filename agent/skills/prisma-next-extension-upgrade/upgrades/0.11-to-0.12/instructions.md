@@ -152,9 +152,9 @@ The most common case is in SQL renderers — Postgres and SQLite both render `Wi
 ```ts
 function renderExpr(expr: AnyExpression): string {
   switch (expr.kind) {
-    case "column-ref":
+    case 'column-ref':
       return renderColumn(expr);
-    case "aggregate":
+    case 'aggregate':
       return renderAggregate(expr);
     // … other cases …
     // v8 ignore next 4
@@ -171,11 +171,11 @@ function renderExpr(expr: AnyExpression): string {
 ```ts
 function renderExpr(expr: AnyExpression): string {
   switch (expr.kind) {
-    case "column-ref":
+    case 'column-ref':
       return renderColumn(expr);
-    case "aggregate":
+    case 'aggregate':
       return renderAggregate(expr);
-    case "window-func":
+    case 'window-func':
       return renderWindowFunc(expr); // ← new: required
     // … other cases …
     default:
@@ -187,16 +187,16 @@ function renderExpr(expr: AnyExpression): string {
 
 function renderWindowFunc(expr: WindowFuncExpr): string {
   const fn = expr.fn.toUpperCase();
-  const args = expr.args.map(renderExpr).join(", ");
+  const args = expr.args.map(renderExpr).join(', ');
   const partition =
     expr.partitionBy && expr.partitionBy.length > 0
-      ? `PARTITION BY ${expr.partitionBy.map(renderExpr).join(", ")}`
-      : "";
+      ? `PARTITION BY ${expr.partitionBy.map(renderExpr).join(', ')}`
+      : '';
   const order =
     expr.orderBy && expr.orderBy.length > 0
-      ? `ORDER BY ${expr.orderBy.map((o) => `${renderExpr(o.expr)} ${o.dir.toUpperCase()}`).join(", ")}`
-      : "";
-  const over = [partition, order].filter((s) => s.length > 0).join(" ");
+      ? `ORDER BY ${expr.orderBy.map((o) => `${renderExpr(o.expr)} ${o.dir.toUpperCase()}`).join(', ')}`
+      : '';
+  const over = [partition, order].filter((s) => s.length > 0).join(' ');
   return `${fn}(${args}) OVER (${over})`;
 }
 ```
@@ -215,8 +215,9 @@ Prior to 0.12, `.distinct(cols)` did not actually collapse rows on the specified
 
 ```ts
 // Both 0.11 and 0.12 — same call site, different runtime behaviour:
-const posts = await db.Post.orderBy([(p) => p.title.asc(), (p) => p.id.asc()])
-  .distinct("title")
+const posts = await db.Post
+  .orderBy([(p) => p.title.asc(), (p) => p.id.asc()])
+  .distinct('title')
   .all();
 
 // 0.11: returns every post (if seed has 3 posts including two sharing title='A',
@@ -254,7 +255,7 @@ If your extension ships a convenience wrapper around `createRuntime(...)` — th
 3. Drop the hard-coded default literal in the `createRuntime(...)` call.
 4. Thread the caller's value through with `ifDefined` so omitted options defer to the runtime default.
 
-The runtime's read-side behaviour also changes: it no longer throws `CONTRACT.MARKER_MISMATCH` or `CONTRACT.MARKER_MISSING` when the database marker is absent or drifted. Instead, on the first `execute()` call per runtime instance, it emits one structured `warn`-level log line (payload includes `code`, `scope`, `expected`, `actual`, `message`) and proceeds with the query. Extension authors do not need to implement this behaviour — it lives inside `@prisma-next/sql-runtime` — but tests that previously asserted thrown errors need retargeting (see _Tests and fixtures_ below).
+The runtime's read-side behaviour also changes: it no longer throws `CONTRACT.MARKER_MISMATCH` or `CONTRACT.MARKER_MISSING` when the database marker is absent or drifted. Instead, on the first `execute()` call per runtime instance, it emits one structured `warn`-level log line (payload includes `code`, `scope`, `expected`, `actual`, `message`) and proceeds with the query. Extension authors do not need to implement this behaviour — it lives inside `@prisma-next/sql-runtime` — but tests that previously asserted thrown errors need retargeting (see *Tests and fixtures* below).
 
 ### Before 0.12 — type import and options interface
 
@@ -266,7 +267,7 @@ import type {
   SqlExecutionStackWithDriver,
   SqlMiddleware,
   SqlRuntimeExtensionDescriptor,
-} from "@prisma-next/sql-runtime";
+} from '@prisma-next/sql-runtime';
 
 export interface MyTargetOptionsBase {
   readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
@@ -285,8 +286,8 @@ import type {
   SqlMiddleware,
   SqlRuntimeExtensionDescriptor,
   VerifyMarkerOption,
-} from "@prisma-next/sql-runtime";
-import { ifDefined } from "@prisma-next/utils/defined";
+} from '@prisma-next/sql-runtime';
+import { ifDefined } from '@prisma-next/utils/defined';
 
 export interface MyTargetOptionsBase {
   readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
@@ -304,8 +305,8 @@ const runtime = createRuntime({
   stackInstance,
   context,
   driver,
-  verify: options.verify ?? { mode: "onFirstUse", requireMarker: false },
-  ...ifDefined("middleware", options.middleware),
+  verify: options.verify ?? { mode: 'onFirstUse', requireMarker: false },
+  ...ifDefined('middleware', options.middleware),
 });
 ```
 
@@ -318,8 +319,8 @@ const runtime = createRuntime({
   stackInstance,
   context,
   driver,
-  ...ifDefined("verifyMarker", options.verifyMarker),
-  ...ifDefined("middleware", options.middleware),
+  ...ifDefined('verifyMarker', options.verifyMarker),
+  ...ifDefined('middleware', options.middleware),
 });
 ```
 
@@ -327,13 +328,13 @@ When the caller omits `verifyMarker`, the spread adds nothing and the runtime de
 
 ### Semantics mapping for callers of your wrapper
 
-| Before 0.12 (`verify`)                                                                       | Starting at 0.12 (`verifyMarker`)                                                                                                         |
-| -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `{ mode: 'onFirstUse', requireMarker: false }` (or omitted — your wrapper defaulted to this) | omit `verifyMarker` (runtime default `'onFirstUse'`)                                                                                      |
-| `{ mode: 'onFirstUse', requireMarker: true }`                                                | `verifyMarker: 'onFirstUse'` — but the throw-on-missing-marker semantics are removed; use the `db-verify` CLI for fail-fast deploy checks |
-| `{ mode: 'always', requireMarker: ... }`                                                     | `verifyMarker: 'onFirstUse'` — `'always'` mode is dropped; verification is once-per-runtime                                               |
-| `{ mode: 'startup', requireMarker: ... }`                                                    | `verifyMarker: 'onFirstUse'` — `'startup'` mode is dropped for the same reason                                                            |
-| Explicit skip                                                                                | `verifyMarker: false`                                                                                                                     |
+| Before 0.12 (`verify`) | Starting at 0.12 (`verifyMarker`) |
+| --- | --- |
+| `{ mode: 'onFirstUse', requireMarker: false }` (or omitted — your wrapper defaulted to this) | omit `verifyMarker` (runtime default `'onFirstUse'`) |
+| `{ mode: 'onFirstUse', requireMarker: true }` | `verifyMarker: 'onFirstUse'` — but the throw-on-missing-marker semantics are removed; use the `db-verify` CLI for fail-fast deploy checks |
+| `{ mode: 'always', requireMarker: ... }` | `verifyMarker: 'onFirstUse'` — `'always'` mode is dropped; verification is once-per-runtime |
+| `{ mode: 'startup', requireMarker: ... }` | `verifyMarker: 'onFirstUse'` — `'startup'` mode is dropped for the same reason |
+| Explicit skip | `verifyMarker: false` |
 
 ### Tests and fixtures
 
@@ -343,23 +344,23 @@ Extension wrapper tests that exercised the old surface need two kinds of updates
 
 ```ts
 // Before 0.12
-it("forwards verify option to createRuntime", async () => {
-  const verify = { mode: "always", requireMarker: true } as const;
+it('forwards verify option to createRuntime', async () => {
+  const verify = { mode: 'always', requireMarker: true } as const;
   const db = myTarget({ contract, verify });
   await db.connect(/* … */);
   expect(mocks.createRuntime).toHaveBeenCalledWith(expect.objectContaining({ verify }));
 });
 
-it("defaults verify to onFirstUse without requireMarker", async () => {
+it('defaults verify to onFirstUse without requireMarker', async () => {
   const db = myTarget({ contract });
   await db.connect(/* … */);
   expect(mocks.createRuntime).toHaveBeenCalledWith(
-    expect.objectContaining({ verify: { mode: "onFirstUse", requireMarker: false } }),
+    expect.objectContaining({ verify: { mode: 'onFirstUse', requireMarker: false } }),
   );
 });
 
 // Starting at 0.12
-it("forwards verifyMarker option to createRuntime", async () => {
+it('forwards verifyMarker option to createRuntime', async () => {
   const db = myTarget({ contract, verifyMarker: false });
   await db.connect(/* … */);
   expect(mocks.createRuntime).toHaveBeenCalledWith(
@@ -367,12 +368,12 @@ it("forwards verifyMarker option to createRuntime", async () => {
   );
 });
 
-it("omits verifyMarker from createRuntime when not provided (runtime default applies)", async () => {
+it('omits verifyMarker from createRuntime when not provided (runtime default applies)', async () => {
   const db = myTarget({ contract });
   await db.connect(/* … */);
   expect(mocks.createRuntime).toHaveBeenCalledTimes(1);
   const callArg = mocks.createRuntime.mock.calls[0]?.[0] as Record<string, unknown>;
-  expect(callArg).not.toHaveProperty("verifyMarker");
+  expect(callArg).not.toHaveProperty('verifyMarker');
 });
 ```
 
@@ -381,7 +382,7 @@ it("omits verifyMarker from createRuntime when not provided (runtime default app
 ```ts
 // Before 0.12
 await expect(runtime.execute(plan).toArray()).rejects.toMatchObject({
-  code: "CONTRACT.MARKER_MISSING",
+  code: 'CONTRACT.MARKER_MISSING',
 });
 
 // Starting at 0.12
@@ -392,14 +393,11 @@ const rows = await runtime.execute(plan).toArray();
 expect(rows).toEqual(/* expected rows — query proceeds */);
 expect(log.warn).toHaveBeenCalledOnce();
 expect(log.warn).toHaveBeenCalledWith({
-  code: "CONTRACT.MARKER_MISSING",
-  scope: "marker-verification",
-  expected: {
-    storageHash: contract.storage.storageHash,
-    profileHash: contract.profileHash ?? null,
-  },
+  code: 'CONTRACT.MARKER_MISSING',
+  scope: 'marker-verification',
+  expected: { storageHash: contract.storage.storageHash, profileHash: contract.profileHash ?? null },
   actual: null,
-  message: "Contract marker not found in database",
+  message: 'Contract marker not found in database',
 });
 ```
 
@@ -425,26 +423,33 @@ If your extension ships a `defineContract` that wraps `baseDefineContract` with 
 #### Before 0.12
 
 ```ts
-import { defineContract as baseDefineContract } from "@prisma-next/contract";
-import type { ContractInput, ExtensionPackRef } from "@prisma-next/contract";
+import { defineContract as baseDefineContract } from '@prisma-next/contract';
+import type { ContractInput, ExtensionPackRef } from '@prisma-next/contract';
 
 type MyTargetResult<
   Types extends TypesConstraint,
   Models extends ModelsConstraint,
-  ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
+  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
   Capabilities extends Record<string, Record<string, boolean>> | undefined,
 > = Omit<
   ReturnType<
-    typeof baseDefineContract<MyFamily, MyTargetPack, Types, Models, ExtensionPacks, Capabilities>
+    typeof baseDefineContract<
+      MyFamily,
+      MyTargetPack,
+      Types,
+      Models,
+      ExtensionPacks,
+      Capabilities
+    >
   >,
-  "target" | "targetFamily"
+  'target' | 'targetFamily'
 > & {
-  readonly target: MyTargetPack["targetId"];
-  readonly targetFamily: MyFamily["familyId"];
+  readonly target: MyTargetPack['targetId'];
+  readonly targetFamily: MyFamily['familyId'];
 };
 
 type MyTargetBaseScaffold<
-  ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
+  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
   Capabilities extends Record<string, Record<string, boolean>> | undefined,
 > = Omit<
   ContractInput<
@@ -455,14 +460,15 @@ type MyTargetBaseScaffold<
     ExtensionPacks,
     Capabilities
   >,
-  "family" | "target" | "types" | "models"
+  'family' | 'target' | 'types' | 'models'
 >;
 
 export function defineContract<
   const Types extends TypesConstraint = Record<never, never>,
   const Models extends ModelsConstraint = Record<never, never>,
-  const ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined =
-    undefined,
+  const ExtensionPacks extends
+    | Record<string, ExtensionPackRef<'sql', string>>
+    | undefined = undefined,
   const Capabilities extends Record<string, Record<string, boolean>> | undefined = undefined,
 >(
   definition: MyTargetDefinition<Types, Models, ExtensionPacks, Capabilities>,
@@ -472,33 +478,42 @@ export function defineContract<
 #### Starting at 0.12
 
 ```ts
-import { defineContract as baseDefineContract } from "@prisma-next/contract";
-import type { ContractInput, ExtensionPackRef } from "@prisma-next/contract";
+import { defineContract as baseDefineContract } from '@prisma-next/contract';
+import type { ContractInput, ExtensionPackRef } from '@prisma-next/contract';
 
 type MyTargetResult<
   Types extends TypesConstraint,
   Models extends ModelsConstraint,
-  ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
+  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
 > = Omit<
-  ReturnType<typeof baseDefineContract<MyFamily, MyTargetPack, Types, Models, ExtensionPacks>>,
-  "target" | "targetFamily"
+  ReturnType<
+    typeof baseDefineContract<MyFamily, MyTargetPack, Types, Models, ExtensionPacks>
+  >,
+  'target' | 'targetFamily'
 > & {
-  readonly target: MyTargetPack["targetId"];
-  readonly targetFamily: MyFamily["familyId"];
+  readonly target: MyTargetPack['targetId'];
+  readonly targetFamily: MyFamily['familyId'];
 };
 
 type MyTargetBaseScaffold<
-  ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
+  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
 > = Omit<
-  ContractInput<MyFamily, MyTargetPack, Record<never, never>, Record<never, never>, ExtensionPacks>,
-  "family" | "target" | "types" | "models"
+  ContractInput<
+    MyFamily,
+    MyTargetPack,
+    Record<never, never>,
+    Record<never, never>,
+    ExtensionPacks
+  >,
+  'family' | 'target' | 'types' | 'models'
 >;
 
 export function defineContract<
   const Types extends TypesConstraint = Record<never, never>,
   const Models extends ModelsConstraint = Record<never, never>,
-  const ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined =
-    undefined,
+  const ExtensionPacks extends
+    | Record<string, ExtensionPackRef<'sql', string>>
+    | undefined = undefined,
 >(
   definition: MyTargetDefinition<Types, Models, ExtensionPacks>,
 ): MyTargetResult<Types, Models, ExtensionPacks>;
@@ -672,13 +687,13 @@ The default namespace a bare name resolves through is **inferred** from the cont
 
 ### Removed exports (old → new)
 
-| Removed                                  | Replacement                                                                                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `contractModels(contract)`               | `domainModelsAtDefaultNamespace(contract.domain)` (reads the sole namespace; throws on multi-namespace)                                                      |
-| `contractValueObjects(contract)`         | `domainValueObjectsAtDefaultNamespace(contract.domain)`                                                                                                      |
-| `resolveSingleDomainNamespaceId(domain)` | `soleDomainNamespaceId(domain)` (same fail-loud single-namespace behaviour)                                                                                  |
-| `ContractModelsMap<C>`                   | `ContractModelDefinitions<C>`                                                                                                                                |
-| `ContractValueObjectsMap<C>`             | Read `contract.domain.namespaces[ns].valueObjects` for a specific namespace, or `domainValueObjectsAtDefaultNamespace(contract.domain)` for the default slot |
+| Removed | Replacement |
+|---|---|
+| `contractModels(contract)` | `domainModelsAtDefaultNamespace(contract.domain)` (reads the sole namespace; throws on multi-namespace) |
+| `contractValueObjects(contract)` | `domainValueObjectsAtDefaultNamespace(contract.domain)` |
+| `resolveSingleDomainNamespaceId(domain)` | `soleDomainNamespaceId(domain)` (same fail-loud single-namespace behaviour) |
+| `ContractModelsMap<C>` | `ContractModelDefinitions<C>` |
+| `ContractValueObjectsMap<C>` | Read `contract.domain.namespaces[ns].valueObjects` for a specific namespace, or `domainValueObjectsAtDefaultNamespace(contract.domain)` for the default slot |
 
 Import the replacements from `@prisma-next/contract/types`.
 
@@ -691,7 +706,7 @@ Storage namespace envelopes in SQL-family contracts must carry a `qualifyTable(t
 Do not `structuredClone` hydrated contracts — it strips functions such as `qualifyTable`. Round-trip through the target serializer instead:
 
 ```ts
-import { PostgresContractSerializer } from "@prisma-next/target-postgres/runtime";
+import { PostgresContractSerializer } from '@prisma-next/target-postgres/runtime';
 
 const serializer = new PostgresContractSerializer();
 const hydrated = serializer.deserializeContract(serializer.serializeContract(rawContract));

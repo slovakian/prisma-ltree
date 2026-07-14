@@ -64,13 +64,13 @@
  *   --check   dry-run; lists manifests that still need fixing and exits 1 if
  *             any remain.
  */
-import { createHash } from "node:crypto";
-import { readdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { createHash } from 'node:crypto';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 
-const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build"]);
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build']);
 
-const dryRun = process.argv.includes("--check");
+const dryRun = process.argv.includes('--check');
 const projectRoot = process.cwd();
 
 // --- Inline canonicalisation + hash --------------------------------------
@@ -81,7 +81,7 @@ const projectRoot = process.cwd();
 // consumer's project root.
 
 function sortKeys(value: unknown): unknown {
-  if (value === null || typeof value !== "object") {
+  if (value === null || typeof value !== 'object') {
     return value;
   }
   if (Array.isArray(value)) {
@@ -101,7 +101,7 @@ function canonicalizeJson(value: unknown): string {
 }
 
 function sha256Hex(input: string): string {
-  return createHash("sha256").update(input).digest("hex");
+  return createHash('sha256').update(input).digest('hex');
 }
 
 /**
@@ -132,19 +132,19 @@ function scanValueEnd(text: string, start: number): number {
   if (c === '"') {
     let i = start + 1;
     while (i < text.length) {
-      if (text[i] === "\\") {
+      if (text[i] === '\\') {
         i += 2;
         continue;
       }
       if (text[i] === '"') return i + 1;
       i += 1;
     }
-    throw new Error("unterminated string while scanning JSON value");
+    throw new Error('unterminated string while scanning JSON value');
   }
 
-  if (c === "{" || c === "[") {
+  if (c === '{' || c === '[') {
     const open = c;
-    const close = c === "{" ? "}" : "]";
+    const close = c === '{' ? '}' : ']';
     let depth = 0;
     let i = start;
     while (i < text.length) {
@@ -160,13 +160,13 @@ function scanValueEnd(text: string, start: number): number {
       }
       i += 1;
     }
-    throw new Error("unterminated container while scanning JSON value");
+    throw new Error('unterminated container while scanning JSON value');
   }
 
   // Primitive (number / true / false / null) — run to the next structural
   // terminator.
   let i = start;
-  while (i < text.length && !",}]\r\n \t".includes(text[i]!)) i += 1;
+  while (i < text.length && !',}]\r\n \t'.includes(text[i]!)) i += 1;
   return i;
 }
 
@@ -188,10 +188,10 @@ function removeTopLevelKey(text: string, key: string): string {
   const valueStart = match.index + match[0].length;
   let after = scanValueEnd(text, valueStart);
 
-  while (text[after] === " " || text[after] === "\t") after += 1;
-  if (text[after] === ",") after += 1;
-  if (text[after] === "\r") after += 1;
-  if (text[after] === "\n") after += 1;
+  while (text[after] === ' ' || text[after] === '\t') after += 1;
+  if (text[after] === ',') after += 1;
+  if (text[after] === '\r') after += 1;
+  if (text[after] === '\n') after += 1;
 
   return text.slice(0, lineStart) + text.slice(after);
 }
@@ -200,11 +200,11 @@ function replaceMigrationHash(text: string, oldHash: string, newHash: string): s
   if (oldHash === newHash) return text;
   // Tolerate any whitespace around the colon (`"migrationHash":"…"`,
   // `"migrationHash" : "…"`), matching the leniency of `removeTopLevelKey`.
-  const escapedOld = oldHash.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedOld = oldHash.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const re = new RegExp(`("migrationHash"[ \\t]*:[ \\t]*)"${escapedOld}"`);
   const match = re.exec(text);
   if (match === null) {
-    throw new Error("could not locate the migrationHash value to replace");
+    throw new Error('could not locate the migrationHash value to replace');
   }
   return text.replace(re, (_full, prefix: string) => `${prefix}"${newHash}"`);
 }
@@ -227,7 +227,7 @@ async function findMigrationManifests(root: string): Promise<string[]> {
       if (entry.isDirectory()) {
         if (SKIP_DIRS.has(entry.name)) continue;
         await walk(join(dir, entry.name));
-      } else if (entry.isFile() && entry.name === "migration.json") {
+      } else if (entry.isFile() && entry.name === 'migration.json') {
         out.push(join(dir, entry.name));
       }
     }
@@ -241,10 +241,10 @@ async function findMigrationManifests(root: string): Promise<string[]> {
 
 /** Narrows an arbitrary JSON-parsed value to a plain object (manifest shape). */
 function isJsonObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-type Status = "already-clean" | "needs-fix" | "fixed" | "skipped-no-ops";
+type Status = 'already-clean' | 'needs-fix' | 'fixed' | 'skipped-no-ops';
 
 interface Result {
   readonly path: string;
@@ -252,7 +252,7 @@ interface Result {
 }
 
 async function processFile(path: string): Promise<Result> {
-  const raw = await readFile(path, "utf-8");
+  const raw = await readFile(path, 'utf-8');
 
   let parsed: unknown;
   try {
@@ -263,35 +263,35 @@ async function processFile(path: string): Promise<Result> {
     );
   }
   if (!isJsonObject(parsed)) {
-    return { path, status: "already-clean" }; // not a manifest object
+    return { path, status: 'already-clean' }; // not a manifest object
   }
   const metadata = parsed;
 
   // A complete on-disk migration package pairs `migration.json` with a sibling
   // `ops.json` (the operations the hash is computed over); without it we cannot
   // recompute the hash, so this is not a package we should touch.
-  const opsPath = join(dirname(path), "ops.json");
+  const opsPath = join(dirname(path), 'ops.json');
   let ops: unknown;
   try {
-    ops = JSON.parse(await readFile(opsPath, "utf-8"));
+    ops = JSON.parse(await readFile(opsPath, 'utf-8'));
   } catch {
-    return { path, status: "skipped-no-ops" };
+    return { path, status: 'skipped-no-ops' };
   }
 
   // Recompute over the slimmed envelope (canonicalisation is order/whitespace
   // independent, so the parsed object is the right input regardless of on-disk
   // formatting). `computeMigrationHash` strips `migrationHash` internally.
   const slimmed = { ...metadata };
-  delete slimmed["labels"];
-  delete slimmed["hints"];
+  delete slimmed['labels'];
+  delete slimmed['hints'];
   const newHash = computeMigrationHash(slimmed, ops);
 
   let out = raw;
-  out = removeTopLevelKey(out, "labels");
-  out = removeTopLevelKey(out, "hints");
+  out = removeTopLevelKey(out, 'labels');
+  out = removeTopLevelKey(out, 'hints');
 
-  const oldHash = metadata["migrationHash"];
-  if (typeof oldHash === "string") {
+  const oldHash = metadata['migrationHash'];
+  if (typeof oldHash === 'string') {
     out = replaceMigrationHash(out, oldHash, newHash);
   } else if (out !== raw) {
     // labels/hints were present but there is no string migrationHash to update
@@ -300,10 +300,10 @@ async function processFile(path: string): Promise<Result> {
   }
 
   if (out === raw) {
-    return { path, status: "already-clean" };
+    return { path, status: 'already-clean' };
   }
-  if (!dryRun) await writeFile(path, out, "utf-8");
-  return { path, status: dryRun ? "needs-fix" : "fixed" };
+  if (!dryRun) await writeFile(path, out, 'utf-8');
+  return { path, status: dryRun ? 'needs-fix' : 'fixed' };
 }
 
 // --- Driver ---------------------------------------------------------------
@@ -320,21 +320,21 @@ let skipped = 0;
 for (const path of manifests) {
   const result = await processFile(path);
   const rel = path.slice(projectRoot.length + 1);
-  if (result.status === "already-clean") {
+  if (result.status === 'already-clean') {
     alreadyClean += 1;
-  } else if (result.status === "skipped-no-ops") {
+  } else if (result.status === 'skipped-no-ops') {
     skipped += 1;
     console.log(`SKIP  ${rel}  (no sibling ops.json — not a migration package)`);
   } else {
     changed += 1;
-    const verb = dryRun ? "WOULD FIX" : "FIXED";
+    const verb = dryRun ? 'WOULD FIX' : 'FIXED';
     console.log(`${verb} ${rel}`);
   }
 }
 
 console.log();
 console.log(
-  `${manifests.length} manifest(s) scanned: ${changed} ${dryRun ? "needing fix" : "fixed"}, ${alreadyClean} already clean${skipped > 0 ? `, ${skipped} skipped (no ops.json)` : ""}.`,
+  `${manifests.length} manifest(s) scanned: ${changed} ${dryRun ? 'needing fix' : 'fixed'}, ${alreadyClean} already clean${skipped > 0 ? `, ${skipped} skipped (no ops.json)` : ''}.`,
 );
 
 if (dryRun && changed > 0) process.exit(1);

@@ -1,7 +1,6 @@
 ---
-description: 'Upgrade Prisma Next in your extension. Bumps every `@prisma-next/*` dependency to the requested target (or npm `latest`), runs the per-transition upgrade instructions for the extension SPI (middleware lifecycle, codec / migration-tools / framework-components churn, seed-migration on-disk shape), verifies the pins are correctly exact via `prisma-next-check-pins`, runs the extension''s own typecheck and tests, and commits each minor step on its own. Use when the user asks to "upgrade Prisma Next" in an extension package, or to update an extension''s `@prisma-next/*` deps to a new minor.'
+description: "Upgrade Prisma Next in your extension. Bumps every `@prisma-next/*` dependency to the requested target (or npm `latest`), runs the per-transition upgrade instructions for the extension SPI (middleware lifecycle, codec / migration-tools / framework-components churn, seed-migration on-disk shape), verifies the pins are correctly exact via `prisma-next-check-pins`, runs the extension's own typecheck and tests, and commits each minor step on its own. Use when the user asks to \"upgrade Prisma Next\" in an extension package, or to update an extension's `@prisma-next/*` deps to a new minor."
 ---
-
 # Upgrade Prisma Next (extension)
 
 This skill upgrades a project that **is** a Prisma Next extension — a package that consumes the framework SPI (`@prisma-next/contract`, `@prisma-next/framework-components`, `@prisma-next/migration-tools`, etc.) and exposes contract / middleware / codec / migration surfaces that downstream apps install via `prisma-next.config.ts`.
@@ -10,7 +9,7 @@ If the project you are upgrading is a consumer **app** (it imports `@prisma-next
 
 ## Step 0 — Ensure the skill is up to date
 
-Before doing anything else, ensure this skill is installed at `@latest` and reload it. Bug fixes to _old_ per-transition upgrade instructions ship in the latest skill release as part of its cumulative set; running against a stale skill can apply a known-broken translation.
+Before doing anything else, ensure this skill is installed at `@latest` and reload it. Bug fixes to *old* per-transition upgrade instructions ship in the latest skill release as part of its cumulative set; running against a stale skill can apply a known-broken translation.
 
 Concretely: if the agent runtime supports an in-session refresh, perform it now. Otherwise, exit and ask the user to re-install:
 

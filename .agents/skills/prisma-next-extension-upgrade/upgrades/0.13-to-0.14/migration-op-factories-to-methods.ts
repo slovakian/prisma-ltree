@@ -27,19 +27,19 @@
  *   pnpm exec tsx <path-to-this-file>
  */
 
-import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "pathe";
+import { execSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'pathe';
 
 const FACTORY_NAMES = [
-  "dropColumn",
-  "setNotNull",
-  "setDefault",
-  "addPrimaryKey",
-  "addForeignKey",
-  "addCheckConstraint",
-  "createIndex",
-  "installExtension",
+  'dropColumn',
+  'setNotNull',
+  'setDefault',
+  'addPrimaryKey',
+  'addForeignKey',
+  'addCheckConstraint',
+  'createIndex',
+  'installExtension',
 ];
 
 /**
@@ -52,21 +52,21 @@ function stripFactoriesFromImports(src: string): string {
     /^[^\S\n]*import\s*\{([^}]+)\}\s*from\s*'@prisma-next\/(?:postgres|target-postgres|sqlite|target-sqlite)\/migration'[^\S\n]*;?[^\S\n]*\n?/gms;
   return src.replace(importRe, (full, nameBlock) => {
     const names = nameBlock
-      .split(",")
+      .split(',')
       .map((n: string) => n.trim())
       .filter((n: string) => n.length > 0 && !FACTORY_NAMES.includes(n));
-    if (names.length === 0) return "";
-    const fromClause = full.slice(full.indexOf("}") + 1);
-    return `import { ${names.join(", ")} }${fromClause}`;
+    if (names.length === 0) return '';
+    const fromClause = full.slice(full.indexOf('}') + 1);
+    return `import { ${names.join(', ')} }${fromClause}`;
   });
 }
 
 /** Reads a quoted string or bare identifier/bracket-balanced token starting at offset. */
 function readToken(src: string, offset: number): { value: string; end: number } | null {
   let i = offset;
-  while (i < src.length && src[i] === " ") i++;
+  while (i < src.length && src[i] === ' ') i++;
   if (i >= src.length) return null;
-  if (src[i] === "'" || src[i] === '"' || src[i] === "`") {
+  if (src[i] === "'" || src[i] === '"' || src[i] === '`') {
     const q = src[i];
     let end = i + 1;
     while (end < src.length && src[end] !== q) end++;
@@ -76,11 +76,11 @@ function readToken(src: string, offset: number): { value: string; end: number } 
   let end = i;
   while (end < src.length) {
     const c = src[end];
-    if (c === "(" || c === "[" || c === "{") depth++;
-    else if (c === ")" || c === "]" || c === "}") {
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') {
       if (depth === 0) break;
       depth--;
-    } else if ((c === "," || c === "\n") && depth === 0) break;
+    } else if ((c === ',' || c === '\n') && depth === 0) break;
     end++;
   }
   return { value: src.slice(i, end).trim(), end };
@@ -204,16 +204,16 @@ const rewrites: Rewrite[] = [
 
 function applyRewrites(src: string): string {
   // installExtension already takes an object — just prepend `this.`
-  let out = src.replace(/(?<!this\.)(?<!\.)\binstallExtension\(/g, "this.installExtension(");
+  let out = src.replace(/(?<!this\.)(?<!\.)\binstallExtension\(/g, 'this.installExtension(');
 
   for (const { pattern, rewrite } of rewrites) {
     pattern.lastIndex = 0;
-    let result = "";
+    let result = '';
     let last = 0;
     let match = pattern.exec(out);
     while (match !== null) {
       const before = out.slice(Math.max(0, match.index - 5), match.index);
-      if (before.endsWith("this.")) {
+      if (before.endsWith('this.')) {
         result += out.slice(last, match.index + match[0].length);
         last = match.index + match[0].length;
         match = pattern.exec(out);
@@ -230,8 +230,8 @@ function applyRewrites(src: string): string {
       let depth = 1;
       let end = match.index + match[0].length;
       while (end < out.length && depth > 0) {
-        if (out[end] === "(") depth++;
-        else if (out[end] === ")") depth--;
+        if (out[end] === '(') depth++;
+        else if (out[end] === ')') depth--;
         end++;
       }
       result += out.slice(last, match.index) + replacement;
@@ -256,20 +256,20 @@ function processFile(src: string): string {
 
 const raw = execSync(
   'git ls-files --cached --others --exclude-standard -- "**migration.ts" "migration.ts"',
-  { encoding: "utf-8" },
+  { encoding: 'utf-8' },
 ).trim();
 
 const files = raw
-  .split("\n")
+  .split('\n')
   .filter(Boolean)
-  .filter((f) => f.endsWith("migration.ts"));
+  .filter((f) => f.endsWith('migration.ts'));
 
 let changed = 0;
 for (const file of files) {
   const abs = join(process.cwd(), file);
   let content: string;
   try {
-    content = readFileSync(abs, "utf-8");
+    content = readFileSync(abs, 'utf-8');
   } catch {
     continue;
   }
@@ -282,7 +282,7 @@ for (const file of files) {
 
   const updated = processFile(content);
   if (updated !== content) {
-    writeFileSync(abs, updated, "utf-8");
+    writeFileSync(abs, updated, 'utf-8');
     console.log(`updated ${file}`);
     changed++;
   }

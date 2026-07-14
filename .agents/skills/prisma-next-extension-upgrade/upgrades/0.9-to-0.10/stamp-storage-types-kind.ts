@@ -76,20 +76,20 @@
  *   --check   dry-run; lists affected files and exits 1 if any still
  *             need fixing.
  */
-import { readdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
-const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build"]);
-const CONTRACT_FILES = new Set(["start-contract.json", "end-contract.json"]);
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build']);
+const CONTRACT_FILES = new Set(['start-contract.json', 'end-contract.json']);
 
-const POSTGRES_ENUM_CODEC_ID = "pg/enum@1";
+const POSTGRES_ENUM_CODEC_ID = 'pg/enum@1';
 
-const dryRun = process.argv.includes("--check");
+const dryRun = process.argv.includes('--check');
 const projectRoot = process.cwd();
 
 interface Result {
   readonly path: string;
-  readonly status: "already-clean" | "needs-fix" | "fixed";
+  readonly status: 'already-clean' | 'needs-fix' | 'fixed';
   readonly stamped: number;
 }
 
@@ -114,7 +114,7 @@ async function findContractSnapshots(root: string): Promise<string[]> {
     for (const entry of entries) {
       if (entry.isDirectory()) {
         if (SKIP_DIRS.has(entry.name)) continue;
-        await walk(join(dir, entry.name), inMigrations || entry.name === "migrations");
+        await walk(join(dir, entry.name), inMigrations || entry.name === 'migrations');
       } else if (inMigrations && entry.isFile() && CONTRACT_FILES.has(entry.name)) {
         out.push(join(dir, entry.name));
       }
@@ -132,14 +132,14 @@ interface UntaggedCodecTriple {
 }
 
 interface StampedCodecInstance {
-  readonly kind: "codec-instance";
+  readonly kind: 'codec-instance';
   readonly codecId: string;
   readonly nativeType: string;
   readonly typeParams: Record<string, unknown>;
 }
 
 interface StampedPostgresEnum {
-  readonly kind: "postgres-enum";
+  readonly kind: 'postgres-enum';
   readonly name: string;
   readonly nativeType: string;
   readonly values: readonly string[];
@@ -149,19 +149,19 @@ interface StampedPostgresEnum {
 type StampedEntry = StampedCodecInstance | StampedPostgresEnum;
 
 function isAlreadyStamped(value: unknown): boolean {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== 'object' || value === null) return false;
   const kind = (value as { kind?: unknown }).kind;
-  return kind === "codec-instance" || kind === "postgres-enum";
+  return kind === 'codec-instance' || kind === 'postgres-enum';
 }
 
 function looksLikeUntaggedCodecTriple(value: unknown): value is UntaggedCodecTriple {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== 'object' || value === null) return false;
   const obj = value as Record<string, unknown>;
   if (
-    typeof obj["codecId"] !== "string" ||
-    typeof obj["nativeType"] !== "string" ||
-    typeof obj["typeParams"] !== "object" ||
-    obj["typeParams"] === null
+    typeof obj['codecId'] !== 'string' ||
+    typeof obj['nativeType'] !== 'string' ||
+    typeof obj['typeParams'] !== 'object' ||
+    obj['typeParams'] === null
   ) {
     return false;
   }
@@ -172,9 +172,9 @@ function looksLikeUntaggedCodecTriple(value: unknown): value is UntaggedCodecTri
   // outer "neither stamped nor untagged-triple — hand-edit required"
   // throw. Folding that case into the predicate gives every malformed
   // entry the same single diagnostic shape.
-  if (obj["codecId"] === POSTGRES_ENUM_CODEC_ID) {
-    const values = (obj["typeParams"] as { values?: unknown })["values"];
-    if (!Array.isArray(values) || !values.every((v) => typeof v === "string")) {
+  if (obj['codecId'] === POSTGRES_ENUM_CODEC_ID) {
+    const values = (obj['typeParams'] as { values?: unknown })['values'];
+    if (!Array.isArray(values) || !values.every((v) => typeof v === 'string')) {
       return false;
     }
   }
@@ -183,19 +183,19 @@ function looksLikeUntaggedCodecTriple(value: unknown): value is UntaggedCodecTri
 
 function stampEntry(name: string, raw: UntaggedCodecTriple): StampedEntry {
   if (raw.codecId === POSTGRES_ENUM_CODEC_ID) {
-    const values = (raw.typeParams as { values?: unknown })["values"];
+    const values = (raw.typeParams as { values?: unknown })['values'];
     // Invariant: `looksLikeUntaggedCodecTriple` already gated this — a
     // `pg/enum@1` entry that reaches `stampEntry` has a string[]
     // `typeParams.values`. The runtime check stays as a defensive
     // marker so a future loosening of the predicate doesn't silently
     // produce a malformed StampedPostgresEnum.
-    if (!Array.isArray(values) || !values.every((v) => typeof v === "string")) {
+    if (!Array.isArray(values) || !values.every((v) => typeof v === 'string')) {
       throw new Error(
         `invariant: storage.types[${JSON.stringify(name)}] reached stampEntry with codecId="${POSTGRES_ENUM_CODEC_ID}" but typeParams.values is not a string[]; the classifier should have rejected this entry`,
       );
     }
     return {
-      kind: "postgres-enum",
+      kind: 'postgres-enum',
       name,
       nativeType: raw.nativeType,
       values,
@@ -203,7 +203,7 @@ function stampEntry(name: string, raw: UntaggedCodecTriple): StampedEntry {
     };
   }
   return {
-    kind: "codec-instance",
+    kind: 'codec-instance',
     codecId: raw.codecId,
     nativeType: raw.nativeType,
     typeParams: raw.typeParams,
@@ -216,17 +216,17 @@ interface ProcessOutcome {
 }
 
 function processContract(parsed: unknown, filePath: string): ProcessOutcome {
-  if (typeof parsed !== "object" || parsed === null) {
+  if (typeof parsed !== 'object' || parsed === null) {
     return { transformed: null, stamped: 0 };
   }
   const root = parsed as Record<string, unknown>;
-  const storage = root["storage"];
-  if (typeof storage !== "object" || storage === null) {
+  const storage = root['storage'];
+  if (typeof storage !== 'object' || storage === null) {
     return { transformed: null, stamped: 0 };
   }
   const storageObj = storage as Record<string, unknown>;
-  const types = storageObj["types"];
-  if (typeof types !== "object" || types === null) {
+  const types = storageObj['types'];
+  if (typeof types !== 'object' || types === null) {
     return { transformed: null, stamped: 0 };
   }
   const typesObj = types as Record<string, unknown>;
@@ -274,44 +274,44 @@ const INLINE_ARRAY_THRESHOLD = 80;
 function isPrimitive(value: unknown): boolean {
   return (
     value === null ||
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
   );
 }
 
 function formatJson(value: unknown, indentLevel = 0): string {
-  const indent = "  ".repeat(indentLevel);
-  const childIndent = "  ".repeat(indentLevel + 1);
+  const indent = '  '.repeat(indentLevel);
+  const childIndent = '  '.repeat(indentLevel + 1);
 
-  if (value === null) return "null";
-  if (typeof value === "string") return JSON.stringify(value);
-  if (typeof value === "number" || typeof value === "boolean") return JSON.stringify(value);
+  if (value === null) return 'null';
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number' || typeof value === 'boolean') return JSON.stringify(value);
 
   if (Array.isArray(value)) {
-    if (value.length === 0) return "[]";
+    if (value.length === 0) return '[]';
     if (value.every(isPrimitive)) {
-      const inline = `[${value.map((v) => JSON.stringify(v)).join(", ")}]`;
+      const inline = `[${value.map((v) => JSON.stringify(v)).join(', ')}]`;
       if (inline.length <= INLINE_ARRAY_THRESHOLD) return inline;
     }
     const items = value.map((v) => `${childIndent}${formatJson(v, indentLevel + 1)}`);
-    return `[\n${items.join(",\n")}\n${indent}]`;
+    return `[\n${items.join(',\n')}\n${indent}]`;
   }
 
-  if (typeof value === "object") {
+  if (typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>);
-    if (entries.length === 0) return "{}";
+    if (entries.length === 0) return '{}';
     const lines = entries.map(
       ([k, v]) => `${childIndent}${JSON.stringify(k)}: ${formatJson(v, indentLevel + 1)}`,
     );
-    return `{\n${lines.join(",\n")}\n${indent}}`;
+    return `{\n${lines.join(',\n')}\n${indent}}`;
   }
 
   throw new Error(`Unsupported value: ${typeof value}`);
 }
 
 async function processFile(path: string): Promise<Result> {
-  const raw = await readFile(path, "utf-8");
+  const raw = await readFile(path, 'utf-8');
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -322,11 +322,11 @@ async function processFile(path: string): Promise<Result> {
   }
   const outcome = processContract(parsed, path);
   if (outcome.transformed === null) {
-    return { path, status: "already-clean", stamped: 0 };
+    return { path, status: 'already-clean', stamped: 0 };
   }
   const serialised = `${formatJson(outcome.transformed)}\n`;
-  if (!dryRun) await writeFile(path, serialised, "utf-8");
-  return { path, status: dryRun ? "needs-fix" : "fixed", stamped: outcome.stamped };
+  if (!dryRun) await writeFile(path, serialised, 'utf-8');
+  return { path, status: dryRun ? 'needs-fix' : 'fixed', stamped: outcome.stamped };
 }
 
 const contracts = await findContractSnapshots(projectRoot);
@@ -341,20 +341,20 @@ let totalStamped = 0;
 for (const path of contracts) {
   const result = await processFile(path);
   const rel = path.slice(projectRoot.length + 1);
-  if (result.status === "already-clean") {
+  if (result.status === 'already-clean') {
     alreadyClean += 1;
     console.log(`OK    ${rel}  (already stamped or no storage.types)`);
   } else {
     changed += 1;
     totalStamped += result.stamped;
-    const verb = dryRun ? "WOULD FIX" : "FIXED";
+    const verb = dryRun ? 'WOULD FIX' : 'FIXED';
     console.log(`${verb} ${rel}  (stamped ${result.stamped} entry/entries)`);
   }
 }
 
 console.log();
 console.log(
-  `${contracts.length} snapshot(s) scanned: ${changed} ${dryRun ? "needing fix" : "fixed"} (${totalStamped} entries), ${alreadyClean} already clean.`,
+  `${contracts.length} snapshot(s) scanned: ${changed} ${dryRun ? 'needing fix' : 'fixed'} (${totalStamped} entries), ${alreadyClean} already clean.`,
 );
 
 if (dryRun && changed > 0) process.exit(1);

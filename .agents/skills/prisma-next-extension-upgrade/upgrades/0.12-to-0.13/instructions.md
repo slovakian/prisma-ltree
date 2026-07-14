@@ -185,10 +185,10 @@ The registry method exported from `@prisma-next/sql-relational-core/query-lane-c
 
 ```ts
 // Before 0.13
-const ref = descriptors.codecRefForColumn("document", "embedding");
+const ref = descriptors.codecRefForColumn('document', 'embedding');
 
 // Starting at 0.13 — namespaceId leads the coordinate args
-const ref = descriptors.codecRefForColumn("public", "document", "embedding");
+const ref = descriptors.codecRefForColumn('public', 'document', 'embedding');
 ```
 
 The namespace is whatever namespace the model/table you are building the ref for lives in — read it from the resolved table coordinate you already hold at the construction site, not a hard-coded literal. The table is now resolved strictly within that namespace, so two same-bare-named tables in different namespaces resolve to their own per-namespace column codecs without colliding.
@@ -199,10 +199,10 @@ The free function exported from `@prisma-next/sql-relational-core/codec-descript
 
 ```ts
 // Before 0.13
-const ref = codecRefForStorageColumn(storage, "document", "embedding");
+const ref = codecRefForStorageColumn(storage, 'document', 'embedding');
 
 // Starting at 0.13
-const ref = codecRefForStorageColumn(storage, "public", "document", "embedding");
+const ref = codecRefForStorageColumn(storage, 'public', 'document', 'embedding');
 ```
 
 It now resolves the table via `resolveStorageTable(storage, tableName, namespaceId)` rather than scanning every namespace for the first bare-name match, so a name that is ambiguous across namespaces is no longer silently bound to whichever namespace happened to enumerate first.

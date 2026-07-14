@@ -5,7 +5,7 @@
       "source": "prisma/prisma-next",
       "sourceType": "github",
       "skillPath": "skills/extension-author/prisma-next-extension-upgrade/SKILL.md",
-      "computedHash": "4be1af7c9832b7a212756aef4e8566509375ef5a54cd24147454a3d90d934408"
+      "computedHash": "802d1a7f9502e82e5246eada8d114c1321464e3de752e64e30c18afface4abf5"
     },
     "shadcn": {
       "source": "shadcn/ui",

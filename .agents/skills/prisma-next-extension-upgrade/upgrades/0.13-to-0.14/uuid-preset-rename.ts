@@ -6,27 +6,27 @@
  * Run from the project root: pnpm exec tsx <path-to-this-file>
  */
 
-import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "pathe";
+import { execSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'pathe';
 
 const replacements: Array<[RegExp, string]> = [
-  [/\bfield\.id\.uuidv4\(\)/g, "field.id.uuidv4String()"],
-  [/\bfield\.id\.uuidv7\(\)/g, "field.id.uuidv7String()"],
-  [/\bfield\.uuid\(\)/g, "field.uuidString()"],
+  [/\bfield\.id\.uuidv4\(\)/g, 'field.id.uuidv4String()'],
+  [/\bfield\.id\.uuidv7\(\)/g, 'field.id.uuidv7String()'],
+  [/\bfield\.uuid\(\)/g, 'field.uuidString()'],
 ];
 
 const raw = execSync('git ls-files --cached --others --exclude-standard -- "*.ts"', {
-  encoding: "utf-8",
+  encoding: 'utf-8',
 }).trim();
 
-const files = raw.split("\n").filter(Boolean);
+const files = raw.split('\n').filter(Boolean);
 let changed = 0;
 for (const file of files) {
   const abs = join(process.cwd(), file);
   let content: string;
   try {
-    content = readFileSync(abs, "utf-8");
+    content = readFileSync(abs, 'utf-8');
   } catch {
     continue;
   }
@@ -35,7 +35,7 @@ for (const file of files) {
     content = content.replace(pattern, replacement);
   }
   if (content !== original) {
-    writeFileSync(abs, content, "utf-8");
+    writeFileSync(abs, content, 'utf-8');
     console.log(`updated ${file}`);
     changed++;
   }
