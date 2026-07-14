@@ -40,6 +40,8 @@ packages/
   extension-ltree/           # The ltree extension pack
 apps/
   web/                       # Documentation website (Vite+ + Fumadocs)
+vendor/
+  prisma-next/               # Upstream prisma-next (git subtree — agent reference)
 docs/
   prisma-next/               # prisma-next extension architecture docs
   ltree/                     # PostgreSQL ltree reference docs
@@ -55,21 +57,31 @@ Working on `apps/web` documentation? Start here:
 
 **Current status:** Docs site v1 shipped (Tasks 1–7, 9). Search (Task 8) deferred.
 
-## Synced External References
+## Prisma Next reference (git subtree)
 
-Before starting extension work, run `pnpm run sync-docs` to clone the prisma-next
-source into `.sync/prisma-next/` (gitignored — never committed). Agents must consult
-this clone for **reference implementations, SPI types, and test patterns**.
+Upstream [prisma/prisma-next](https://github.com/prisma/prisma-next) is vendored at
+`vendor/prisma-next/` as a **git subtree** (committed in this repo). Agents must
+consult it for **reference implementations, SPI types, and test patterns** — it is
+always available after clone; do **not** look for `.sync/prisma-next/` or run a
+clone step before reading it.
+
+To refresh from upstream (clean working tree required; creates a merge commit):
+
+```bash
+pnpm run sync-prisma-next
+```
+
+See [`vendor/README.md`](vendor/README.md) for re-add / pull details.
 
 ### Reference path map
 
-| What                                  | Path                                                |
-| ------------------------------------- | --------------------------------------------------- |
-| pgvector reference (closest to ltree) | `.sync/prisma-next/packages/3-extensions/pgvector/` |
-| postgis reference (multi-operator)    | `.sync/prisma-next/packages/3-extensions/postgis/`  |
-| paradedb reference                    | `.sync/prisma-next/packages/3-extensions/paradedb/` |
-| Extension architecture docs (source)  | `.sync/prisma-next/docs/`                           |
-| Extension author skills               | `.sync/prisma-next/skills/extension-author/`        |
+| What                                  | Path                                                   |
+| ------------------------------------- | ------------------------------------------------------ |
+| pgvector reference (closest to ltree) | `vendor/prisma-next/packages/3-extensions/pgvector/`   |
+| postgis reference (multi-operator)    | `vendor/prisma-next/packages/3-extensions/postgis/`    |
+| paradedb reference                    | `vendor/prisma-next/packages/3-extensions/paradedb/`   |
+| Extension architecture docs (source)  | `vendor/prisma-next/docs/`                             |
+| Extension author skills               | `vendor/prisma-next/skills/extension-author/`          |
 
 ## Key Documentation (consult these before coding)
 
@@ -223,5 +235,5 @@ Mirror tests from postgis (`operations.test.ts` pattern: descriptor metadata, op
 
 Do **not** bump `@prisma-next/*` pins casually. Follow
 `docs/prisma-next/versioning-and-compatibility.md` and the upstream
-`prisma-next-extension-upgrade` skill (`.sync/prisma-next/skills/extension-author/` after
-`pnpm run sync-docs`). One minor per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.
+`prisma-next-extension-upgrade` skill (`vendor/prisma-next/skills/extension-author/`).
+One minor per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.

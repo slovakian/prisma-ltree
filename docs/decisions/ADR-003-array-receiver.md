@@ -36,7 +36,7 @@ Three candidates were on the table:
 3. **Reuse core `pg/text-array@1`** — bind the receiver as `text[]` and cast
    `::ltree[]` in-template.
 
-### What the source says (verified against `.sync/prisma-next/`)
+### What the source says (verified against `vendor/prisma-next/`)
 
 - Core Postgres ships a first-class **`pg/text-array@1`** codec
   (`packages/3-targets/3-targets/postgres/src/core/codecs.ts:172–203`): non-parameterized,

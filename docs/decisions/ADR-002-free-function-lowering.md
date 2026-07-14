@@ -23,7 +23,7 @@ operation as a method on every column whose codec matches `self.codecId`. The op
 question (flagged for this ADR since Task 3.2): how does a **free function** with no
 natural `ltree` `self` — `text2ltree`, and by extension `lca(ltree[])` — surface?
 
-### What the source says (verified against `.sync/prisma-next/`)
+### What the source says (verified against `vendor/prisma-next/`)
 
 - `QueryOperationTypeEntry.self` is **optional** (`packages/2-sql/1-core/contract/src/types.ts`),
   so a self-less op type-checks.

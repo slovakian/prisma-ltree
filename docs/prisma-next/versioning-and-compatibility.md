@@ -34,7 +34,7 @@ root version. Bumping is mechanical:
 - Native extensions do **not** run the external upgrade skill; they ride the monorepo bump
 - Upgrade instructions are still authored per minor transition (for external authors and release notes)
 
-Reference: `.sync/prisma-next/packages/3-extensions/pgvector/package.json` uses
+Reference: `vendor/prisma-next/packages/3-extensions/pgvector/package.json` uses
 `"workspace:0.14.0"` specs instead of exact npm pins.
 
 ### External extensions (prisma-ltree)
@@ -63,7 +63,7 @@ Prisma Next ships two agent skills (in the upstream repo under `skills/`):
 Each minor transition has a directory:
 
 ```text
-.sync/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/<from>-to-<to>/
+vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/<from>-to-<to>/
   instructions.md    # YAML frontmatter + changes[] entries (codemods, prose)
   *.ts               # Optional codemods
 ```
@@ -80,8 +80,9 @@ pnpm dlx skills add prisma/prisma-next/skills/extension-author --all
 ```
 
 The skill subpath is intentionally **unpinned** (tracks `main`) so codemod fixes apply to all prior
-transitions. After `pnpm run sync-docs`, the same content is available locally at
-`.sync/prisma-next/skills/extension-author/`.
+transitions. The same content is always available locally at
+`vendor/prisma-next/skills/extension-author/` (git subtree; refresh with
+`pnpm run sync-prisma-next`).
 
 Companion CLI (already a devDependency here):
 
@@ -142,9 +143,9 @@ When upstream adds extension-author breaking changes, they **must** ship a match
 
 When prisma-next releases a new minor (e.g. `0.15.0`):
 
-1. **Sync upstream docs** — `pnpm run sync-docs` (refresh `.sync/prisma-next/`)
+1. **Sync upstream reference** — `pnpm run sync-prisma-next` (refresh `vendor/prisma-next/`)
 2. **Install/refresh the skill** — `pnpm dlx skills add prisma/prisma-next/skills/extension-author --all`
-3. **Read the transition** — `.sync/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/0.14-to-0.15/instructions.md`
+3. **Read the transition** — `vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/0.14-to-0.15/instructions.md`
 4. **Bump pins** — set every `@prisma-next/*` in `packages/extension-ltree/package.json` to `"0.15.0"`
 5. **Install** — `vp install` / `pnpm install`
 6. **Check pins** — `cd packages/extension-ltree && pnpm run check-pins`
@@ -181,8 +182,8 @@ pnpm run check-pins                       # exact-pin enforcement
 pnpm run build:contract-space             # re-emit contract.json / contract.d.ts
 pnpm exec prisma-next migration plan      # plan migration changes
 
-# Refresh upstream reference + upgrade instructions
-pnpm run sync-docs
+# Refresh upstream prisma-next subtree + upgrade instructions
+pnpm run sync-prisma-next
 ```
 
 ## See also
@@ -190,6 +191,6 @@ pnpm run sync-docs
 - [Extension Packs — Naming and Layout](./extension-packs-naming-and-layout.md) — `prismaNext` metadata, exports
 - [Extensions Glossary](./extensions-glossary.md) — `invariantId`, codec terminology
 - [Ecosystem Extensions & Packs](./ecosystem-extensions-and-packs.md) — four-slice model, contract spaces
-- Upstream skill: `.sync/prisma-next/skills/extension-author/prisma-next-extension-upgrade/SKILL.md`
-- Upstream release notes: `.sync/prisma-next/docs/releases/` (breaking changes per minor)
+- Upstream skill: `vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/SKILL.md`
+- Upstream release notes: `vendor/prisma-next/docs/releases/` (breaking changes per minor)
 - Dependency strategy: exact-pin `@prisma-next/*` per this document and `packages/extension-ltree/package.json`

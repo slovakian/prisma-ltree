@@ -31,7 +31,7 @@ coverage
 .env.*
 !.env.example
 
-# Synced external references (not committed)
+# Legacy local clone path (replaced by vendor/prisma-next git subtree)
 .sync/
 
 # Alchemy state (infra-as-code local state)

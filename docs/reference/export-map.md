@@ -10,8 +10,8 @@ idiom, and where in a consumer's project it gets wired. Keep it in sync with
 
 - The export surface is **byte-for-byte canonical** with the prisma-next reference
   packs (pgvector / postgis). Verified against
-  `.sync/prisma-next/packages/3-extensions/pgvector/` (run `pnpm run sync-docs` to
-  refresh the clone). Consistency with the ecosystem is the point — a consumer who
+  `vendor/prisma-next/packages/3-extensions/pgvector/` (git subtree; refresh with
+  `pnpm run sync-prisma-next`). Consistency with the ecosystem is the point — a consumer who
   has wired any prisma-next extension already knows how to wire this one. Do not
   diverge from the reference shape or naming without an ADR.
 - **Six subpath exports, no root export.** A bare `import x from "prisma-ltree"`

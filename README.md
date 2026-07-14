@@ -59,6 +59,7 @@ This is a [Vite+](https://viteplus.dev) (`vp`) + pnpm workspace monorepo.
 | --------------------------- | ------------------------------------------------------------------------------------------ |
 | `packages/extension-ltree/` | The published `prisma-ltree` extension pack ([README](packages/extension-ltree/README.md)) |
 | `apps/web/`                 | Documentation site (Fumadocs + TanStack Start)                                             |
+| `vendor/prisma-next/`       | Upstream prisma-next git subtree (agent / contributor reference)                           |
 | `examples/family-tree/`     | Tree-of-Life demo app exercising the extension                                             |
 | `skills/`, `.agents/`       | Agent skills for adoption and query patterns                                               |
 | `docs/`                     | prisma-next architecture, ltree reference, specs, and ADRs                                 |
@@ -67,9 +68,11 @@ This is a [Vite+](https://viteplus.dev) (`vp`) + pnpm workspace monorepo.
 
 ```bash
 pnpm install          # install dependencies
-pnpm run sync-docs    # clone prisma-next reference into .sync/ (gitignored)
 pnpm run ready        # check-pins + build + check + test (full gate)
 ```
+
+Upstream prisma-next lives at [`vendor/prisma-next/`](vendor/prisma-next/) (git
+subtree). Refresh with `pnpm run sync-prisma-next` when needed.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full workflow (changesets, branch model,
 skills) and [`AGENTS.md`](AGENTS.md) for extension-author conventions.

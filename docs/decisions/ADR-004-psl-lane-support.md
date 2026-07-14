@@ -19,7 +19,7 @@ authoring in `contract.prisma` are a first-class prisma-next audience. This ADR 
 **how** ltree columns are made available to the PSL lane and **why** that is the only
 viable mechanism for a third-party extension.
 
-### What the source says (verified against `.sync/prisma-next/`)
+### What the source says (verified against `vendor/prisma-next/`)
 
 1. **Both lanes lower to one Contract IR.** The framework's stated design goal is that
    the two authoring surfaces "produce identical compiled contracts." Piece 2 confirmed
