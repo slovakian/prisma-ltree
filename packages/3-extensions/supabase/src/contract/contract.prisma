@@ -1,0 +1,75 @@
+// use prisma-next
+
+types {
+  Uuid        = String   @db.Uuid
+  Timestamptz = DateTime @db.Timestamptz
+}
+
+namespace unbound {
+  role anon {
+  }
+
+  role authenticated {
+  }
+
+  role service_role {
+  }
+}
+
+namespace auth {
+  model AuthUser {
+    id         Uuid        @id
+    email      String
+    created_at Timestamptz
+    updated_at Timestamptz
+
+    @@map("users")
+  }
+
+  model AuthIdentity {
+    id         Uuid        @id
+    user_id    Uuid
+    provider   String
+    created_at Timestamptz
+    updated_at Timestamptz
+
+    @@map("identities")
+  }
+
+  native_enum AalLevel {
+    aal1 = "aal1"
+    aal2 = "aal2"
+    aal3 = "aal3"
+    @@map("aal_level")
+  }
+
+  model AuthSession {
+    id         Uuid          @id
+    user_id    Uuid
+    aal        pg.enum(AalLevel)?
+    created_at Timestamptz
+
+    @@map("sessions")
+  }
+}
+
+namespace storage {
+  model StorageBucket {
+    id         String      @id
+    name       String
+    created_at Timestamptz
+    updated_at Timestamptz
+
+    @@map("buckets")
+  }
+
+  model StorageObject {
+    id         Uuid        @id
+    bucket_id  String
+    name       String
+    created_at Timestamptz
+    updated_at Timestamptz
+
+    @@map("objects")
+  }
+}

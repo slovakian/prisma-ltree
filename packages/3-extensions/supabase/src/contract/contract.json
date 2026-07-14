@@ -1,0 +1,625 @@
+{
+  "schemaVersion": "1",
+  "targetFamily": "sql",
+  "target": "postgres",
+  "profileHash": "sha256:9c8aa3114e84ed3b7ea2bd57526d9c2e1bf7c5292be694e9d3801f566fda7ccb",
+  "roots": {
+    "buckets": {
+      "model": "StorageBucket",
+      "namespace": "storage"
+    },
+    "identities": {
+      "model": "AuthIdentity",
+      "namespace": "auth"
+    },
+    "objects": {
+      "model": "StorageObject",
+      "namespace": "storage"
+    },
+    "sessions": {
+      "model": "AuthSession",
+      "namespace": "auth"
+    },
+    "users": {
+      "model": "AuthUser",
+      "namespace": "auth"
+    }
+  },
+  "domain": {
+    "namespaces": {
+      "auth": {
+        "models": {
+          "AuthIdentity": {
+            "fields": {
+              "created_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "provider": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updated_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              },
+              "user_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "created_at": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "provider": {
+                  "column": "provider"
+                },
+                "updated_at": {
+                  "column": "updated_at"
+                },
+                "user_id": {
+                  "column": "user_id"
+                }
+              },
+              "namespaceId": "auth",
+              "table": "identities"
+            }
+          },
+          "AuthSession": {
+            "fields": {
+              "aal": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/enum@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "typeName": "auth.aal_level"
+                  }
+                }
+              },
+              "created_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "user_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "aal": {
+                  "column": "aal"
+                },
+                "created_at": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "user_id": {
+                  "column": "user_id"
+                }
+              },
+              "namespaceId": "auth",
+              "table": "sessions"
+            }
+          },
+          "AuthUser": {
+            "fields": {
+              "created_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "updated_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "created_at": {
+                  "column": "created_at"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "updated_at": {
+                  "column": "updated_at"
+                }
+              },
+              "namespaceId": "auth",
+              "table": "users"
+            }
+          }
+        }
+      },
+      "storage": {
+        "models": {
+          "StorageBucket": {
+            "fields": {
+              "created_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updated_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "created_at": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "updated_at": {
+                  "column": "updated_at"
+                }
+              },
+              "namespaceId": "storage",
+              "table": "buckets"
+            }
+          },
+          "StorageObject": {
+            "fields": {
+              "bucket_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "created_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updated_at": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "bucket_id": {
+                  "column": "bucket_id"
+                },
+                "created_at": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "updated_at": {
+                  "column": "updated_at"
+                }
+              },
+              "namespaceId": "storage",
+              "table": "objects"
+            }
+          }
+        }
+      }
+    }
+  },
+  "storage": {
+    "namespaces": {
+      "__unbound__": {
+        "entries": {
+          "role": {
+            "anon": {
+              "control": "external",
+              "kind": "role",
+              "name": "anon",
+              "namespaceId": "__unbound__"
+            },
+            "authenticated": {
+              "control": "external",
+              "kind": "role",
+              "name": "authenticated",
+              "namespaceId": "__unbound__"
+            },
+            "service_role": {
+              "control": "external",
+              "kind": "role",
+              "name": "service_role",
+              "namespaceId": "__unbound__"
+            }
+          },
+          "table": {}
+        },
+        "id": "__unbound__",
+        "kind": "postgres-unbound-schema"
+      },
+      "auth": {
+        "entries": {
+          "native_enum": {
+            "aal_level": {
+              "kind": "postgres-enum",
+              "members": [
+                "aal1",
+                "aal2",
+                "aal3"
+              ],
+              "typeName": "aal_level"
+            }
+          },
+          "table": {
+            "identities": {
+              "columns": {
+                "created_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false,
+                  "typeRef": "Uuid"
+                },
+                "provider": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                },
+                "user_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false,
+                  "typeRef": "Uuid"
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "sessions": {
+              "columns": {
+                "aal": {
+                  "codecId": "pg/enum@1",
+                  "nativeType": "auth.aal_level",
+                  "nullable": true,
+                  "typeParams": {
+                    "typeName": "auth.aal_level"
+                  },
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AalLevel",
+                    "namespaceId": "auth",
+                    "plane": "storage"
+                  }
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false,
+                  "typeRef": "Uuid"
+                },
+                "user_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false,
+                  "typeRef": "Uuid"
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "users": {
+              "columns": {
+                "created_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false,
+                  "typeRef": "Uuid"
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            }
+          },
+          "valueSet": {
+            "AalLevel": {
+              "kind": "valueSet",
+              "values": [
+                "aal1",
+                "aal2",
+                "aal3"
+              ]
+            }
+          }
+        },
+        "id": "auth",
+        "kind": "postgres-schema"
+      },
+      "public": {
+        "entries": {
+          "table": {}
+        },
+        "id": "public",
+        "kind": "postgres-schema"
+      },
+      "storage": {
+        "entries": {
+          "table": {
+            "buckets": {
+              "columns": {
+                "created_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "objects": {
+              "columns": {
+                "bucket_id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false,
+                  "typeRef": "Uuid"
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeRef": "Timestamptz"
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            }
+          }
+        },
+        "id": "storage",
+        "kind": "postgres-schema"
+      }
+    },
+    "storageHash": "sha256:a5fe76b96ff56aff07eb0f48336aac7f9eb9dd4c37171751f793197a03d3b4c7",
+    "types": {
+      "Timestamptz": {
+        "codecId": "pg/timestamptz@1",
+        "kind": "codec-instance",
+        "nativeType": "timestamptz"
+      },
+      "Uuid": {
+        "codecId": "pg/uuid@1",
+        "kind": "codec-instance",
+        "nativeType": "uuid"
+      }
+    }
+  },
+  "capabilities": {
+    "postgres": {
+      "distinctOn": true,
+      "jsonAgg": true,
+      "lateral": true,
+      "limit": true,
+      "orderBy": true,
+      "returning": true
+    },
+    "sql": {
+      "defaultInInsert": true,
+      "enums": true,
+      "lateral": true,
+      "returning": true,
+      "scalarList": true
+    }
+  },
+  "extensionPacks": {},
+  "defaultControlPolicy": "external",
+  "meta": {},
+  "_generated": {
+    "warning": "⚠️  GENERATED FILE - DO NOT EDIT",
+    "message": "This file is automatically generated by \"prisma-next contract emit\".",
+    "regenerate": "To regenerate, run: prisma-next contract emit"
+  }
+}
