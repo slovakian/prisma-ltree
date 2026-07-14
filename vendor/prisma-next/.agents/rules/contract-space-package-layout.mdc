@@ -1,0 +1,63 @@
+---
+description: On-disk layout for packages that expose a contract space (extensions, internal monorepo packages, aggregate-root apps)
+globs:
+  - "packages/3-extensions/**"
+  - "examples/multi-extension-monorepo/**"
+alwaysApply: false
+---
+
+# Contract-space package layout
+
+Every package that emits its own `contract.json` + migrations (published
+extensions, internal monorepo extension packages, aggregate-root
+applications) uses the **same** on-disk shape:
+
+```text
+<package>/
+├── prisma-next.config.ts            ← project config (at package root)
+├── migrations/
+│   ├── refs/head.json               ← hand-pinned head ref
+│   └── <timestamp>_<name>/          ← one dir per migration
+│       ├── migration.json
+│       ├── ops.json
+│       ├── end-contract.json
+│       ├── end-contract.d.ts
+│       └── migration.ts
+└── src/
+    ├── contract.prisma              ← PSL source when the space has app-visible schema (preferred; exceptions below)
+    ├── contract.ts                  ← optional TS source (narrow exception)
+    ├── contract.json                ← emitted (do not edit)
+    ├── contract.d.ts                ← emitted (do not edit)
+    └── exports/control.ts           ← descriptor; JSON-imports the artefacts
+                                       (or `src/control.ts` in internal /
+                                        monorepo packages without an exports
+                                        barrel)
+```
+
+## Rules (these are the spots where mistakes recur)
+
+- **Pick the contract source by what the space contributes.** Three cases, each wired in `prisma-next.config.ts`:
+  - *App-visible schema* (models, storage types, namespaces) → author PSL in `src/contract.prisma`; wire `prismaContract('./src/contract.prisma', { output: 'src/contract.json', target })`. PSL is the canonical authoring surface: it reads as a schema (not as builder calls), interoperates with brownfield Prisma schemas, and keeps the contract decoupled from the workspace's TS type system.
+  - *Migrations only* — installs invariants (e.g. a Postgres extension) but ships no tables or native types → omit the contract source entirely; wire `emptyContract({ output: 'src/contract.json', target })`. Example: `@prisma-next/extension-paradedb`.
+  - *Typed objects PSL can't yet express* (e.g. pgvector's parameterised `vector` registration under `storage.types`) → keep `src/contract.ts`; wire `typescriptContract(contract, 'src/contract.json')`, with a comment in the source naming the missing PSL surface.
+- **No `<space-id>` subdirectory inside `migrations/`.** A package owns
+  exactly one contract space, so the `<space-id>` directory adds no
+  information. Migration directories sit *directly* under `migrations/`,
+  and `refs/` sits at `migrations/refs/`. Configure with
+  `migrations.dir: 'migrations'` — not `migrations/<space-id>`.
+- **No `src/contract/` subdirectory.** The contract source and the
+  emitted `contract.json` / `contract.d.ts` sit *directly* in `src/`.
+- **`prisma-next.config.ts` lives at the package root**, not under `src/`.
+
+## Contrast with the consuming app layout
+
+When an application *composes* contract spaces, its `migrations/`
+directory ends up with one subdirectory per space (`migrations/<space-id>/`)
+because there are multiple spaces. That is an emergent shape from
+composition — **not** a per-package authoring convention. Inside a
+contract-space package, the `<space-id>` subdirectory does not belong.
+
+## Reference
+
+See [ADR 212 — Contract spaces](mdc:docs/architecture%20docs/adrs/ADR%20212%20-%20Contract%20spaces.md)
+("Contract-space package layout") for the full rationale.

@@ -1,0 +1,510 @@
+/**
+ * CLI error envelope for output formatting.
+ * This is the serialized form of a CliStructuredError.
+ */
+export interface CliErrorEnvelope {
+  readonly ok: false;
+  readonly code: string;
+  readonly domain: string;
+  readonly severity: 'error' | 'warn' | 'info';
+  readonly summary: string;
+  readonly why: string | undefined;
+  readonly fix: string | undefined;
+  readonly where:
+    | {
+        readonly path: string | undefined;
+        readonly line: number | undefined;
+      }
+    | undefined;
+  readonly meta: Record<string, unknown> | undefined;
+  readonly docsUrl: string | undefined;
+}
+
+/**
+ * Minimal conflict data structure expected by CLI output.
+ */
+export interface CliErrorConflict {
+  readonly kind: string;
+  readonly summary: string;
+  readonly why?: string;
+}
+
+/**
+ * Domain prefix for structured CLI error codes.
+ *
+ * The full envelope code is rendered as `PN-<domain>-<code>` (see
+ * `CliStructuredError.toEnvelope`). The supported domains follow the
+ * taxonomy documented in `docs/CLI Style Guide.md`:
+ *
+ * - `CLI`    — CLI command processing (config, validation, planning)
+ * - `MIG`    — Migration subsystem (authoring, planning conflicts, runner)
+ * - `RUN`    — Application runtime (query execution, streaming)
+ * - `CON`    — Contract subsystem (validation, normalization)
+ * - `SCHEMA` — Schema subsystem
+ *
+ * Sub-clustering within a domain is conveyed by the numeric code range; see
+ * the per-domain source files for reserved ranges.
+ */
+const CLI_ERROR_DOMAINS = ['CLI', 'RUN', 'MIG', 'CON', 'SCHEMA'] as const;
+
+export type CliErrorDomain = (typeof CLI_ERROR_DOMAINS)[number];
+
+/**
+ * Structured CLI error that contains all information needed for error envelopes.
+ * Call sites throw these errors with full context.
+ */
+export class CliStructuredError extends Error {
+  readonly code: string;
+  readonly domain: CliErrorDomain;
+  readonly severity: 'error' | 'warn' | 'info';
+  readonly why: string | undefined;
+  readonly fix: string | undefined;
+  readonly where:
+    | {
+        readonly path: string | undefined;
+        readonly line: number | undefined;
+      }
+    | undefined;
+  readonly meta: Record<string, unknown> | undefined;
+  readonly docsUrl: string | undefined;
+
+  constructor(
+    code: string,
+    summary: string,
+    options?: {
+      readonly domain?: CliErrorDomain;
+      readonly severity?: 'error' | 'warn' | 'info';
+      readonly why?: string;
+      readonly fix?: string;
+      readonly where?: { readonly path?: string; readonly line?: number };
+      readonly meta?: Record<string, unknown>;
+      readonly docsUrl?: string;
+    },
+  ) {
+    super(summary);
+    this.name = 'CliStructuredError';
+    this.code = code;
+    this.domain = options?.domain ?? 'CLI';
+    this.severity = options?.severity ?? 'error';
+    this.why = options?.why;
+    this.fix = options?.fix === options?.why ? undefined : options?.fix;
+    this.where = options?.where
+      ? {
+          path: options.where.path,
+          line: options.where.line,
+        }
+      : undefined;
+    this.meta = options?.meta;
+    this.docsUrl = options?.docsUrl;
+  }
+
+  /**
+   * Converts this error to a CLI error envelope for output formatting.
+   */
+  toEnvelope(): CliErrorEnvelope {
+    return {
+      ok: false as const,
+      code: `PN-${this.domain}-${this.code}`,
+      domain: this.domain,
+      severity: this.severity,
+      summary: this.message,
+      why: this.why,
+      fix: this.fix,
+      where: this.where,
+      meta: this.meta,
+      docsUrl: this.docsUrl,
+    };
+  }
+
+  /**
+   * Type guard to check if an error is a CliStructuredError.
+   * Uses duck-typing to work across module boundaries where instanceof may fail.
+   */
+  static is(error: unknown): error is CliStructuredError {
+    if (!(error instanceof Error)) {
+      return false;
+    }
+    const candidate = error as CliStructuredError;
+    return (
+      candidate.name === 'CliStructuredError' &&
+      typeof candidate.code === 'string' &&
+      isCliErrorDomain(candidate.domain) &&
+      typeof candidate.toEnvelope === 'function'
+    );
+  }
+}
+
+const CLI_ERROR_DOMAIN_SET: ReadonlySet<CliErrorDomain> = new Set(CLI_ERROR_DOMAINS);
+
+function isCliErrorDomain(value: unknown): value is CliErrorDomain {
+  return typeof value === 'string' && CLI_ERROR_DOMAIN_SET.has(value as CliErrorDomain);
+}
+
+// ============================================================================
+// Numeric range conventions for `PN-CLI-NNNN`
+// ============================================================================
+//
+// Sub-clustering inside the `CLI` domain uses the numeric prefix:
+//
+// - `4xxx` — generic / cross-command CLI errors authored here (config
+//   missing, file not found, contract validation, etc.).
+// - `5xxx` — command-specific CLI errors authored alongside the command
+//   itself (e.g. `init` errors live in
+//   `packages/1-framework/3-tooling/cli/src/commands/init/errors.ts`).
+//   The 5xxx range avoids collisions with the shared 4xxx pool while
+//   still belonging to the `CLI` domain — consumers branch on the full
+//   `PN-CLI-5007` form, so the prefix is purely an authoring guide.
+//
+// See [`docs/CLI Style Guide.md` § Errors](../../../../../docs/CLI%20Style%20Guide.md#errors)
+// and the per-command error file for the live reservation list.
+
+// ============================================================================
+// Config Errors (PN-CLI-4001-4007)
+// ============================================================================
+
+/**
+ * Config file not found or missing.
+ */
+export function errorConfigFileNotFound(
+  configPath?: string,
+  options?: {
+    readonly why?: string;
+  },
+): CliStructuredError {
+  return new CliStructuredError('4001', 'Config file not found', {
+    domain: 'CLI',
+    ...(options?.why ? { why: options.why } : { why: 'Config file not found' }),
+    fix: "Run 'prisma-next init' to create a config file",
+    docsUrl: 'https://prisma-next.dev/docs/cli/config',
+    ...(configPath ? { where: { path: configPath } } : {}),
+  });
+}
+
+/**
+ * Contract configuration missing from config.
+ */
+export function errorContractConfigMissing(options?: {
+  readonly why?: string;
+}): CliStructuredError {
+  return new CliStructuredError('4002', 'Contract configuration missing', {
+    domain: 'CLI',
+    why: options?.why ?? 'The contract configuration is required for emit',
+    fix: 'Add contract configuration to your prisma-next.config.ts',
+    docsUrl: 'https://prisma-next.dev/docs/cli/contract-emit',
+  });
+}
+
+/**
+ * Contract validation failed.
+ */
+export function errorContractValidationFailed(
+  reason: string,
+  options?: {
+    readonly where?: { readonly path?: string; readonly line?: number };
+  },
+): CliStructuredError {
+  return new CliStructuredError('4003', 'Contract validation failed', {
+    domain: 'CLI',
+    why: reason,
+    fix: 'Re-run `prisma-next contract emit`, or fix the contract file and try again',
+    docsUrl: 'https://prisma-next.dev/docs/contracts',
+    ...(options?.where ? { where: options.where } : {}),
+  });
+}
+
+/**
+ * File not found.
+ */
+export function errorFileNotFound(
+  filePath: string,
+  options?: {
+    readonly why?: string;
+    readonly fix?: string;
+    readonly docsUrl?: string;
+  },
+): CliStructuredError {
+  return new CliStructuredError('4004', 'File not found', {
+    domain: 'CLI',
+    why: options?.why ?? `File not found: ${filePath}`,
+    fix: options?.fix ?? 'Check that the file path is correct',
+    where: { path: filePath },
+    ...(options?.docsUrl ? { docsUrl: options.docsUrl } : {}),
+  });
+}
+
+/**
+ * Database connection is required but not provided.
+ */
+export function errorDatabaseConnectionRequired(options?: {
+  readonly why?: string;
+  readonly commandName?: string;
+  readonly retryCommand?: string;
+  readonly missingFlags?: readonly string[];
+}): CliStructuredError {
+  const runHint = options?.retryCommand
+    ? `Run \`${options.retryCommand}\``
+    : options?.commandName
+      ? `Run \`prisma-next ${options.commandName} --db <url>\``
+      : 'Provide `--db <url>`';
+  return new CliStructuredError('4005', 'Database connection is required', {
+    domain: 'CLI',
+    why: options?.why ?? 'Database connection is required for this command',
+    fix: `${runHint}, or set \`db: { connection: "postgres://…" }\` in prisma-next.config.ts`,
+    ...(options?.missingFlags !== undefined
+      ? { meta: { missingFlags: [...options.missingFlags] } }
+      : {}),
+  });
+}
+
+/**
+ * Query runner factory is required but not provided in config.
+ */
+export function errorQueryRunnerFactoryRequired(options?: {
+  readonly why?: string;
+}): CliStructuredError {
+  return new CliStructuredError('4006', 'Query runner factory is required', {
+    domain: 'CLI',
+    why: options?.why ?? 'Config.db.queryRunnerFactory is required for db verify',
+    fix: 'Add db.queryRunnerFactory to prisma-next.config.ts',
+    docsUrl: 'https://prisma-next.dev/docs/cli/db-verify',
+  });
+}
+
+/**
+ * Family verify.readMarker is required but not provided.
+ */
+export function errorFamilyReadMarkerSqlRequired(options?: {
+  readonly why?: string;
+}): CliStructuredError {
+  return new CliStructuredError('4007', 'Family readMarker() is required', {
+    domain: 'CLI',
+    why: options?.why ?? 'Family verify.readMarker is required for db verify',
+    fix: 'Ensure family.verify.readMarker() is exported by your family package',
+    docsUrl: 'https://prisma-next.dev/docs/cli/db-verify',
+  });
+}
+
+/**
+ * JSON output format not supported.
+ */
+export function errorJsonFormatNotSupported(options: {
+  readonly command: string;
+  readonly format: string;
+  readonly supportedFormats: readonly string[];
+}): CliStructuredError {
+  return new CliStructuredError('4008', 'Unsupported JSON format', {
+    domain: 'CLI',
+    why: `The ${options.command} command does not support --json ${options.format}`,
+    fix: `Use --json ${options.supportedFormats.join(' or ')}, or omit --json for human output`,
+    meta: {
+      command: options.command,
+      format: options.format,
+      supportedFormats: options.supportedFormats,
+    },
+  });
+}
+
+/**
+ * Driver is required for DB-connected commands but not provided.
+ */
+export function errorDriverRequired(options?: { readonly why?: string }): CliStructuredError {
+  return new CliStructuredError('4010', 'Driver is required for DB-connected commands', {
+    domain: 'CLI',
+    why: options?.why ?? 'Config.driver is required for DB-connected commands',
+    fix: 'Add a control-plane driver to prisma-next.config.ts (e.g. import a driver descriptor and set `driver: postgresDriver`)',
+    docsUrl: 'https://prisma-next.dev/docs/cli/config',
+  });
+}
+
+/**
+ * Contract requires extension packs that are not provided by config descriptors.
+ */
+export function errorContractMissingExtensionPacks(options: {
+  readonly missingExtensionPacks: readonly string[];
+  readonly providedComponentIds: readonly string[];
+}): CliStructuredError {
+  const missing = [...options.missingExtensionPacks].sort();
+  return new CliStructuredError('4011', 'Missing extension packs in config', {
+    domain: 'CLI',
+    why:
+      missing.length === 1
+        ? `Contract requires extension pack '${missing[0]}', but CLI config does not provide a matching descriptor.`
+        : `Contract requires extension packs ${missing.map((p) => `'${p}'`).join(', ')}, but CLI config does not provide matching descriptors.`,
+    fix: 'Add the missing extension descriptors to `extensions` in prisma-next.config.ts',
+    docsUrl: 'https://prisma-next.dev/docs/cli/config',
+    meta: {
+      missingExtensionPacks: missing,
+      providedComponentIds: [...options.providedComponentIds].sort(),
+    },
+  });
+}
+
+/**
+ * Migration planning failed due to conflicts.
+ */
+export function errorMigrationPlanningFailed(options: {
+  readonly conflicts: readonly CliErrorConflict[];
+  readonly why?: string;
+}): CliStructuredError {
+  const conflictSummaries = options.conflicts.map((c) => c.summary);
+  const computedWhy = options.why ?? conflictSummaries.join('\n');
+
+  const conflictFixes = options.conflicts
+    .map((c) => c.why)
+    .filter((why): why is string => typeof why === 'string');
+  const computedFix =
+    conflictFixes.length > 0
+      ? conflictFixes.join('\n')
+      : 'Use `db verify --schema-only` to inspect conflicts, or ensure the database is empty';
+
+  return new CliStructuredError('4020', 'Migration planning failed', {
+    domain: 'CLI',
+    why: computedWhy,
+    fix: computedFix,
+    meta: { conflicts: options.conflicts },
+    docsUrl: 'https://prisma-next.dev/docs/cli/db-init',
+  });
+}
+
+/**
+ * Target does not support migrations (missing createPlanner/createRunner).
+ */
+export function errorTargetMigrationNotSupported(options?: {
+  readonly why?: string;
+}): CliStructuredError {
+  return new CliStructuredError('4021', 'Target does not support migrations', {
+    domain: 'CLI',
+    why: options?.why ?? 'The configured target does not provide migration planner/runner',
+    fix: 'Select a target that provides migrations (it must export `target.migrations` for db init)',
+    docsUrl: 'https://prisma-next.dev/docs/cli/db-init',
+  });
+}
+
+/**
+ * The migration-file CLI received `--config` without a path argument (either
+ * a bare trailing `--config`, or `--config` followed by another flag like
+ * `--config --dry-run`). Surfacing this as a structured error fails fast
+ * rather than silently consuming the next flag as the config path or
+ * falling back to default discovery against the wrong project.
+ */
+export function errorMigrationCliInvalidConfigArg(options?: {
+  readonly nextToken?: string;
+}): CliStructuredError {
+  const why =
+    options?.nextToken !== undefined
+      ? `\`--config\` was followed by another flag (\`${options.nextToken}\`) instead of a path argument.`
+      : '`--config` was passed without a following path argument.';
+  return new CliStructuredError('4012', '--config flag requires a path argument', {
+    domain: 'CLI',
+    why,
+    fix: 'Pass a config path: `--config <path>` or `--config=<path>`.',
+    meta: options?.nextToken !== undefined ? { nextToken: options.nextToken } : {},
+  });
+}
+
+/**
+ * The migration-file CLI received a flag it does not recognise. Surfaced as a
+ * structured error so consumers can render their own "did you mean"
+ * suggestions from `meta.knownFlags` rather than parsing the message.
+ *
+ * Designed to wrap clipanion's `UnknownSyntaxError` at the parser boundary:
+ * pass the offending token as `flag` and the option declarations as
+ * `knownFlags`.
+ */
+export function errorMigrationCliUnknownFlag(options: {
+  readonly flag: string;
+  readonly knownFlags: readonly string[];
+}): CliStructuredError {
+  const knownList = options.knownFlags.join(', ');
+  return new CliStructuredError('4013', 'Unknown migration CLI flag', {
+    domain: 'CLI',
+    why: `Unknown flag \`${options.flag}\`.`,
+    fix: `Known flags: ${knownList}. Run with \`--help\` to see the full list.`,
+    meta: { flag: options.flag, knownFlags: options.knownFlags },
+  });
+}
+
+/**
+ * The main CLI received an unsupported `--format` value.
+ */
+export function errorInvalidOutputFormat(value: string): CliStructuredError {
+  return new CliStructuredError(
+    '4014',
+    `Invalid --format value "${value}". Allowed values: pretty, json.`,
+    {
+      domain: 'CLI',
+      meta: { value, allowed: ['pretty', 'json'] as const },
+    },
+  );
+}
+
+/**
+ * The main CLI received mutually exclusive output format flags
+ * (`--format pretty` together with `--json`).
+ */
+export function errorOutputFormatMutex(): CliStructuredError {
+  return new CliStructuredError(
+    '4015',
+    'Cannot use --format pretty together with --json. Use --format json or --json alone for JSON output.',
+    { domain: 'CLI' },
+  );
+}
+
+/**
+ * Config validation error (missing required fields).
+ */
+export function errorConfigValidation(
+  field: string,
+  options?: {
+    readonly why?: string;
+  },
+): CliStructuredError {
+  return new CliStructuredError('4009', 'Config validation error', {
+    domain: 'CLI',
+    why: options?.why ?? `Config must have a "${field}" field`,
+    fix: 'Check your prisma-next.config.ts and ensure all required fields are provided',
+    docsUrl: 'https://prisma-next.dev/docs/cli/config',
+  });
+}
+
+// ============================================================================
+// Generic Error
+// ============================================================================
+
+/**
+ * An enum declares a codecId that no component in the contract's pack stack provides,
+ * so its member values cannot be encoded. Thrown by both authoring paths (TS `defineContract`
+ * and PSL interpretation) when the codec lookup built from the contract's packs has no
+ * descriptor for the codecId.
+ */
+export function errorEnumCodecNotInPackStack(options: {
+  readonly codecId: string;
+}): CliStructuredError {
+  return new CliStructuredError(
+    '4016',
+    `Enum codec "${options.codecId}" is not part of the contract's pack stack`,
+    {
+      domain: 'CON',
+      why: `An enum uses codec "${options.codecId}", but no family, target, or extension pack in the contract provides it.`,
+      fix: "Use a codec provided by the contract's target/extension packs, or add the pack that supplies this codec.",
+      meta: { codecId: options.codecId },
+    },
+  );
+}
+
+/**
+ * Generic unexpected error.
+ */
+export function errorUnexpected(
+  message: string,
+  options?: {
+    readonly why?: string;
+    readonly fix?: string;
+  },
+): CliStructuredError {
+  return new CliStructuredError('4999', 'Unexpected error', {
+    domain: 'CLI',
+    why: options?.why ?? message,
+    fix: options?.fix ?? 'Check the error message and try again',
+  });
+}
