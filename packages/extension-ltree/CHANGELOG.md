@@ -1,5 +1,11 @@
 # prisma-ltree
 
+## 0.2.3
+
+### Patch Changes
+
+- Upgrade framework pins to `@prisma-next/*@0.15.0` and re-emit the bundled contract for the 0.15 SPI.
+
 ## 0.2.2
 
 ### Patch Changes
