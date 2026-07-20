@@ -1,9 +1,9 @@
 import type { PostgresContract } from "@prisma-next/adapter-postgres/types";
 import { UNBOUND_DOMAIN_NAMESPACE_ID } from "@prisma-next/contract/types";
-import { SqlContractSerializer } from "@prisma-next/family-sql/ir";
 import { UNBOUND_NAMESPACE_ID } from "@prisma-next/framework-components/ir";
 import type { AnyExpression, LoweredStatement } from "@prisma-next/sql-relational-core/ast";
 import { ColumnRef } from "@prisma-next/sql-relational-core/ast";
+import { PostgresContractSerializer } from "@prisma-next/target-postgres/runtime";
 
 /**
  * A minimal Postgres contract declaring a `node(id int4, path ltree)` table so
@@ -11,7 +11,9 @@ import { ColumnRef } from "@prisma-next/sql-relational-core/ast";
  * the ltree PGlite integration tests.
  */
 export function createLtreeContract(): PostgresContract {
-  return new SqlContractSerializer().deserializeContract({
+  // 0.15+: hydrate through the postgres target serializer so unbound namespaces
+  // become PostgresSchema concretions (generic SqlContractSerializer no longer does).
+  return new PostgresContractSerializer().deserializeContract({
     target: "postgres",
     targetFamily: "sql",
     profileHash: "sha256:test-profile",
@@ -24,6 +26,7 @@ export function createLtreeContract(): PostgresContract {
       namespaces: {
         [UNBOUND_NAMESPACE_ID]: {
           id: UNBOUND_NAMESPACE_ID,
+          kind: "postgres-unbound-schema",
           entries: {
             table: {
               node: {

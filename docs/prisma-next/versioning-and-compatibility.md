@@ -12,7 +12,7 @@ Prisma Next extension work involves **three version concepts** that must not be 
 
 | Axis                             | Example (today)                        | What it means                                                               | When it changes                                                   |
 | -------------------------------- | -------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Framework pin**                | `@prisma-next/*@0.14.0`                | The prisma-next SPI/API version this extension was built and tested against | Each prisma-next **minor** bump, via a deliberate upgrade run     |
+| **Framework pin**                | `@prisma-next/*@0.15.0`                | The prisma-next SPI/API version this extension was built and tested against | Each prisma-next **minor** bump, via a deliberate upgrade run     |
 | **Extension package version**    | `prisma-ltree@0.1.0`                   | Our npm release semver — features, fixes, ltree-specific surface            | When **we** publish; independent of prisma-next cadence           |
 | **Stable extension identifiers** | `pg/ltree@1`, `ltree:install-ltree-v1` | Immutable IDs inside contracts, migrations, and codecs                      | **Never** after first publish — add new IDs (`@2`, `-v2`) instead |
 
@@ -34,8 +34,8 @@ root version. Bumping is mechanical:
 - Native extensions do **not** run the external upgrade skill; they ride the monorepo bump
 - Upgrade instructions are still authored per minor transition (for external authors and release notes)
 
-Reference: `vendor/prisma-next/packages/3-extensions/pgvector/package.json` uses
-`"workspace:0.14.0"` specs instead of exact npm pins.
+Reference: `.sync/prisma-next/packages/3-extensions/pgvector/package.json` uses
+`"workspace:0.15.0"` specs instead of exact npm pins.
 
 ### External extensions (prisma-ltree)
 
@@ -45,7 +45,7 @@ ranges, or `workspace:` in the published `package.json`.
 **Exact-pin rule** (enforced by `prisma-next-check-pins`):
 
 - Every `@prisma-next/*` entry in `dependencies`, `peerDependencies`, and `optionalDependencies` must
-  be a single exact semver (e.g. `"0.14.0"`)
+  be a single exact semver (e.g. `"0.15.0"`)
 - All such entries must share the **same** version
 
 This pin is intentional: it is the highest prisma-next minor the extension author has validated.
@@ -100,14 +100,14 @@ When a **user app** upgrades prisma-next, the `prisma-next-upgrade` skill runs a
 3. Compute the **lowest** pin across all extensions
 4. **Refuse** to upgrade the app past that pin unless the user explicitly accepts the risk
 
-So if `prisma-ltree` pins `0.14.0` and the user wants `0.16.0`, they must wait for (or contribute) a
+So if `prisma-ltree` pins `0.15.0` and the user wants `0.16.0`, they must wait for (or contribute) a
 `prisma-ltree` release that pins `0.16.0` after a successful extension upgrade run.
 
 ## prisma-ltree vs native extensions — checklist
 
 | Concern                                         | Native (`pgvector`)                  | prisma-ltree (ours)                            | Status                   |
 | ----------------------------------------------- | ------------------------------------ | ---------------------------------------------- | ------------------------ |
-| `@prisma-next/*` dep style                      | `workspace:0.14.0`                   | exact `"0.14.0"`                               | ✅ Correct for external  |
+| `@prisma-next/*` dep style                      | `workspace:0.15.0`                   | exact `"0.15.0"`                               | ✅ Correct for external  |
 | `prismaNext` metadata in `package.json`         | not present in monorepo copies       | `{ family, dialects, type }`                   | ✅ Per layout docs       |
 | Runtime SPI deps (`contract`, `sql-runtime`, …) | `dependencies`                       | `dependencies`                                 | ✅ Matches pgvector      |
 | Adapter peer for tests                          | `@prisma-next/adapter-postgres` peer | same                                           | ✅                       |
