@@ -10,7 +10,8 @@ description: >-
   prisma-ltree", "CREATE EXTENSION ltree", "ltree migration", "taxonomy
   table", and brownfield Postgres that already has ltree enabled. Requires
   @prisma-next/* version matching prisma-ltree's pin. Also use when agents need
-  to know ltree is TS-contract-only today or how path strings are validated.
+  to know how path strings are validated, or how to declare GiST indexes on
+  ltree columns (Prisma Next 0.16+).
 ---
 
 # prisma-ltree — Adoption
@@ -29,7 +30,7 @@ This skill takes a Prisma Next **Postgres** app from "no ltree" to "typed `ltree
 ## When Not to Use
 
 - User already has ltree columns wired and wants query examples → `prisma-ltree-queries`.
-- User wants GiST indexes, raw SQL only, or non-Postgres targets → see _What prisma-ltree doesn't do yet_.
+- User wants raw SQL only or non-Postgres targets → see _What prisma-ltree doesn't do yet_.
 - User is authoring the extension package → not this skill.
 
 ## Prerequisites
@@ -39,7 +40,7 @@ Read the project's `package.json` before changing deps:
 | Requirement      | Typical value (verify in npm)                                                   |
 | ---------------- | ------------------------------------------------------------------------------- |
 | Node             | `>=24`                                                                          |
-| `@prisma-next/*` | Exact pin matching `prisma-ltree`'s `peerDependencies` / README (e.g. `0.14.0`) |
+| `@prisma-next/*` | Exact pin matching `prisma-ltree`'s `peerDependencies` / README (e.g. `0.16.0`) |
 | Target           | Postgres only                                                                   |
 
 If the app's `@prisma-next/*` version is **newer** than `prisma-ltree` allows, stop and ask the user to upgrade `prisma-ltree` or align framework versions — do not bump past the extension pin silently.
@@ -47,7 +48,7 @@ If the app's `@prisma-next/*` version is **newer** than `prisma-ltree` allows, s
 Install upstream PN skills when the agent lacks Prisma Next context:
 
 ```bash
-pnpm dlx skills add prisma/prisma-next#v0.14.0 --all
+pnpm dlx skills add prisma/prisma-next#v0.16.0 --all
 pnpm dlx skills add slovakian/prisma-ltree --all
 ```
 
@@ -184,16 +185,15 @@ When inserting rows, build paths in application code (`parentPath.concatText("Ch
 
 1. **Skipping runtime wiring.** Control + contract alone do not register codecs at execute time — queries fail or lack ltree methods if `prisma-ltree/runtime` is missing from `db.ts`.
 2. **Framework / extension version mismatch.** `prisma-ltree` pins exact `@prisma-next/*` versions. Upgrading PN without a matching extension release breaks types and runtime identity.
-3. **Expecting PSL `ltree` types in `contract.prisma`.** Use TypeScript contract authoring until PSL support ships.
+3. **Skipping a GiST index on hot path columns.** Prefer `@@index([path], type: "gist")` (PSL) or `constraints.index(..., { type: "gist" })` (TS) for hierarchy and pattern-match queries (Prisma Next 0.16+).
 4. **Invalid path strings.** Empty labels, double dots, or special characters in labels fail codec validation — normalize slugs before insert.
 5. **Confusing `ltree` and `ltree[]`.** Scalar hierarchy ops live on `ltree()` columns; first-match ops live on `ltreeArray()` columns — different column helpers and methods.
 6. **Hand-running `CREATE EXTENSION` when PN already manages it.** Prefer pack migrations; manual DDL is only for exceptional brownfield cases.
 
 ## What prisma-ltree doesn't do yet
 
-- **PSL contract authoring** — no `ltree` type in `contract.prisma` today. Workaround: TypeScript contract with `ltree()` / `ltreeArray()`.
 - **Non-Postgres targets** — Mongo, SQLite, etc. Workaround: not supported; use Postgres for ltree.
-- **GiST / specialized ltree indexes via the extension** — index DDL is owned by Prisma Next's index story. Workaround: express indexes through PN's index APIs when available, or track as a feature request on the repo.
+- **GiST opclass typmod (`siglen`)** — `gist_ltree_ops(siglen=N)` is not expressible via the index-type registry; declare a plain `type: "gist"` index instead.
 - **`lquery` / `ltxtquery` as column types** — patterns are **string parameters** to `matchesLquery` / `matchesLtxtquery`, not stored column types.
 - **Boolean `ltree[]` operators** (`ltree[] @> ltree`, etc.) — out of scope; use scalar ops or first-match array ops instead.
 

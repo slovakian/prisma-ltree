@@ -12,7 +12,7 @@ Prisma Next extension work involves **three version concepts** that must not be 
 
 | Axis                             | Example (today)                        | What it means                                                               | When it changes                                                   |
 | -------------------------------- | -------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Framework pin**                | `@prisma-next/*@0.15.0`                | The prisma-next SPI/API version this extension was built and tested against | Each prisma-next **minor** bump, via a deliberate upgrade run     |
+| **Framework pin**                | `@prisma-next/*@0.16.0`                | The prisma-next SPI/API version this extension was built and tested against | Each prisma-next **minor** bump, via a deliberate upgrade run     |
 | **Extension package version**    | `prisma-ltree@0.1.0`                   | Our npm release semver — features, fixes, ltree-specific surface            | When **we** publish; independent of prisma-next cadence           |
 | **Stable extension identifiers** | `pg/ltree@1`, `ltree:install-ltree-v1` | Immutable IDs inside contracts, migrations, and codecs                      | **Never** after first publish — add new IDs (`@2`, `-v2`) instead |
 
@@ -34,8 +34,8 @@ root version. Bumping is mechanical:
 - Native extensions do **not** run the external upgrade skill; they ride the monorepo bump
 - Upgrade instructions are still authored per minor transition (for external authors and release notes)
 
-Reference: `.sync/prisma-next/packages/3-extensions/pgvector/package.json` uses
-`"workspace:0.15.0"` specs instead of exact npm pins.
+Reference: `vendor/prisma-next/packages/3-extensions/pgvector/package.json` uses
+`"workspace:0.16.0"` specs instead of exact npm pins.
 
 ### External extensions (prisma-ltree)
 
@@ -45,7 +45,7 @@ ranges, or `workspace:` in the published `package.json`.
 **Exact-pin rule** (enforced by `prisma-next-check-pins`):
 
 - Every `@prisma-next/*` entry in `dependencies`, `peerDependencies`, and `optionalDependencies` must
-  be a single exact semver (e.g. `"0.15.0"`)
+  be a single exact semver (e.g. `"0.16.0"`)
 - All such entries must share the **same** version
 
 This pin is intentional: it is the highest prisma-next minor the extension author has validated.
@@ -100,14 +100,14 @@ When a **user app** upgrades prisma-next, the `prisma-next-upgrade` skill runs a
 3. Compute the **lowest** pin across all extensions
 4. **Refuse** to upgrade the app past that pin unless the user explicitly accepts the risk
 
-So if `prisma-ltree` pins `0.15.0` and the user wants `0.16.0`, they must wait for (or contribute) a
-`prisma-ltree` release that pins `0.16.0` after a successful extension upgrade run.
+So if `prisma-ltree` pins `0.16.0` and the user wants `0.17.0`, they must wait for (or contribute) a
+`prisma-ltree` release that pins `0.17.0` after a successful extension upgrade run.
 
 ## prisma-ltree vs native extensions — checklist
 
 | Concern                                         | Native (`pgvector`)                  | prisma-ltree (ours)                            | Status                   |
 | ----------------------------------------------- | ------------------------------------ | ---------------------------------------------- | ------------------------ |
-| `@prisma-next/*` dep style                      | `workspace:0.15.0`                   | exact `"0.15.0"`                               | ✅ Correct for external  |
+| `@prisma-next/*` dep style                      | `workspace:0.16.0`                   | exact `"0.16.0"`                               | ✅ Correct for external  |
 | `prismaNext` metadata in `package.json`         | not present in monorepo copies       | `{ family, dialects, type }`                   | ✅ Per layout docs       |
 | Runtime SPI deps (`contract`, `sql-runtime`, …) | `dependencies`                       | `dependencies`                                 | ✅ Matches pgvector      |
 | Adapter peer for tests                          | `@prisma-next/adapter-postgres` peer | same                                           | ✅                       |
@@ -141,18 +141,18 @@ When upstream adds extension-author breaking changes, they **must** ship a match
 
 ## Upgrade workflow (extension authors)
 
-When prisma-next releases a new minor (e.g. `0.15.0`):
+When prisma-next releases a new minor (e.g. `0.16.0`):
 
 1. **Sync upstream reference** — `pnpm run sync-prisma-next` (refresh `vendor/prisma-next/`)
 2. **Install/refresh the skill** — `pnpm dlx skills add prisma/prisma-next/skills/extension-author --all`
-3. **Read the transition** — `vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/0.14-to-0.15/instructions.md`
-4. **Bump pins** — set every `@prisma-next/*` in `packages/extension-ltree/package.json` to `"0.15.0"`
+3. **Read the transition** — `vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/0.15-to-0.16/instructions.md`
+4. **Bump pins** — set every `@prisma-next/*` in `packages/extension-ltree/package.json` to `"0.16.0"`
 5. **Install** — `vp install` / `pnpm install`
 6. **Check pins** — `cd packages/extension-ltree && pnpm run check-pins`
 7. **Apply codemods** — per `instructions.md` `changes[]` (scripts in the upgrade directory)
 8. **Re-emit contract** — `pnpm run build:contract-space` if instructions or emit shape changed
 9. **Validate** — `vp run ready` from repo root
-10. **Commit** — one commit per minor step: `chore: upgrade @prisma-next/* to 0.15.0`
+10. **Commit** — one commit per minor step: `chore: upgrade @prisma-next/* to 0.16.0`
 11. **Publish extension** — bump `prisma-ltree` semver if the release includes user-visible changes; the
     framework pin in `package.json` is what consumers need
 

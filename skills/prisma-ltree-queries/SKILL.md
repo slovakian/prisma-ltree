@@ -114,7 +114,7 @@ Predicate helpers (`and`, `or`, ranges) follow `prisma-next-queries` — ltree m
 - **`paths.lcaAll()` on `ltree[]`** — `lca(ltree[])`; scalar paths use `path.lca(other, ...)`.
 - **`Ltree.fromText()` static constructor** — use `text.toLtree()` on text columns.
 - **Automatic path maintenance on insert** — you build/store path strings; triggers or app logic maintain hierarchy.
-- **GiST index helpers** — not in this extension.
+- **GiST opclass typmod (`siglen`)** — declare `type: "gist"` indexes in the contract (Prisma Next 0.16+); `siglen` tuning remains out of scope.
 
 ## Reference Files
 

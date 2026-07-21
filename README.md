@@ -23,7 +23,7 @@ computation — without dropping to raw SQL.
 pnpm add prisma-ltree
 ```
 
-Requires Node `>=24` and `@prisma-next/*@0.14.0` (exact pin — see
+Requires Node `>=24` and `@prisma-next/*@0.16.0` (exact pin — see
 [versioning & compatibility](docs/prisma-next/versioning-and-compatibility.md)).
 
 ## Quickstart

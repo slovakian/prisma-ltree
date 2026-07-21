@@ -68,7 +68,7 @@ instead. Full details (bump types, the Version PR flow, OIDC trusted publishing)
 
 ## Dependency pins
 
-`@prisma-next/*` dependencies are **exact-pinned by design** (currently `@0.14.0`). Do not
+`@prisma-next/*` dependencies are **exact-pinned by design** (currently `@0.16.0`). Do not
 bump them casually — `pnpm run check-pins` enforces alignment, and upgrades follow
 [`docs/prisma-next/versioning-and-compatibility.md`](docs/prisma-next/versioning-and-compatibility.md)
 (one minor per commit).

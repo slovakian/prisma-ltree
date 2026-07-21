@@ -18,6 +18,9 @@ raw SQL.
 - **Array first-match** — find the first matching path in an `ltree[]` column
 - **Baseline migration** — installs the Postgres extension via
   `CREATE EXTENSION IF NOT EXISTS ltree` when the pack is composed
+- **GiST indexes** — declare `@@index([path], type: "gist")` (PSL) or
+  `constraints.index(..., { type: "gist" })` (TS); recommended for hierarchy and
+  pattern-match queries (requires Prisma Next 0.16+)
 
 See the [feature support matrix](https://github.com/slovakian/prisma-ltree/blob/main/docs/feature-support.md)
 for what is supported, planned, or out of scope.
@@ -28,7 +31,7 @@ for what is supported, planned, or out of scope.
 pnpm add prisma-ltree
 ```
 
-Requires Node `>=24` and `@prisma-next/*@0.14.0` (exact pin — see
+Requires Node `>=24` and `@prisma-next/*@0.16.0` (exact pin — see
 [versioning & compatibility](https://github.com/slovakian/prisma-ltree/blob/main/docs/prisma-next/versioning-and-compatibility.md)).
 
 ### Agent skills (optional)
@@ -92,33 +95,49 @@ model Page {
   path        Path
   breadcrumbs Paths
 
+  @@index([path], type: "gist", map: "page_path_gist_idx")
   @@map("page")
 }
 ```
 
+Prefer a **GiST** index on `ltree` / `ltree[]` columns used with ancestor/descendant or
+pattern-match operators. Prisma Next 0.16+ accepts `type: "gist"` in both lanes.
+
 **TypeScript lane**:
 
 ```typescript
-import { int4Column, textColumn } from "@prisma-next/adapter-postgres/column-types";
-import sqlFamily from "@prisma-next/family-sql/pack";
-import { defineContract, field, model } from "@prisma-next/sql-contract-ts/contract-builder";
-import { ltree } from "prisma-ltree/column-types";
-import ltreePack from "prisma-ltree/pack";
-import postgres from "@prisma-next/target-postgres/pack";
+import { defineContract } from "@prisma-next/postgres/contract-builder";
+import ltree from "prisma-ltree/pack";
 
-export const contract = defineContract({
-  family: sqlFamily,
-  target: postgres,
-  extensionPacks: { ltree: ltreePack },
-  models: {
-    Category: model("Category", {
-      fields: {
-        id: field.column(int4Column).id(),
-        name: field.column(textColumn),
-        path: field.column(ltree()),
-      },
-    }).sql({ table: "category" }),
-  },
+export const contract = defineContract({ extensionPacks: { ltree } }, ({ field, model, type }) => {
+  const types = {
+    Path: type.ltree.Ltree(),
+    Paths: type.ltree.LtreeArray(),
+  } as const;
+
+  const Page = model("Page", {
+    fields: {
+      id: field.id.uuidv4String(),
+      path: field.namedType(types.Path),
+      breadcrumbs: field.namedType(types.Paths),
+    },
+  });
+
+  return {
+    types,
+    models: {
+      Page: Page.sql(({ cols, constraints }) => ({
+        table: "page",
+        indexes: [
+          constraints.index([cols.path], {
+            name: "page_path_gist_idx",
+            type: "gist",
+            options: {},
+          }),
+        ],
+      })),
+    },
+  };
 });
 ```
 

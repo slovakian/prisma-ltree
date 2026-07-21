@@ -115,6 +115,53 @@ After editing either contract, re-emit:
 pnpm prisma-next contract emit
 ```
 
+## Indexing with GiST
+
+Hierarchy and pattern-match queries on `ltree` are accelerated by a **GiST** index.
+Prisma Next 0.16+ registers Postgres index access methods (`btree`, `hash`, `gin`,
+`gist`, `spgist`, `brin`) on the Postgres target, so you can declare `type: "gist"`
+in either authoring lane. Migrations emit `CREATE INDEX … USING gist (…)`. PostgreSQL
+picks the operator class from the column type (`gist_ltree_ops` for `ltree`,
+`gist__ltree_ops` for `ltree[]`).
+
+<Tabs items={["PSL", "TypeScript"]}>
+
+<Tab value="PSL">
+
+```prisma title="contract.prisma"
+model Page {
+  id   String @id @default(uuid())
+  path Path
+
+  @@index([path], type: "gist", map: "page_path_gist_idx")
+  @@map("page")
+}
+```
+
+</Tab>
+
+<Tab value="TypeScript">
+
+```typescript title="contract.ts"
+Page: Page.sql(({ cols, constraints }) => ({
+  table: "page",
+  indexes: [
+    constraints.index([cols.path], {
+      name: "page_path_gist_idx",
+      type: "gist",
+      options: {},
+    }),
+  ],
+})),
+```
+
+</Tab>
+
+</Tabs>
+
+Custom operator-class tuning such as `gist_ltree_ops(siglen=N)` is out of scope —
+`siglen` is an opclass typmod, not a `WITH (...)` storage parameter.
+
 ## Next steps
 
 Once your columns are declared, see [Getting Started](/docs/getting-started) for runtime

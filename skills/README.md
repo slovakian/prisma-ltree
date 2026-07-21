@@ -2,7 +2,7 @@
 
 Agent skills for [prisma-ltree](https://github.com/slovakian/prisma-ltree) — typed PostgreSQL `ltree` support in [Prisma Next](https://github.com/prisma/prisma-next) apps.
 
-> **Install the skills version that matches your `prisma-ltree` and `@prisma-next/*` pins.** The skill cluster documents the extension surface at the framework version the package was validated against (today `@prisma-next/*@0.14.0`).
+> **Install the skills version that matches your `prisma-ltree` and `@prisma-next/*` pins.** The skill cluster documents the extension surface at the framework version the package was validated against (today `@prisma-next/*@0.16.0`).
 
 ## What's in the box
 
@@ -17,7 +17,7 @@ One repo path, three consumer skills. Each skill is a `SKILL.md` whose `descript
 These skills assume the user already has (or is setting up) a **Postgres-target Prisma Next app**. For base Prisma Next workflows — init, contract emit, migrations, `db.ts`, generic queries — install the upstream cluster first:
 
 ```bash
-pnpm dlx skills add prisma/prisma-next#v0.14.0 --all
+pnpm dlx skills add prisma/prisma-next#v0.16.0 --all
 ```
 
 ## Install
