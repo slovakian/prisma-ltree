@@ -17,7 +17,7 @@ catalog:
   "@effect/platform-bun": 4.0.0-beta.84
   "@effect/platform-node": 4.0.0-beta.84
   tslib: ^2.8.1
-  "@vitest/coverage-v8": 4.1.9
+  "@vitest/coverage-v8": 4.1.10
   shiki: ^4.2.0
   pkg-pr-new: ^0.0.75
   "@changesets/cli": ^2.31.0
