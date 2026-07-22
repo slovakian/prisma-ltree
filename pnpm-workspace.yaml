@@ -20,7 +20,7 @@ catalog:
   "@vitest/coverage-v8": 4.1.9
   shiki: ^4.2.0
   pkg-pr-new: ^0.0.75
-  "@changesets/cli": ^2.31.0
+  "@changesets/cli": ^2.31.1
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
