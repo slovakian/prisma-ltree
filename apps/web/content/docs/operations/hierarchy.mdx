@@ -3,13 +3,10 @@ title: Hierarchy Operators
 description: Ancestor and descendant checks for tree paths
 ---
 
-Hierarchy operators check whether a row's `ltree` path is an ancestor or descendant of another path. They are methods on **ltree column references** in the SQL query builder.
+Hierarchy operators check whether a row's `ltree` path is an ancestor or descendant of another path. They are methods on **ltree-typed fields** in the ORM lane (and on column references in the SQL query builder).
 
 ```typescript
 import { db } from "../prisma/db";
-import { param } from "@prisma-next/sql-query/param";
-
-const category = db.schema.tables.category;
 ```
 
 PostgreSQL compares the **row's path as the left operand**:
@@ -26,13 +23,11 @@ Both comparisons are **inclusive** of the argument path.
 Returns rows whose path is an ancestor of the argument.
 
 ```typescript
-const plan = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.isAncestorOf(param("target")))
-  .build({ params: { target: "electronics.computers" } });
-
-const rows = await db.runtime().execute(plan);
+const rows = await db.orm.Category.where((c) =>
+  c.path.isAncestorOf("electronics.computers"),
+)
+  .select("id", "path")
+  .all();
 ```
 
 Given `electronics.computers` as the argument:
@@ -48,13 +43,9 @@ Given `electronics.computers` as the argument:
 Returns rows whose path is a descendant of the argument. This is the usual choice for "everything under this prefix."
 
 ```typescript
-const plan = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.isDescendantOf(param("prefix")))
-  .build({ params: { prefix: "electronics" } });
-
-const rows = await db.runtime().execute(plan);
+const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("electronics"))
+  .select("id", "path")
+  .all();
 ```
 
 Given `electronics` as the argument:
@@ -72,33 +63,19 @@ Mnemonic: **`isDescendantOf(prefix)`** → "my path sits under this prefix."
 **All subcategories under `electronics`:**
 
 ```typescript
-const subcategories = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.isDescendantOf(param("prefix")))
-  .build({ params: { prefix: "electronics" } });
-
-await db.runtime().execute(subcategories);
+const subcategories = await db.orm.Category.where((c) =>
+  c.path.isDescendantOf("electronics"),
+)
+  .select("id", "path")
+  .all();
 ```
 
 **All ancestors of a deep path:**
 
 ```typescript
-const ancestors = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.isAncestorOf(param("target")))
-  .build({ params: { target: "electronics.computers.laptops" } });
-
-await db.runtime().execute(ancestors);
-```
-
-## ORM lane (optional)
-
-When your app uses `@prisma-next/sql-orm-client`, the same methods appear on ltree-typed fields:
-
-```typescript
-const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("electronics"))
+const ancestors = await db.orm.Category.where((c) =>
+  c.path.isAncestorOf("electronics.computers.laptops"),
+)
   .select("id", "path")
   .all();
 ```

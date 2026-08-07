@@ -70,5 +70,5 @@ An immutable string identifier (e.g., `pgvector:install-vector-v1`) emitted by b
 }
 ```
 
-External extension packs also exact-pin every `@prisma-next/*` dependency to the framework version
+External extension packs also exact-pin every `@prisma/orm-*` dependency to the framework version
 they were validated against. See [Versioning & Compatibility](./versioning-and-compatibility.md).

@@ -18,7 +18,7 @@ Whichever lane you author in, add `ltree` to `extensions` in `prisma-next.config
 the `ltree` namespace resolves during emit:
 
 ```typescript title="prisma-next.config.ts"
-import { defineConfig } from "@prisma-next/postgres/config";
+import { defineConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
 export default defineConfig({
@@ -69,12 +69,12 @@ The parentheses are **required**, even though these constructors take no argumen
 <Tab value="TypeScript">
 
 ```typescript title="contract.ts"
-import { defineContract } from "@prisma-next/postgres/contract-builder";
+import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import ltree from "prisma-ltree/pack";
 
 export const contract = defineContract(
   {
-    extensionPacks: { ltree },
+    extensions: { ltree },
   },
   ({ field, model, type }) => {
     const types = {

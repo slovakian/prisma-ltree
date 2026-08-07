@@ -68,10 +68,11 @@ instead. Full details (bump types, the Version PR flow, OIDC trusted publishing)
 
 ## Dependency pins
 
-`@prisma-next/*` dependencies are **exact-pinned by design** (currently `@0.14.0`). Do not
+`@prisma/orm-*` dependencies are **exact-pinned by design** (currently `8.0.0-rc.1`). Do not
 bump them casually — `pnpm run check-pins` enforces alignment, and upgrades follow
 [`docs/prisma-next/versioning-and-compatibility.md`](docs/prisma-next/versioning-and-compatibility.md)
-(one minor per commit).
+(one RC / minor step per commit). Use the `prisma-8-extension-upgrade` skill from
+[`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills).
 
 ## Conventions & where things live
 

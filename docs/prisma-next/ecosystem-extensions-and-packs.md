@@ -33,7 +33,7 @@ A pack is a TS/JS package that may provide any subset of four slices:
 
 ## Schema-Contributing Extensions: Contract Spaces
 
-Some extensions ship persistence structures the user's schema references (e.g., pgvector's `vector` type). [ADR 212](https://github.com/prisma/prisma-next/blob/main/docs/architecture%20docs/adrs/ADR%20212%20-%20Contract%20spaces.md) introduces **contract spaces**: each schema-contributing extension owns a `(contract.json, migrations, headRef)` triple.
+Some extensions ship persistence structures the user's schema references (e.g., pgvector's `vector` type). ADR 212 (historical docs from the former `prisma/prisma-next` tree) introduces **contract spaces**: each schema-contributing extension owns a `(contract.json, migrations, headRef)` triple.
 
 ### Descriptor's `contractSpace` field
 
@@ -72,7 +72,7 @@ migrations/
 3. DSL uses pack lane slice to build AST nodes and lower to SQL
 4. Runtime registers pack codecs and optional lints
 
-### Flow: `extensionPacks` in config → contract emit → db init/update applies extension contract-space migration → runtime registers codecs + column methods
+### Flow: `extensions` in config → contract emit → db init/update applies extension contract-space migration → runtime registers codecs + column methods
 
 ## Testing Anatomy
 

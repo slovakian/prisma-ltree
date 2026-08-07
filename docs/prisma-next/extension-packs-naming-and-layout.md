@@ -4,14 +4,15 @@ Source: prisma-next `docs/reference/Extension-Packs-Naming-and-Layout.md`
 
 ## NPM Package Name
 
-- `@prisma-next/extension-<name>` for all extension packs
-  - Examples: `@prisma-next/extension-pgvector`, `@prisma-next/extension-postgis`
+- Prisma-published packs: `@prisma/orm-extension-<name>`
+  - Examples: `@prisma/orm-extension-pgvector`, `@prisma/orm-extension-postgis`
+- External packs (this repo): unscoped names such as `prisma-ltree`
 
 ## Filesystem Location
 
 ```
 packages/
-  3-extensions/              # Domain 3: Extensions
+  3-extensions/              # Domain 3: Extensions (inside prisma/prisma)
     pgvector/                # pgvector extension pack
     <name>/                  # Your extension pack
 ```
@@ -20,7 +21,7 @@ packages/
 
 ```json
 {
-  "name": "@prisma-next/extension-<name>",
+  "name": "@prisma/orm-extension-<name>",
   "prismaNext": {
     "family": "sql",
     "dialects": ["postgres"],
@@ -28,7 +29,6 @@ packages/
   }
 }
 ```
-
 ## Minimal Source Layout
 
 ```
