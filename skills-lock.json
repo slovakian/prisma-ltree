@@ -1,11 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "prisma-8": {
+      "source": "prisma/prisma",
+      "sourceType": "github",
+      "skillPath": "skills/prisma-8/SKILL.md",
+      "computedHash": "2d5d66604858f99cc5bbaf1826947ad17ff745e7ce414f130c0d8c0783fd6a50"
+    },
+    "prisma-8-extension-upgrade": {
+      "source": "prisma/prisma",
+      "sourceType": "github",
+      "skillPath": "skills/prisma-8-extension-upgrade/SKILL.md",
+      "computedHash": "d9d55cd6de1983e83908ef880af9349bcbe0d04b2f2de7c58aebaed32d50a198"
+    },
     "prisma-next-extension-upgrade": {
       "source": "prisma/prisma-next",
       "sourceType": "github",
       "skillPath": "skills/extension-author/prisma-next-extension-upgrade/SKILL.md",
       "computedHash": "7b413918b856186bd053c004923f25e433cfcd7de010fd2a4cddd9f645d7dd46"
+    },
+    "prisma-next-upgrade": {
+      "source": "prisma/prisma",
+      "sourceType": "github",
+      "skillPath": "skills/prisma-next-upgrade/SKILL.md",
+      "computedHash": "0b678734d07ed6e1db6e5a310d84d8c50fa65930c446d8af10f0bf8cc54b47d8"
     },
     "shadcn": {
       "source": "shadcn/ui",
