@@ -1,4 +1,4 @@
-import type { Char } from "@prisma-next/target-postgres/codec-types";
+import type { Char } from "@prisma/orm-target-postgres/target/codec-types";
 
 /**
  * Shared taxonomy types.

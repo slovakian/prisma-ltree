@@ -16,16 +16,16 @@
     "sql": { "defaultInInsert": true, "enums": true, "lateral": true, "returning": true }
   },
   "domain": { "namespaces": { "public": { "models": {} } } },
-  "extensionPacks": {},
+  "extensions": {},
   "meta": {},
-  "profileHash": "sha256:9c8aa3114e84ed3b7ea2bd57526d9c2e1bf7c5292be694e9d3801f566fda7ccb",
+  "profileHash": "9c8aa3114e84ed3b7ea2bd57526d9c2e1bf7c5292be694e9d3801f566fda7ccb",
   "roots": {},
   "schemaVersion": "1",
   "storage": {
     "namespaces": {
       "public": { "entries": { "table": {} }, "id": "public", "kind": "postgres-schema" }
     },
-    "storageHash": "sha256:81cc0a29674d926c9089886b1941ba66d6ce26ec5644fc8a0b7c92a5e9e9876e",
+    "storageHash": "81cc0a29674d926c9089886b1941ba66d6ce26ec5644fc8a0b7c92a5e9e9876e",
     "types": {
       "ltree": { "codecId": "pg/ltree@1", "kind": "codec-instance", "nativeType": "ltree" },
       "ltreeArray": {

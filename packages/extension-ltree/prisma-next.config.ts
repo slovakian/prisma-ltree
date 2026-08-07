@@ -1,8 +1,8 @@
-import postgresAdapter from "@prisma-next/adapter-postgres/control";
-import { defineConfig } from "@prisma-next/cli/config-types";
-import sql from "@prisma-next/family-sql/control";
-import { typescriptContract } from "@prisma-next/sql-contract-ts/config-types";
-import postgres from "@prisma-next/target-postgres/control";
+import postgresAdapter from "@prisma/orm-target-postgres/adapter/control";
+import { defineConfig } from "@prisma/orm-toolchain/cli/config-types";
+import sql from "@prisma/orm-family-sql/family/control";
+import { typescriptContract } from "@prisma/orm-family-sql/contract-ts/config-types";
+import postgres from "@prisma/orm-target-postgres/target/control";
 import { contract } from "./src/contract";
 
 export default defineConfig({

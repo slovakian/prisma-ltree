@@ -100,7 +100,7 @@ assertion guards the 46-taxon count and rejects duplicate / malformed paths.
 | Piece    | Choice                                                  |
 | -------- | ------------------------------------------------------- |
 | Database | Postgres 17 (Docker) — `ltree` ships in the stock image |
-| ORM      | prisma-next (`@prisma-next/postgres`) + `prisma-ltree`  |
+| ORM      | prisma-next (`@prisma/orm-postgres`) + `prisma-ltree`  |
 | App      | TanStack Start (React 19, server functions, Vite)       |
 | Layout   | `d3-hierarchy` (dendrogram) + `@xyflow/react` (canvas)  |
 | UI       | shadcn / radix-ui primitives, Tailwind v4               |

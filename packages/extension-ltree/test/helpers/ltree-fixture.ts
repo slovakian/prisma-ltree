@@ -1,9 +1,9 @@
-import type { PostgresContract } from "@prisma-next/adapter-postgres/types";
-import { UNBOUND_DOMAIN_NAMESPACE_ID } from "@prisma-next/contract/types";
-import { UNBOUND_NAMESPACE_ID } from "@prisma-next/framework-components/ir";
-import type { AnyExpression, LoweredStatement } from "@prisma-next/sql-relational-core/ast";
-import { ColumnRef } from "@prisma-next/sql-relational-core/ast";
-import { PostgresContractSerializer } from "@prisma-next/target-postgres/runtime";
+import type { PostgresContract } from "@prisma/orm-target-postgres/adapter/types";
+import { UNBOUND_DOMAIN_NAMESPACE_ID } from "@prisma/orm-framework/contract/types";
+import { UNBOUND_NAMESPACE_ID } from "@prisma/orm-framework/components/ir";
+import type { AnyExpression, LoweredStatement } from "@prisma/orm-family-sql/relational-core/ast";
+import { ColumnRef } from "@prisma/orm-family-sql/relational-core/ast";
+import { PostgresContractSerializer } from "@prisma/orm-target-postgres/target/runtime";
 
 /**
  * A minimal Postgres contract declaring a `node(id int4, path ltree)` table so
@@ -16,13 +16,13 @@ export function createLtreeContract(): PostgresContract {
   return new PostgresContractSerializer().deserializeContract({
     target: "postgres",
     targetFamily: "sql",
-    profileHash: "sha256:test-profile",
+    profileHash: "test-profile",
     roots: {},
     capabilities: {},
-    extensionPacks: {},
+    extensions: {},
     meta: {},
     storage: {
-      storageHash: "sha256:test-core",
+      storageHash: "test-core",
       namespaces: {
         [UNBOUND_NAMESPACE_ID]: {
           id: UNBOUND_NAMESPACE_ID,

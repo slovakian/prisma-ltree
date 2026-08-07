@@ -1,5 +1,5 @@
-import { buildCodecDescriptorRegistry } from "@prisma-next/sql-relational-core/codec-descriptor-registry";
-import type { CodecDescriptorRegistry } from "@prisma-next/sql-relational-core/query-lane-context";
+import { buildCodecDescriptorRegistry } from "@prisma/orm-family-sql/relational-core/codec-descriptor-registry";
+import type { CodecDescriptorRegistry } from "@prisma/orm-family-sql/relational-core/query-lane-context";
 import { codecDescriptors } from "./codecs";
 
 export const ltreeCodecRegistry: CodecDescriptorRegistry =

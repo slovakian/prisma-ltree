@@ -2,7 +2,7 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { executeContractEmit } from "@prisma-next/cli/control-api";
+import { executeContractEmit } from "@prisma/orm-toolchain/cli/control-api";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
 // Directory holding the PSL/TS fixtures and their configs.
@@ -93,7 +93,7 @@ describe("PSL lane parity", () => {
 
   it("reports PSL_EXTENSION_NAMESPACE_NOT_COMPOSED naming ltree when the extension is not composed", async () => {
     await expect(emit("no-ext.config.ts")).rejects.toMatchObject({
-      code: "3000",
+      code: "CONTRACT.VERIFY_FAILED",
     });
 
     let caught: unknown;

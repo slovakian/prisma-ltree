@@ -55,17 +55,17 @@ CREATE EXTENSION IF NOT EXISTS ltree;
 Add the pack to your `prisma-next.config.ts`:
 
 ```typescript
-import { defineConfig } from "@prisma-next/cli/config-types";
-import postgresAdapter from "@prisma-next/adapter-postgres/control";
-import sql from "@prisma-next/family-sql/control";
-import postgres from "@prisma-next/target-postgres/control";
+import { defineConfig } from "@prisma/orm-toolchain/cli/config-types";
+import postgresAdapter from "@prisma/orm-target-postgres/adapter/control";
+import sql from "@prisma/orm-family-sql/family/control";
+import postgres from "@prisma/orm-target-postgres/target/control";
 import ltree from "prisma-ltree/control";
 
 export default defineConfig({
   family: sql,
   target: postgres,
   adapter: postgresAdapter,
-  extensionPacks: [ltree],
+  extensions: [ltree],
 });
 ```
 
@@ -99,17 +99,17 @@ model Page {
 **TypeScript lane**:
 
 ```typescript
-import { int4Column, textColumn } from "@prisma-next/adapter-postgres/column-types";
-import sqlFamily from "@prisma-next/family-sql/pack";
-import { defineContract, field, model } from "@prisma-next/sql-contract-ts/contract-builder";
+import { int4Column, textColumn } from "@prisma/orm-target-postgres/adapter/column-types";
+import sqlFamily from "@prisma/orm-family-sql/family/pack";
+import { defineContract, field, model } from "@prisma/orm-family-sql/contract-ts/contract-builder";
 import { ltree } from "prisma-ltree/column-types";
 import ltreePack from "prisma-ltree/pack";
-import postgres from "@prisma-next/target-postgres/pack";
+import postgres from "@prisma/orm-target-postgres/target/pack";
 
 export const contract = defineContract({
   family: sqlFamily,
   target: postgres,
-  extensionPacks: { ltree: ltreePack },
+  extensions: { ltree: ltreePack },
   models: {
     Category: model("Category", {
       fields: {
@@ -125,16 +125,16 @@ export const contract = defineContract({
 ### Runtime setup
 
 ```typescript
-import { instantiateExecutionStack } from "@prisma-next/framework-components/execution";
-import { createExecutionContext, createSqlExecutionStack } from "@prisma-next/sql-runtime";
-import postgresAdapter from "@prisma-next/adapter-postgres/runtime";
-import postgresTarget from "@prisma-next/target-postgres/runtime";
+import { instantiateExecutionStack } from "@prisma/orm-framework/components/execution";
+import { createExecutionContext, createSqlExecutionStack } from "@prisma/orm-family-sql/runtime";
+import postgresAdapter from "@prisma/orm-target-postgres/adapter/runtime";
+import postgresTarget from "@prisma/orm-target-postgres/target/runtime";
 import ltree from "prisma-ltree/runtime";
 
 const stack = createSqlExecutionStack({
   target: postgresTarget,
   adapter: postgresAdapter,
-  extensionPacks: [ltree],
+  extensions: [ltree],
 });
 const context = createExecutionContext({ contract, stack });
 const stackInstance = instantiateExecutionStack(stack);

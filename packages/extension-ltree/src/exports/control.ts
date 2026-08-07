@@ -1,13 +1,13 @@
-import type { Contract } from "@prisma-next/contract/types";
+import type { Contract } from "@prisma/orm-framework/contract/types";
 import type {
   CodecControlHooks,
   SqlControlExtensionDescriptor,
-} from "@prisma-next/family-sql/control";
-import { contractSpaceFromJson } from "@prisma-next/migration-tools/spaces";
-import type { SqlStorage } from "@prisma-next/sql-contract/types";
-import baselineMetadata from "../../migrations/app/20260619T2142_install_ltree/migration.json" with { type: "json" };
-import baselineOps from "../../migrations/app/20260619T2142_install_ltree/ops.json" with { type: "json" };
-import headRef from "../../migrations/app/refs/head.json" with { type: "json" };
+} from "@prisma/orm-family-sql/family/control";
+import { contractSpaceFromJson } from "@prisma/orm-toolchain/migration-tools/spaces";
+import type { SqlStorage } from "@prisma/orm-family-sql/contract/types";
+import baselineMetadata from "../../migrations/20260619T2142_install_ltree/migration.json" with { type: "json" };
+import baselineOps from "../../migrations/20260619T2142_install_ltree/ops.json" with { type: "json" };
+import headRef from "../../migrations/refs/head.json" with { type: "json" };
 import contractJson from "../contract.json" with { type: "json" };
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "../core/constants";
 import { LTREE_SPACE_ID, LTREE_BASELINE_MIGRATION_NAME } from "../core/contract-space-constants";

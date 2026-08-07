@@ -1,4 +1,4 @@
-import { defineContract } from "@prisma-next/postgres/contract-builder";
+import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import ltree from "prisma-ltree/pack";
 
 // TS-lane twin of contract.prisma. The `ltree` namespace on `type` is the same
@@ -6,7 +6,7 @@ import ltree from "prisma-ltree/pack";
 // so this contract must emit IR identical to the PSL fixture.
 export const contract = defineContract(
   {
-    extensionPacks: { ltree },
+    extensions: { ltree },
   },
   ({ field, model, type }) => {
     const types = {

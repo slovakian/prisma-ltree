@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Char } from "@prisma-next/target-postgres/codec-types";
+import type { Char } from "@prisma/orm-target-postgres/target/codec-types";
 import { db } from "../prisma/db.server";
 import { validateTaxonLabel } from "../lib/taxon-label";
 import type { TaxonRow } from "./taxonomy";

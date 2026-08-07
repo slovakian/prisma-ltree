@@ -1,11 +1,11 @@
-import type { AnyExpression } from "@prisma-next/sql-relational-core/ast";
+import type { AnyExpression } from "@prisma/orm-family-sql/relational-core/ast";
 import {
   buildOperation,
   type CodecExpression,
   codecOf,
   type Expression,
   toExpr,
-} from "@prisma-next/sql-relational-core/expression";
+} from "@prisma/orm-family-sql/relational-core/expression";
 import type { CodecTypes } from "../types/codec-types";
 import type { QueryOperationTypes } from "../types/operation-types";
 import { ltreeAuthoringTypes } from "./authoring";

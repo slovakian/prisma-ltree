@@ -1,4 +1,4 @@
-import type { AuthoringTypeNamespace } from "@prisma-next/framework-components/authoring";
+import type { AuthoringTypeNamespace } from "@prisma/orm-framework/components/authoring";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./constants";
 import { LTREE_ARRAY_NATIVE_TYPE, LTREE_NATIVE_TYPE } from "./contract-space-constants";
 

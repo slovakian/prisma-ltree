@@ -1,4 +1,4 @@
-import type { SqlRuntimeExtensionDescriptor } from "@prisma-next/sql-runtime";
+import type { SqlRuntimeExtensionDescriptor } from "@prisma/orm-family-sql/runtime";
 import { ltreePackMeta, ltreeQueryOperations } from "../core/descriptor-meta";
 import { ltreeCodecRegistry } from "../core/registry";
 
