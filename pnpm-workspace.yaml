@@ -46,3 +46,9 @@ minimumReleaseAgeExclude:
   - "@distilled.cloud/neon@0.26.1"
   - "@distilled.cloud/planetscale@0.26.1"
   - alchemy@2.0.0-beta.57
+  - '@prisma/orm-family-sql@8.0.0-rc.1'
+  - '@prisma/orm-framework@8.0.0-rc.1'
+  - '@prisma/orm-postgres@8.0.0-rc.1'
+  - '@prisma/orm-target-postgres@8.0.0-rc.1'
+  - '@prisma/orm-toolchain@8.0.0-rc.1'
+  - prisma-next@8.0.0-rc.1
