@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
 import { CodeBlock } from "@/components/code-block";
 import { LtreeDemo } from "@/components/home/ltree-demo";
 import { InstallCommand } from "@/components/install-command";
@@ -7,14 +6,7 @@ import { Button } from "@/components/ui/button";
 import { homeCodeBlocks } from "@/lib/home-code-samples";
 import { demoCodeBlocks } from "@/lib/ltree-demo-data";
 
-const getHomeHighlights = createServerFn({ method: "GET" }).handler(async () => {
-  const { highlightCodeBlocks } = await import("@/lib/shiki.server");
-  const setupBlocks = homeCodeBlocks.filter((block) => !block.id.startsWith("feature."));
-  return { highlights: await highlightCodeBlocks([...setupBlocks, ...demoCodeBlocks]) };
-});
-
 export const Route = createFileRoute("/")({
-  loader: () => getHomeHighlights(),
   component: Home,
   head: () => ({
     meta: [
@@ -31,6 +23,9 @@ export const Route = createFileRoute("/")({
 });
 
 const GITHUB_URL = "https://github.com/slovakian/prisma-ltree";
+
+const homeBlocksById = Object.fromEntries(homeCodeBlocks.map((block) => [block.id, block]));
+const demoBlocksById = Object.fromEntries(demoCodeBlocks.map((block) => [block.id, block]));
 
 interface Op {
   method: string;
@@ -119,8 +114,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 function Home() {
-  const { highlights } = Route.useLoaderData();
-
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-16 md:py-24">
       {/* Hero */}
@@ -161,7 +154,7 @@ function Home() {
           Each operator selects a different slice of the tree. Pick one below to see which nodes
           match, the typed call, and the SQL it runs.
         </p>
-        <LtreeDemo codeHighlights={highlights} />
+        <LtreeDemo codeBlocks={demoBlocksById} />
       </section>
 
       {/* Quickstart */}
@@ -183,7 +176,7 @@ function Home() {
             <p className="mb-3 text-sm text-muted-foreground">
               Add <code>prisma-ltree/control</code> to your config.
             </p>
-            <CodeBlock html={highlights.config.html} />
+            <CodeBlock code={homeBlocksById.config.code} lang={homeBlocksById.config.lang} />
           </div>
           <div>
             <h3 className="mb-2 text-sm font-medium">2. Declare ltree columns</h3>
@@ -194,7 +187,7 @@ function Home() {
               </a>
               .
             </p>
-            <CodeBlock html={highlights.contract.html} />
+            <CodeBlock code={homeBlocksById.contract.code} lang={homeBlocksById.contract.lang} />
           </div>
         </div>
 
@@ -203,7 +196,7 @@ function Home() {
           <p className="mb-3 text-sm text-muted-foreground">
             Operators attach to ltree column references in the query builder.
           </p>
-          <CodeBlock html={highlights.query.html} />
+          <CodeBlock code={homeBlocksById.query.code} lang={homeBlocksById.query.lang} />
         </div>
       </section>
 

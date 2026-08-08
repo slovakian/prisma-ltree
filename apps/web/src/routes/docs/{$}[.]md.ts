@@ -1,16 +1,20 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { markdownPathToSlugs } from "@/lib/source";
-import { getDocsMarkdownResponse } from "@/lib/docs-markdown";
+
+import { getDocsMarkdownText, getDocsPage, markdownPathToSlugs } from "@/lib/docs/content";
 
 export const Route = createFileRoute("/docs/{$}.md")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: ({ params }) => {
         const slugs = markdownPathToSlugs(params._splat?.split("/") ?? []);
-        const response = await getDocsMarkdownResponse(slugs);
-        if (!response) throw notFound();
+        const page = getDocsPage(slugs);
+        if (!page) throw notFound();
 
-        return response;
+        return new Response(getDocsMarkdownText(page), {
+          headers: {
+            "Content-Type": "text/markdown; charset=utf-8",
+          },
+        });
       },
     },
   },

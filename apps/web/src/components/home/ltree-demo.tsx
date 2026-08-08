@@ -8,11 +8,11 @@ const ACCENT = "oklch(0.72 0.14 165)";
 const CYCLE_MS = 3400;
 
 interface LtreeDemoProps {
-  /** Shiki-highlighted snippets keyed by `demo.<opId>`. */
-  codeHighlights: Record<string, { html: string; lang: string }>;
+  /** Raw snippets keyed by `demo.<opId>` — highlighted with TanStack Highlight. */
+  codeBlocks: Record<string, { code: string; lang: string }>;
 }
 
-export function LtreeDemo({ codeHighlights }: LtreeDemoProps) {
+export function LtreeDemo({ codeBlocks }: LtreeDemoProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoPlaying, setAutoPlaying] = useState(true);
 
@@ -35,7 +35,7 @@ export function LtreeDemo({ codeHighlights }: LtreeDemoProps) {
     setAutoPlaying(false);
   }
 
-  const code = codeHighlights[`demo.${activeOp.id}`];
+  const code = codeBlocks[`demo.${activeOp.id}`];
 
   return (
     <div className="overflow-hidden border border-border">
@@ -98,7 +98,7 @@ export function LtreeDemo({ codeHighlights }: LtreeDemoProps) {
         <div className="order-3 bg-background md:col-span-2 md:col-start-1 md:row-start-2">
           <div className="border-t border-border px-4 py-3">
             <p className="mb-3 text-sm text-muted-foreground">{activeOp.caption}</p>
-            <CodeBlock html={code.html} lang={code.lang} />
+            {code ? <CodeBlock code={code.code} lang={code.lang} /> : null}
             <div className="mt-3 flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-3">
               <code className="font-mono text-foreground">{activeOp.method}</code>
               <span className="hidden text-muted-foreground sm:inline" aria-hidden="true">

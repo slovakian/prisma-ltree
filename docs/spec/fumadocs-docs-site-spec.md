@@ -1,8 +1,14 @@
 # Spec: Fumadocs Docs Site for prisma-ltree
 
-**Status:** Approved (2026-06-20)
+**Status:** Approved (2026-06-20), content pipeline updated (2026-08-08)
 **Date:** 2026-06-20
 **Author:** Agent (spec-driven-development → planning-and-task-breakdown)
+
+> **Content pipeline update (2026-08-08):** Docs content now uses **TanStack Markdown**
+> (`content/docs/**/*.md`) and **TanStack Highlight** for code fences. The Fumadocs MDX +
+> Shiki + `createServerFn` content path was removed. Docs still use Fumadocs UI
+> (`DocsLayout` / `DocsPage` / `RootProvider`) with TanStack Start SSR (no RSC /
+> content server-function boundary). See `apps/web/AGENTS.md`.
 
 ---
 

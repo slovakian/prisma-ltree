@@ -13,7 +13,7 @@ pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.1
 
 Or install `prisma-ltree` alone if you already pin the facade:
 
-<InstallCommand />
+<!-- ::install-command -->
 
 `prisma-ltree` exact-pins `@prisma/orm-*` packages to **`8.0.0-rc.1`**. Align `@prisma/orm-postgres` (and any other Prisma Next packages you install) with that pin before continuing. Pre-releases do not match caret ranges like `^0.x`.
 

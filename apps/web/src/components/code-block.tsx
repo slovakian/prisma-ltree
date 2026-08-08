@@ -1,29 +1,37 @@
+import { useMemo } from "react";
+
+import { highlightCodeFence } from "@/lib/highlight";
 import { cn } from "@/lib/utils";
 
 interface CodeBlockProps {
-  html: string;
+  code: string;
   lang?: string;
+  title?: string;
   className?: string;
 }
 
 /**
- * Renders Shiki output produced on the server (route loader / prerender).
- * Inline token styles are baked in at SSR time — no client highlighter bundle.
+ * Standalone highlighted code block for the landing page and interactive demos.
+ * Uses TanStack Highlight synchronously (SSR + client) — no server function.
  */
-export function CodeBlock({ html, lang = "ts", className }: CodeBlockProps) {
+export function CodeBlock({ code, lang = "ts", title, className }: CodeBlockProps) {
+  const rendered = useMemo(() => highlightCodeFence(code, lang, title), [code, lang, title]);
+
+  const label = title ?? (lang === "bash" || lang === "shell" ? "sh" : lang);
+
   return (
     <div
       className={cn(
-        "group relative overflow-hidden border border-border bg-[#1a1b26] text-[#c0caf5]",
+        "th-codeblock group relative overflow-hidden border border-border bg-card text-card-foreground",
         className,
       )}
     >
-      <div className="flex items-center justify-between border-b border-white/10 bg-black/20 px-3 py-1.5">
-        <span className="text-xs text-[#565f89] select-none">{lang}</span>
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-1.5">
+        <span className="text-xs text-muted-foreground select-none">{label}</span>
       </div>
       <div
-        className="shiki-code overflow-x-auto p-4 text-xs leading-relaxed [&_pre]:m-0 [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: html }}
+        className="overflow-x-auto p-4 text-xs leading-relaxed [&_pre]:m-0 [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: rendered.htmlMarkup }}
       />
     </div>
   );

@@ -1,56 +1,52 @@
-import { Suspense } from "react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
-import { useFumadocsLoader } from "fumadocs-core/source/client";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page";
-import browserCollections from "collections/browser";
-import { getMDXComponents } from "@/components/mdx";
+
+import { DocsMarkdown } from "@/components/markdown/docs-markdown";
+import { getDocsPage, getDocsPageTree } from "@/lib/docs/content";
 import { baseOptions } from "@/lib/layout.shared";
-import { source } from "@/lib/source";
 
 export const Route = createFileRoute("/docs/$")({
   component: Page,
-  loader: async ({ params }) => {
+  loader: ({ params }) => {
     const slugs = params._splat ? params._splat.split("/") : [];
-    const data = await serverLoader({ data: slugs });
-    await clientLoader.preload(data.path);
-    return data;
-  },
-});
-
-const serverLoader = createServerFn({ method: "GET" })
-  .validator((slugs: string[]) => slugs)
-  .handler(async ({ data: slugs }) => {
-    const page = source.getPage(slugs);
+    const page = getDocsPage(slugs);
     if (!page) throw notFound();
 
     return {
-      path: page.path,
-      pageTree: await source.serializePageTree(source.getPageTree()),
+      pageTree: getDocsPageTree(),
+      title: page.document.meta.title,
+      description: page.document.meta.description,
+      document: page.document,
+      toc: page.document.headings.map((heading) => ({
+        title: heading.text,
+        url: `#${heading.id}`,
+        depth: heading.level,
+      })),
     };
-  });
-
-const clientLoader = browserCollections.docs.createClientLoader({
-  component({ toc, frontmatter, default: MDX }) {
-    return (
-      <DocsPage toc={toc}>
-        <DocsTitle>{frontmatter.title}</DocsTitle>
-        <DocsDescription>{frontmatter.description}</DocsDescription>
-        <DocsBody>
-          <MDX components={getMDXComponents()} />
-        </DocsBody>
-      </DocsPage>
-    );
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      { title: `${loaderData?.title ?? "Docs"} — prisma-ltree` },
+      ...(loaderData?.description
+        ? [{ name: "description", content: loaderData.description }]
+        : []),
+    ],
+  }),
 });
 
 function Page() {
-  const data = useFumadocsLoader(Route.useLoaderData());
+  const data = Route.useLoaderData();
 
   return (
     <DocsLayout {...baseOptions()} tree={data.pageTree}>
-      <Suspense>{clientLoader.useContent(data.path)}</Suspense>
+      <DocsPage toc={data.toc}>
+        <DocsTitle>{data.title}</DocsTitle>
+        {data.description ? <DocsDescription>{data.description}</DocsDescription> : null}
+        <DocsBody>
+          <DocsMarkdown document={data.document} />
+        </DocsBody>
+      </DocsPage>
     </DocsLayout>
   );
 }
