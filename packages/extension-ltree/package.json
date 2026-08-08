@@ -1,7 +1,7 @@
 {
   "name": "prisma-ltree",
   "version": "0.2.3",
-  "description": "Prisma Next extension pack for PostgreSQL's ltree hierarchical tree data type.",
+  "description": "Prisma Next (8.0.0-rc) extension pack for PostgreSQL's ltree hierarchical tree data type.",
   "homepage": "https://prisma-ltree.procka.org",
   "license": "Apache-2.0",
   "repository": {
@@ -33,44 +33,33 @@
     "test": "vp test",
     "check": "vp check",
     "build:contract-space": "prisma-next contract emit",
-    "check-pins": "prisma-next-check-pins",
+    "check-pins": "node ./scripts/check-pins.mjs",
     "prepublishOnly": "vp run build"
   },
   "dependencies": {
-    "@prisma-next/contract": "0.15.0",
-    "@prisma-next/contract-authoring": "0.15.0",
-    "@prisma-next/family-sql": "0.15.0",
-    "@prisma-next/framework-components": "0.15.0",
-    "@prisma-next/migration-tools": "0.15.0",
-    "@prisma-next/sql-contract": "0.15.0",
-    "@prisma-next/sql-operations": "0.15.0",
-    "@prisma-next/sql-relational-core": "0.15.0",
-    "@prisma-next/sql-runtime": "0.15.0",
-    "@prisma-next/sql-schema-ir": "0.15.0",
+    "@prisma/orm-family-sql": "8.0.0-rc.1",
+    "@prisma/orm-framework": "8.0.0-rc.1",
+    "@prisma/orm-toolchain": "8.0.0-rc.1",
     "@standard-schema/spec": "^1.1.0",
     "arktype": "^2.2.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "catalog:",
-    "@prisma-next/adapter-postgres": "0.15.0",
-    "@prisma-next/cli": "0.15.0",
-    "@prisma-next/extension-author-tools": "0.15.0",
-    "@prisma-next/operations": "0.15.0",
-    "@prisma-next/postgres": "0.15.0",
-    "@prisma-next/sql-contract-ts": "0.15.0",
-    "@prisma-next/target-postgres": "0.15.0",
+    "@prisma/orm-postgres": "8.0.0-rc.1",
+    "@prisma/orm-target-postgres": "8.0.0-rc.1",
     "@types/node": "catalog:",
     "@typescript/native-preview": "7.0.0-dev.20260509.2",
     "@vitest/coverage-v8": "4.1.8",
+    "prisma-next": "8.0.0-rc.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@prisma-next/adapter-postgres": "0.15.0",
+    "@prisma/orm-target-postgres": "8.0.0-rc.1",
     "typescript": ">=5.9"
   },
   "peerDependenciesMeta": {
-    "@prisma-next/adapter-postgres": {
+    "@prisma/orm-target-postgres": {
       "optional": true
     },
     "typescript": {

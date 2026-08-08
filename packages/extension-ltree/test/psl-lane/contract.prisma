@@ -10,7 +10,9 @@ types {
 /// A page in a hierarchy. `path` is its position in the tree; `breadcrumbs`
 /// is the array of ancestor paths.
 model Page {
-  id          String @id @default(uuid())
+  // Char(36) keeps uuid storage aligned with field.id.uuidv4String() after
+  // @default(uuid()) stopped selecting character(N) storage on its own.
+  id          Char(36) @id @default(uuid())
   path        Path
   breadcrumbs Paths
 

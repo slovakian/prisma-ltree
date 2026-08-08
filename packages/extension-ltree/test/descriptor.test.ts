@@ -1,6 +1,6 @@
-import { UNBOUND_NAMESPACE_ID } from "@prisma-next/framework-components/ir";
-import { assertDescriptorSelfConsistency } from "@prisma-next/migration-tools/spaces";
-import { sqlContractCanonicalizationHooks } from "@prisma-next/sql-contract/canonicalization-hooks";
+import { UNBOUND_NAMESPACE_ID } from "@prisma/orm-framework/components/ir";
+import { assertDescriptorSelfConsistency } from "@prisma/orm-toolchain/migration-tools/spaces";
+import { sqlContractCanonicalizationHooks } from "@prisma/orm-family-sql/contract/canonicalization-hooks";
 import { describe, expect, it } from "vite-plus/test";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "../src/core/constants";
 import {

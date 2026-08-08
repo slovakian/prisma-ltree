@@ -3,13 +3,10 @@ title: Pattern Matching Operators
 description: Query paths using lquery and ltxtquery patterns
 ---
 
-Pattern matching operators filter `ltree` paths using PostgreSQL `lquery` and `ltxtquery` syntax. Pattern arguments are **strings** (or `string[]` for array matching) passed through `param()`. They are not separate column types.
+Pattern matching operators filter `ltree` paths using PostgreSQL `lquery` and `ltxtquery` syntax. Pattern arguments are **strings** (or `string[]` for array matching). They are not separate column types.
 
 ```typescript
 import { db } from "../prisma/db";
-import { param } from "@prisma-next/sql-query/param";
-
-const category = db.schema.tables.category;
 ```
 
 ## matchesLquery()
@@ -17,13 +14,9 @@ const category = db.schema.tables.category;
 Match a path against a single `lquery` pattern.
 
 ```typescript
-const plan = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.matchesLquery(param("pattern")))
-  .build({ params: { pattern: "*.computers.*" } });
-
-await db.runtime().execute(plan);
+const rows = await db.orm.Category.where((c) => c.path.matchesLquery("*.computers.*"))
+  .select("id", "path")
+  .all();
 ```
 
 Common `lquery` syntax:
@@ -40,28 +33,25 @@ Common `lquery` syntax:
 **Paths exactly two labels deep:**
 
 ```typescript
-db.sql
-  .from(category)
-  .where(category.columns.path.matchesLquery(param("pat")))
-  .build({ params: { pat: "*{1}.*{1}" } });
+await db.orm.Category.where((c) => c.path.matchesLquery("*{1}.*{1}"))
+  .select("id", "path")
+  .all();
 ```
 
 **Paths under `electronics` at any depth:**
 
 ```typescript
-db.sql
-  .from(category)
-  .where(category.columns.path.matchesLquery(param("pat")))
-  .build({ params: { pat: "electronics.*" } });
+await db.orm.Category.where((c) => c.path.matchesLquery("electronics.*"))
+  .select("id", "path")
+  .all();
 ```
 
 **Direct children of `electronics` only:**
 
 ```typescript
-db.sql
-  .from(category)
-  .where(category.columns.path.matchesLquery(param("pat")))
-  .build({ params: { pat: "electronics.*{1}" } });
+await db.orm.Category.where((c) => c.path.matchesLquery("electronics.*{1}"))
+  .select("id", "path")
+  .all();
 ```
 
 ## matchesLqueryArray()
@@ -69,15 +59,11 @@ db.sql
 Match if the path satisfies **any** pattern in a `string[]`.
 
 ```typescript
-const plan = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.matchesLqueryArray(param("patterns")))
-  .build({
-    params: { patterns: ["electronics.*", "software.*"] },
-  });
-
-await db.runtime().execute(plan);
+const rows = await db.orm.Category.where((c) =>
+  c.path.matchesLqueryArray(["electronics.*", "software.*"]),
+)
+  .select("id", "path")
+  .all();
 ```
 
 **SQL equivalent:** `path ? $1::lquery[]`
@@ -87,33 +73,23 @@ await db.runtime().execute(plan);
 Match using `ltxtquery` full-text-style patterns over path labels (words combined with `&`, `|`, `!`).
 
 ```typescript
-const plan = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.matchesLtxtquery(param("query")))
-  .build({ params: { query: "computer | phone" } });
-
-await db.runtime().execute(plan);
+const rows = await db.orm.Category.where((c) =>
+  c.path.matchesLtxtquery("computer | phone"),
+)
+  .select("id", "path")
+  .all();
 ```
 
 **SQL equivalent:** `path @ $1::ltxtquery`
 
 ## Pattern syntax reference
 
-| Syntax               | Meaning            | Example                                           |
-| -------------------- | ------------------ | ------------------------------------------------- |
-| `*`                  | Zero or more labels | `a.*.c` matches `a.c`, `a.b.c`, …                 |
-| `*{1}` / `*{n,m}`    | Bounded wildcards   | `Top.Science.*{1}`: one label under `Top.Science` |
-| `{a,b}`              | Label alternatives | `{a,b}.c` matches `a.c` or `b.c`                  |
-| `\|` (ltxtquery)     | Boolean OR         | `computer \| phone`                               |
-| `&` (ltxtquery)      | Boolean AND        | `computer & laptop`                               |
+| Syntax            | Meaning             | Example                                           |
+| ----------------- | ------------------- | ------------------------------------------------- |
+| `*`               | Zero or more labels | `a.*.c` matches `a.c`, `a.b.c`, …                 |
+| `*{1}` / `*{n,m}` | Bounded wildcards   | `Top.Science.*{1}`: one label under `Top.Science` |
+| `{a,b}`           | Label alternatives  | `{a,b}.c` matches `a.c` or `b.c`                  |
+| `\|` (ltxtquery)  | Boolean OR          | `computer \| phone`                               |
+| `&` (ltxtquery)   | Boolean AND         | `computer & laptop`                               |
 
 Refer to [PostgreSQL ltree documentation](https://www.postgresql.org/docs/current/ltree.html) for full pattern syntax.
-
-## ORM lane (optional)
-
-```typescript
-await db.orm.Category.where((c) => c.path.matchesLquery("electronics.*"))
-  .select("id", "path")
-  .all();
-```

@@ -169,8 +169,8 @@ function Home() {
         <SectionLabel>Quickstart</SectionLabel>
         <h2 className="text-2xl font-medium">Three steps to your first query</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Requires Node <code>&gt;=24</code> and <code>@prisma-next/*@0.14.0</code>. Full setup in
-          the{" "}
+          Requires Node <code>&gt;=24</code> and Prisma Next{" "}
+          <code>@prisma/orm-postgres@8.0.0-rc.1</code> (exact pin). Full setup in the{" "}
           <a href="/docs/getting-started" className="underline underline-offset-4">
             Getting Started guide
           </a>

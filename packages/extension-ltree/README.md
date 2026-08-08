@@ -28,8 +28,14 @@ for what is supported, planned, or out of scope.
 pnpm add prisma-ltree
 ```
 
-Requires Node `>=24` and `@prisma-next/*@0.14.0` (exact pin — see
+Requires Node `>=24` and Prisma Next **`8.0.0-rc.1`** (exact `@prisma/orm-*` pins — see
 [versioning & compatibility](https://github.com/slovakian/prisma-ltree/blob/main/docs/prisma-next/versioning-and-compatibility.md)).
+
+Consumer apps typically depend on the Postgres facade at the same version:
+
+```bash
+pnpm add @prisma/orm-postgres@8.0.0-rc.1 prisma-ltree
+```
 
 ### Agent skills (optional)
 
@@ -55,17 +61,12 @@ CREATE EXTENSION IF NOT EXISTS ltree;
 Add the pack to your `prisma-next.config.ts`:
 
 ```typescript
-import { defineConfig } from "@prisma-next/cli/config-types";
-import postgresAdapter from "@prisma-next/adapter-postgres/control";
-import sql from "@prisma-next/family-sql/control";
-import postgres from "@prisma-next/target-postgres/control";
+import { defineConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
 export default defineConfig({
-  family: sql,
-  target: postgres,
-  adapter: postgresAdapter,
-  extensionPacks: [ltree],
+  contract: "./src/prisma/contract.ts",
+  extensions: [ltree],
 });
 ```
 
@@ -99,62 +100,54 @@ model Page {
 **TypeScript lane**:
 
 ```typescript
-import { int4Column, textColumn } from "@prisma-next/adapter-postgres/column-types";
-import sqlFamily from "@prisma-next/family-sql/pack";
-import { defineContract, field, model } from "@prisma-next/sql-contract-ts/contract-builder";
+import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import { ltree } from "prisma-ltree/column-types";
 import ltreePack from "prisma-ltree/pack";
-import postgres from "@prisma-next/target-postgres/pack";
 
-export const contract = defineContract({
-  family: sqlFamily,
-  target: postgres,
-  extensionPacks: { ltree: ltreePack },
-  models: {
-    Category: model("Category", {
-      fields: {
-        id: field.column(int4Column).id(),
-        name: field.column(textColumn),
-        path: field.column(ltree()),
-      },
-    }).sql({ table: "category" }),
+export const contract = defineContract(
+  {
+    extensions: { ltree: ltreePack },
   },
-});
+  ({ field, model }) => ({
+    models: {
+      Category: model("Category", {
+        fields: {
+          id: field.id.int(),
+          name: field.string(),
+          path: field.column(ltree()),
+        },
+      }).sql({ table: "category" }),
+    },
+  }),
+);
 ```
 
 ### Runtime setup
 
 ```typescript
-import { instantiateExecutionStack } from "@prisma-next/framework-components/execution";
-import { createExecutionContext, createSqlExecutionStack } from "@prisma-next/sql-runtime";
-import postgresAdapter from "@prisma-next/adapter-postgres/runtime";
-import postgresTarget from "@prisma-next/target-postgres/runtime";
+import postgres from "@prisma/orm-postgres/runtime";
 import ltree from "prisma-ltree/runtime";
+import type { Contract } from "./contract.d";
+import contractJson from "./contract.json" with { type: "json" };
 
-const stack = createSqlExecutionStack({
-  target: postgresTarget,
-  adapter: postgresAdapter,
-  extensionPacks: [ltree],
+export const db = postgres<Contract>({
+  contractJson,
+  extensions: [ltree],
+  url: process.env.DATABASE_URL!,
 });
-const context = createExecutionContext({ contract, stack });
-const stackInstance = instantiateExecutionStack(stack);
 ```
 
 ### Query usage
 
 ```typescript
-import { sql, tables } from "../prisma/query";
-import { param } from "@prisma-next/sql-query/param";
+import { db } from "../prisma/db";
 
 // Find every descendant of "Top.Science"
-const plan = sql
-  .from(tables.category)
-  .select({
-    id: tables.category.columns.id,
-    depth: tables.category.columns.path.nlevel(),
+const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Science"))
+  .select("id", {
+    depth: (c) => c.path.nlevel(),
   })
-  .where(tables.category.columns.path.isDescendantOf(param("prefix")))
-  .build({ params: { prefix: "Top.Science" } });
+  .all();
 ```
 
 ## Operations

@@ -141,7 +141,7 @@ import { ltree } from "prisma-ltree/column-types";
 import ltreePack from "prisma-ltree/pack";
 
 path: field.column(ltree());
-extensionPacks: {
+extensions: {
   ltree: ltreePack;
 }
 ```

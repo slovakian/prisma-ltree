@@ -1,10 +1,10 @@
 # Prisma Next Versioning & Extension Compatibility
 
-How prisma-next versions relate to extension packs, how native extensions (`pgvector`, `postgis`, …)
+How Prisma Next versions relate to extension packs, how native extensions (`pgvector`, `postgis`, …)
 handle it inside the monorepo, and how **prisma-ltree** (an external extension) should stay aligned.
 
 Agents working on upgrades, dependency bumps, or consumer compatibility should read this before
-changing `@prisma-next/*` pins or publishing a release.
+changing `@prisma/orm-*` pins or publishing a release.
 
 ## Three independent version axes
 
@@ -12,113 +12,111 @@ Prisma Next extension work involves **three version concepts** that must not be 
 
 | Axis                             | Example (today)                        | What it means                                                               | When it changes                                                   |
 | -------------------------------- | -------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Framework pin**                | `@prisma-next/*@0.15.0`                | The prisma-next SPI/API version this extension was built and tested against | Each prisma-next **minor** bump, via a deliberate upgrade run     |
-| **Extension package version**    | `prisma-ltree@0.1.0`                   | Our npm release semver — features, fixes, ltree-specific surface            | When **we** publish; independent of prisma-next cadence           |
+| **Framework pin**                | `@prisma/orm-*@8.0.0-rc.1`             | The Prisma Next SPI/API version this extension was built and tested against | Each Prisma Next RC / minor bump, via a deliberate upgrade run    |
+| **Extension package version**    | `prisma-ltree@0.2.3`                   | Our npm release semver — features, fixes, ltree-specific surface            | When **we** publish; independent of Prisma Next cadence           |
 | **Stable extension identifiers** | `pg/ltree@1`, `ltree:install-ltree-v1` | Immutable IDs inside contracts, migrations, and codecs                      | **Never** after first publish — add new IDs (`@2`, `-v2`) instead |
 
 The framework pin is the compatibility contract. Downstream apps read it from our published
-`package.json` and must not upgrade prisma-next past it without a newer `prisma-ltree` release.
+`package.json` and must not upgrade Prisma Next past it without a newer `prisma-ltree` release.
 
 Stable identifiers (`codecId`, `invariantId`, contract space id) survive framework upgrades unchanged.
-They are how migrations, runtime codec registries, and query operators stay coherent across prisma-next
-minors.
+They are how migrations, runtime codec registries, and query operators stay coherent across Prisma Next
+releases.
 
-## How prisma-next manages framework compatibility
+## How Prisma Next manages framework compatibility
 
 ### Monorepo (native extensions)
 
-Inside `prisma/prisma-next`, every package — including `@prisma-next/extension-pgvector` — shares one
-root version. Bumping is mechanical:
+Inside [`prisma/prisma`](https://github.com/prisma/prisma) (the active home for Prisma Next on the
+`8.0.0-rc` line), every package — including `@prisma/orm-extension-pgvector` — shares one root
+version. Bumping is mechanical inside that monorepo.
 
-- `pnpm bump-minor` / `scripts/set-version.ts` rewrites all `workspace:<X.Y.Z>` specs in lockstep
-- Native extensions do **not** run the external upgrade skill; they ride the monorepo bump
-- Upgrade instructions are still authored per minor transition (for external authors and release notes)
-
-Reference: `.sync/prisma-next/packages/3-extensions/pgvector/package.json` uses
-`"workspace:0.15.0"` specs instead of exact npm pins.
+The historical [`prisma/prisma-next`](https://github.com/prisma/prisma-next) repo is **stale**; do
+not treat it as the active product home. A git subtree at `vendor/prisma-next/` remains available
+here as agent reference only.
 
 ### External extensions (prisma-ltree)
 
-Standalone repos consume `@prisma-next/*` from **npm** with **exact version strings** — no `^`, `~`,
-ranges, or `workspace:` in the published `package.json`.
+Standalone repos consume `@prisma/orm-*` from **npm** with **exact version strings** — no `^`, `~`,
+ranges, or `workspace:` in the published `package.json`. Pre-releases such as `8.0.0-rc.1` will not
+match caret ranges like `^0.x`.
 
-**Exact-pin rule** (enforced by `prisma-next-check-pins`):
+**App consumers** install the Postgres facade:
 
-- Every `@prisma-next/*` entry in `dependencies`, `peerDependencies`, and `optionalDependencies` must
-  be a single exact semver (e.g. `"0.15.0"`)
+```bash
+pnpm add @prisma/orm-postgres@8.0.0-rc.1 prisma-ltree
+```
+
+**Extension authors** depend on the SPI packages (exact pin):
+
+| Package                        | Role                                      |
+| ------------------------------ | ----------------------------------------- |
+| `@prisma/orm-framework`        | Framework SPI                             |
+| `@prisma/orm-family-sql`       | SQL family SPI                            |
+| `@prisma/orm-toolchain`        | CLI / migration tooling                   |
+| `@prisma/orm-target-postgres`  | Postgres target (peer)                    |
+
+The retired `@prisma-next/*` package scope is no longer published for this line.
+
+**Exact-pin rule** (enforced by `check-pins`):
+
+- Every `@prisma/orm-*` entry in `dependencies`, `peerDependencies`, and `optionalDependencies` must
+  be a single exact semver (e.g. `"8.0.0-rc.1"`)
 - All such entries must share the **same** version
 
-This pin is intentional: it is the highest prisma-next minor the extension author has validated.
+This pin is intentional: it is the highest Prisma Next version the extension author has validated.
 Consumer apps depend on it for safe upgrades.
 
 ### Per-minor upgrade machinery
 
-Prisma Next ships two agent skills (in the upstream repo under `skills/`):
+Prisma Next ships agent skills from [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills):
 
-| Skill                           | Audience                                         | Purpose                                                                                          |
-| ------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `prisma-next-upgrade`           | **Apps** consuming `@prisma-next/postgres`, etc. | Bump app deps, apply codemods, validate                                                          |
-| `prisma-next-extension-upgrade` | **Extension authors**                            | Bump SPI deps one minor at a time, apply extension-side codemods, run `check-pins`, test, commit |
+| Skill                         | Audience                                      | Purpose                                                                 |
+| ----------------------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
+| `prisma-8`                    | App / product work on Prisma Next             | Contract, queries, migrations, runtime                                  |
+| `prisma-next-upgrade`         | **Apps** consuming `@prisma/orm-postgres`, etc. | Bump app deps, apply codemods, validate                               |
+| `prisma-8-extension-upgrade`  | **Extension authors**                         | Bump SPI deps one step at a time, apply codemods, run `check-pins`, test, commit |
 
-Each minor transition has a directory:
-
-```text
-vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/<from>-to-<to>/
-  instructions.md    # YAML frontmatter + changes[] entries (codemods, prose)
-  *.ts               # Optional codemods
-```
-
-Some transitions have **empty** `changes[]` (no extension-author action). Others are substantial
-(e.g. `0.13→0.14` migration op factories; `0.14→0.15` namespace factory / schema-diff SPI churn).
-Always read the current `instructions.md` for the step you are applying — the skill tracks
-prisma-next `main` and is refreshed with `pnpm dlx skills add prisma/prisma-next/skills/extension-author --all`.
-
-Install the extension-author skill for upgrade work:
+Install / refresh:
 
 ```bash
-pnpm dlx skills add prisma/prisma-next/skills/extension-author --all
+pnpm dlx skills add prisma/prisma/skills --all
 ```
 
-The skill subpath is intentionally **unpinned** (tracks `main`) so codemod fixes apply to all prior
-transitions. The same content is always available locally at
-`vendor/prisma-next/skills/extension-author/` (git subtree; refresh with
-`pnpm run sync-prisma-next`).
-
-Companion CLI (already a devDependency here):
+Companion check (from the extension package):
 
 ```bash
 cd packages/extension-ltree
-pnpm exec prisma-next-check-pins   # exit 0 = pins OK
+pnpm run check-pins   # exit 0 = pins OK
 ```
 
 ### Consumer app guardrail
 
-When a **user app** upgrades prisma-next, the `prisma-next-upgrade` skill runs a **pre-flight**:
+When a **user app** upgrades Prisma Next, the upgrade skill runs a **pre-flight**:
 
-1. Read `prisma-next.config.ts` → list `extensionPacks`
-2. For each installed extension, read `node_modules/<pkg>/package.json` → find `@prisma-next/*` pins
+1. Read `prisma-next.config.ts` → list `extensions`
+2. For each installed extension, read `node_modules/<pkg>/package.json` → find `@prisma/orm-*` pins
 3. Compute the **lowest** pin across all extensions
 4. **Refuse** to upgrade the app past that pin unless the user explicitly accepts the risk
 
-So if `prisma-ltree` pins `0.15.0` and the user wants `0.16.0`, they must wait for (or contribute) a
-`prisma-ltree` release that pins `0.16.0` after a successful extension upgrade run.
+So if `prisma-ltree` pins `8.0.0-rc.1` and the user wants a newer RC, they must wait for (or
+contribute) a `prisma-ltree` release that pins that RC after a successful extension upgrade run.
 
 ## prisma-ltree vs native extensions — checklist
 
-| Concern                                         | Native (`pgvector`)                  | prisma-ltree (ours)                            | Status                   |
-| ----------------------------------------------- | ------------------------------------ | ---------------------------------------------- | ------------------------ |
-| `@prisma-next/*` dep style                      | `workspace:0.15.0`                   | exact `"0.15.0"`                               | ✅ Correct for external  |
-| `prismaNext` metadata in `package.json`         | not present in monorepo copies       | `{ family, dialects, type }`                   | ✅ Per layout docs       |
-| Runtime SPI deps (`contract`, `sql-runtime`, …) | `dependencies`                       | `dependencies`                                 | ✅ Matches pgvector      |
-| Adapter peer for tests                          | `@prisma-next/adapter-postgres` peer | same                                           | ✅                       |
-| `@prisma-next/extension-author-tools`           | not in pgvector package.json         | devDep + `check-pins` script                   | ✅ Required for external |
-| Upgrade skill workflow                          | N/A (monorepo bump)                  | use `prisma-next-extension-upgrade`            | ✅ Documented here       |
-| Stable codec IDs                                | `pg/vector@1`                        | `pg/ltree@1`, `pg/ltree-array@1`               | ✅                       |
-| Stable invariantIds                             | e.g. `pgvector:install-vector-v1`    | `ltree:install-ltree-v1`                       | ✅                       |
-| Contract space on disk                          | `migrations/<space>/`                | `migrations/app/` (space id `ltree`)           | ✅                       |
-| CI pin enforcement                              | upstream monorepo CI                 | `pnpm run check-pins` in `ready` + CI workflow | ✅ wired                 |
+| Concern                                 | Native (`pgvector`)            | prisma-ltree (ours)                          | Status                   |
+| --------------------------------------- | ------------------------------ | -------------------------------------------- | ------------------------ |
+| `@prisma/orm-*` dep style               | monorepo workspace pin         | exact `"8.0.0-rc.1"`                         | ✅ Correct for external  |
+| `prismaNext` metadata in `package.json` | present in published packs     | `{ family, dialects, type }`                 | ✅ Per layout docs       |
+| Runtime SPI deps                        | `dependencies`                 | `dependencies`                               | ✅                       |
+| Target peer for tests                   | `@prisma/orm-target-postgres`  | same                                         | ✅                       |
+| Upgrade skill workflow                  | N/A (monorepo bump)            | use `prisma-8-extension-upgrade`             | ✅ Documented here       |
+| Stable codec IDs                        | `pg/vector@1`                  | `pg/ltree@1`, `pg/ltree-array@1`             | ✅                       |
+| Stable invariantIds                     | e.g. `pgvector:install-…`      | `ltree:install-ltree-v1`                     | ✅                       |
+| Config key                              | `extensions`                   | `extensions` (not `extensionPacks`)          | ✅                       |
+| CI pin enforcement                      | upstream monorepo CI           | `pnpm run check-pins` in `ready` + CI        | ✅ wired                 |
 
-## What breaks vs what stays stable across prisma-next minors
+## What breaks vs what stays stable across Prisma Next releases
 
 **Usually stable** (extension interface / layers):
 
@@ -128,45 +126,40 @@ So if `prisma-ltree` pins `0.15.0` and the user wants `0.16.0`, they must wait f
 - Baseline migration `invariantId` strings
 - Column helpers (`ltree()`, `ltreeArray()`)
 
-**May break on a minor** (requires upgrade instructions):
+**May break on a step** (requires upgrade instructions):
 
-- SPI import paths and type shapes (`Migration` methods vs bare factories — 0.13→0.14)
-- Contract JSON canonicalization (`storage.types` shape, `kind` discriminators — 0.9→0.10)
-- Namespace-scoped APIs (`codecRefForColumn(namespaceId, …)` — 0.12→0.13)
-- Test utility locations (`@prisma-next/test-utils` vs `@prisma-next/contract/testing` — 0.11→0.12)
-- Migration manifest schema (closed manifest, hash recomputation — 0.11→0.12)
+- SPI import paths and type shapes
+- Contract JSON canonicalization
+- Namespace-scoped APIs
+- Test utility locations
+- Migration manifest schema
 
-When upstream adds extension-author breaking changes, they **must** ship a matching
-`upgrades/<from>-to-<to>/instructions.md` entry (enforced upstream by `check:upgrade-coverage`).
+When upstream adds extension-author breaking changes, they ship a matching
+`upgrades/<from>-to-<to>/instructions.md` entry.
 
 ## Upgrade workflow (extension authors)
 
-When prisma-next releases a new minor (e.g. `0.15.0`):
+When Prisma Next publishes a new RC / minor (e.g. `8.0.0-rc.2`):
 
-1. **Sync upstream reference** — `pnpm run sync-prisma-next` (refresh `vendor/prisma-next/`)
-2. **Install/refresh the skill** — `pnpm dlx skills add prisma/prisma-next/skills/extension-author --all`
-3. **Read the transition** — `vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/upgrades/0.14-to-0.15/instructions.md`
-4. **Bump pins** — set every `@prisma-next/*` in `packages/extension-ltree/package.json` to `"0.15.0"`
-5. **Install** — `vp install` / `pnpm install`
-6. **Check pins** — `cd packages/extension-ltree && pnpm run check-pins`
-7. **Apply codemods** — per `instructions.md` `changes[]` (scripts in the upgrade directory)
-8. **Re-emit contract** — `pnpm run build:contract-space` if instructions or emit shape changed
-9. **Validate** — `vp run ready` from repo root
-10. **Commit** — one commit per minor step: `chore: upgrade @prisma-next/* to 0.15.0`
-11. **Publish extension** — bump `prisma-ltree` semver if the release includes user-visible changes; the
-    framework pin in `package.json` is what consumers need
-
-`@prisma-next/extension-author-tools` can stay at the previous pin until convenient — bumping it is
-independent of the framework upgrade (normally a no-op).
+1. **Install/refresh skills** — `pnpm dlx skills add prisma/prisma/skills --all`
+2. **Read the transition** — `prisma-8-extension-upgrade/upgrades/<from>-to-<to>/instructions.md`
+3. **Bump pins** — set every `@prisma/orm-*` in `packages/extension-ltree/package.json` to the target
+4. **Install** — `vp install` / `pnpm install`
+5. **Check pins** — `cd packages/extension-ltree && pnpm run check-pins`
+6. **Apply codemods** — per `instructions.md` `changes[]`
+7. **Re-emit contract** — `pnpm run build:contract-space` if instructions or emit shape changed
+8. **Validate** — `vp run ready` from repo root
+9. **Commit** — one commit per step: `chore: upgrade @prisma/* to 8.0.0-rc.2`
+10. **Publish extension** — bump `prisma-ltree` semver if the release includes user-visible changes
 
 ## Release checklist (prisma-ltree)
 
 Before publishing to npm:
 
 1. `vp run ready` — format, lint, typecheck, test, build, **check-pins**
-2. Framework pin in `package.json` matches the prisma-next version you tested against
-3. `README.md` states the required `@prisma-next/*@<pin>` version
-4. No accidental range pins on `@prisma-next/*`
+2. Framework pin in `package.json` matches the Prisma Next version you tested against
+3. `README.md` states the required `@prisma/orm-postgres@<pin>` / `@prisma/orm-*@<pin>` version
+4. No accidental range pins on `@prisma/orm-*`
 5. Contract/migration artifacts committed if emit changed
 6. `feature-support.md` accurate for the shipped surface
 
@@ -180,10 +173,7 @@ vp run ready                              # full validation (includes check-pins
 cd packages/extension-ltree
 pnpm run check-pins                       # exact-pin enforcement
 pnpm run build:contract-space             # re-emit contract.json / contract.d.ts
-pnpm exec prisma-next migration plan      # plan migration changes
-
-# Refresh upstream prisma-next subtree + upgrade instructions
-pnpm run sync-prisma-next
+pnpm exec prisma-next migration plan      # plan migration changes (CLI bin: prisma-next)
 ```
 
 ## See also
@@ -191,6 +181,6 @@ pnpm run sync-prisma-next
 - [Extension Packs — Naming and Layout](./extension-packs-naming-and-layout.md) — `prismaNext` metadata, exports
 - [Extensions Glossary](./extensions-glossary.md) — `invariantId`, codec terminology
 - [Ecosystem Extensions & Packs](./ecosystem-extensions-and-packs.md) — four-slice model, contract spaces
-- Upstream skill: `vendor/prisma-next/skills/extension-author/prisma-next-extension-upgrade/SKILL.md`
-- Upstream release notes: `vendor/prisma-next/docs/releases/` (breaking changes per minor)
-- Dependency strategy: exact-pin `@prisma-next/*` per this document and `packages/extension-ltree/package.json`
+- Active product home: [`prisma/prisma`](https://github.com/prisma/prisma)
+- Skills: [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills)
+- Dependency strategy: exact-pin `@prisma/orm-*` per this document and `packages/extension-ltree/package.json`

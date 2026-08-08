@@ -1,14 +1,14 @@
-import postgresAdapterControlDescriptor from "@prisma-next/adapter-postgres/control";
-import postgresRuntimeAdapterDescriptor from "@prisma-next/adapter-postgres/runtime";
-import sqlFamilyDescriptor from "@prisma-next/family-sql/control";
-import type { SqlControlAdapter } from "@prisma-next/family-sql/control-adapter";
-import type { ControlExtensionDescriptor } from "@prisma-next/framework-components/control";
-import { createControlStack } from "@prisma-next/framework-components/control";
+import postgresAdapterControlDescriptor from "@prisma/orm-target-postgres/adapter/control";
+import postgresRuntimeAdapterDescriptor from "@prisma/orm-target-postgres/adapter/runtime";
+import sqlFamilyDescriptor from "@prisma/orm-family-sql/family/control";
+import type { SqlControlAdapter } from "@prisma/orm-family-sql/family/control-adapter";
+import type { ControlExtensionDescriptor } from "@prisma/orm-framework/components/control";
+import { createControlStack } from "@prisma/orm-framework/components/control";
 import type {
   RuntimeExtensionDescriptor,
   RuntimeTargetDescriptor,
-} from "@prisma-next/framework-components/execution";
-import postgresTargetControlDescriptor from "@prisma-next/target-postgres/control";
+} from "@prisma/orm-framework/components/execution";
+import postgresTargetControlDescriptor from "@prisma/orm-target-postgres/target/control";
 
 const stubRuntimeTarget: RuntimeTargetDescriptor<"sql", "postgres"> = {
   kind: "target",
@@ -29,13 +29,13 @@ const stubRuntimeTarget: RuntimeTargetDescriptor<"sql", "postgres"> = {
  * with the relevant extension pack(s). Mirrors the pgvector reference helper.
  */
 export function createComposedPostgresAdapter(options: {
-  readonly extensionPacks: readonly RuntimeExtensionDescriptor<"sql", "postgres">[];
+  readonly extensions: readonly RuntimeExtensionDescriptor<"sql", "postgres">[];
 }) {
   return postgresRuntimeAdapterDescriptor.create({
     target: stubRuntimeTarget,
     adapter: postgresRuntimeAdapterDescriptor,
     driver: undefined,
-    extensionPacks: options.extensionPacks,
+    extensions: options.extensions,
   });
 }
 
@@ -44,13 +44,13 @@ export function createComposedPostgresAdapter(options: {
  * extension codecs on the control plane. Mirrors the pgvector reference helper.
  */
 export function createComposedPostgresControlAdapter(options: {
-  readonly extensionPacks: readonly ControlExtensionDescriptor<"sql", "postgres">[];
+  readonly extensions: readonly ControlExtensionDescriptor<"sql", "postgres">[];
 }): SqlControlAdapter<"postgres"> {
   const stack = createControlStack({
     family: sqlFamilyDescriptor,
     target: postgresTargetControlDescriptor,
     adapter: postgresAdapterControlDescriptor,
-    extensionPacks: options.extensionPacks,
+    extensions: options.extensions,
   });
   return postgresAdapterControlDescriptor.create(stack) as SqlControlAdapter<"postgres">;
 }

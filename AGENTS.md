@@ -59,11 +59,14 @@ Working on `apps/web` documentation? Start here:
 
 ## Prisma Next reference (git subtree)
 
-Upstream [prisma/prisma-next](https://github.com/prisma/prisma-next) is vendored at
-`vendor/prisma-next/` as a **git subtree** (committed in this repo). Agents must
-consult it for **reference implementations, SPI types, and test patterns** — it is
-always available after clone; do **not** look for `.sync/prisma-next/` or run a
-clone step before reading it.
+Upstream Prisma Next now lives in [`prisma/prisma`](https://github.com/prisma/prisma)
+(Early Access / `8.0.0-rc` line). A historical layout from
+[prisma/prisma-next](https://github.com/prisma/prisma-next) is vendored at
+`vendor/prisma-next/` as a **git subtree** (committed in this repo) for
+**reference implementations, SPI types, and test patterns** — it is always
+available after clone; do **not** look for `.sync/prisma-next/` or run a
+clone step before reading it. Treat `prisma/prisma-next` as historical/stale
+when linking users to the active product home.
 
 To refresh from upstream (clean working tree required; creates a merge commit):
 
@@ -97,7 +100,7 @@ See [`vendor/README.md`](vendor/README.md) for re-add / pull details.
 
 ## Extension Pack Architecture (Four Slices)
 
-Per [ADR 212](https://github.com/prisma/prisma-next/blob/main/docs/architecture%20docs/adrs/ADR%20212%20-%20Contract%20spaces.md), every pack provides some subset of:
+Per ADR 212 (Contract spaces; historical `prisma/prisma-next` docs), every pack provides some subset of:
 
 1. **Contract slice (compile-time)** — TS contract builder (`defineContract`) emitting codec-instance types, column type registrations; baseline `CREATE EXTENSION` migration
 2. **Query-lane slice (build-time)** — Typed query operators via descriptor metadata (`ltreeQueryOperations()`) lowering to SQL templates
@@ -229,11 +232,11 @@ Mirror tests from postgis (`operations.test.ts` pattern: descriptor metadata, op
 2. `vp check` — format, lint, typecheck
 3. `vp test` — run tests
 4. `vp run build` — build packages
-5. `vp run ready` — full validation (includes `check-pins` for exact `@prisma-next/*` alignment)
+5. `vp run ready` — full validation (includes `check-pins` for exact `@prisma/orm-*` alignment)
 
-### Upgrading prisma-next
+### Upgrading Prisma Next
 
-Do **not** bump `@prisma-next/*` pins casually. Follow
-`docs/prisma-next/versioning-and-compatibility.md` and the upstream
-`prisma-next-extension-upgrade` skill (`vendor/prisma-next/skills/extension-author/`).
-One minor per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.
+Do **not** bump `@prisma/orm-*` pins casually. Follow
+`docs/prisma-next/versioning-and-compatibility.md` and the
+`prisma-8-extension-upgrade` skill (from `prisma/prisma/skills`).
+One RC / minor step per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.

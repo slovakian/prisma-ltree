@@ -1,11 +1,11 @@
 #!/usr/bin/env -S node
-import { Migration, MigrationCLI, col, primaryKey } from "@prisma-next/postgres/migration";
+import { Migration, MigrationCLI, col, primaryKey } from "@prisma/orm-target-postgres/target/migration";
 
 export default class M extends Migration {
   override describe() {
     return {
       from: null,
-      to: "sha256:3598d200521bad542c32c8cdb6d5c2adbe0be4f092857b12dbe5aa2faff59f31",
+      to: "3598d200521bad542c32c8cdb6d5c2adbe0be4f092857b12dbe5aa2faff59f31",
     };
   }
 

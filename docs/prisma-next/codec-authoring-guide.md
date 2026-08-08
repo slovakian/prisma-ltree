@@ -12,7 +12,7 @@ A codec is **three artifacts**:
 
 ## Framework Imports
 
-From `@prisma-next/framework-components/codec`:
+From `@prisma/orm-framework/components/codec`:
 
 - `CodecImpl<Id, TTraits, TWire, TInput>` — abstract codec base class
 - `CodecDescriptorImpl<P>` — abstract descriptor base class

@@ -1,8 +1,9 @@
 # prisma-ltree · Tree of Life
 
 An interactive viewer for PostgreSQL's [`ltree`](https://www.postgresql.org/docs/current/ltree.html)
-hierarchical type, driven through [prisma-next](https://github.com/prisma/prisma-next)
-and the [`prisma-ltree`](https://www.npmjs.com/package/prisma-ltree) extension.
+hierarchical type, driven through [Prisma Next](https://github.com/prisma/prisma)
+(`@prisma/orm-postgres` on the `8.0.0-rc` line) and the
+[`prisma-ltree`](https://www.npmjs.com/package/prisma-ltree) extension.
 
 It models a **Catarrhini-rooted phylogenetic tree** — Old World monkeys and apes,
 detailed through Hominoidea down to living and key extinct _Homo_ species — and
@@ -100,7 +101,7 @@ assertion guards the 46-taxon count and rejects duplicate / malformed paths.
 | Piece    | Choice                                                  |
 | -------- | ------------------------------------------------------- |
 | Database | Postgres 17 (Docker) — `ltree` ships in the stock image |
-| ORM      | prisma-next (`@prisma-next/postgres`) + `prisma-ltree`  |
+| ORM      | Prisma Next (`@prisma/orm-postgres@8.0.0-rc.1`) + `prisma-ltree` |
 | App      | TanStack Start (React 19, server functions, Vite)       |
 | Layout   | `d3-hierarchy` (dendrogram) + `@xyflow/react` (canvas)  |
 | UI       | shadcn / radix-ui primitives, Tailwind v4               |

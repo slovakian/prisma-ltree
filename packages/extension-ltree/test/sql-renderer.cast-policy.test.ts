@@ -5,7 +5,7 @@ import {
   ProjectionItem,
   SelectAst,
   TableSource,
-} from "@prisma-next/sql-relational-core/ast";
+} from "@prisma/orm-family-sql/relational-core/ast";
 import { describe, expect, it } from "vite-plus/test";
 import ltreeRuntimeDescriptor from "../src/exports/runtime";
 import { createComposedPostgresAdapter } from "./helpers/composed-adapter";
@@ -13,9 +13,9 @@ import { createLtreeContract } from "./helpers/ltree-fixture";
 
 describe("ltree cast policy", () => {
   const contract = createLtreeContract();
-  const adapter = createComposedPostgresAdapter({ extensionPacks: [ltreeRuntimeDescriptor] });
+  const adapter = createComposedPostgresAdapter({ extensions: [ltreeRuntimeDescriptor] });
 
-  it("emits $1::ltree when ltree is installed via stack.extensionPacks", () => {
+  it("emits $1::ltree when ltree is installed via stack.extensions", () => {
     // Regression: the runtime descriptor must surface codecs via `types.codecTypes.codecDescriptors`
     // so the adapter resolves `pg/ltree@1` and the renderer emits `::ltree`. Without the stack
     // extension pack, lowered SQL silently regresses to bare `$1`.

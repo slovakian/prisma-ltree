@@ -1,4 +1,5 @@
-import type { AnyCodecDescriptor } from "@prisma-next/sql-relational-core/ast";
+import type { AnyCodecDescriptor } from "@prisma/orm-family-sql/relational-core/ast";
+import type { AnyPostgresCodecDescriptor } from "@prisma/orm-target-postgres/target/codec-descriptor";
 import { expectTypeOf, test } from "vite-plus/test";
 import {
   codecDescriptors,
@@ -9,8 +10,8 @@ import {
 } from "../src/core/codecs";
 import type { CodecTypes, Ltree, LtreeArray } from "../src/exports/codec-types";
 
-test("codecDescriptors is a readonly AnyCodecDescriptor list", () => {
-  expectTypeOf(codecDescriptors).toEqualTypeOf<readonly AnyCodecDescriptor[]>();
+test("codecDescriptors is a readonly AnyPostgresCodecDescriptor list", () => {
+  expectTypeOf(codecDescriptors).toExtend<readonly AnyPostgresCodecDescriptor[]>();
   expectTypeOf<(typeof codecDescriptors)[number]>().toExtend<AnyCodecDescriptor>();
 });
 

@@ -1,4 +1,4 @@
-import { defineConfig } from "@prisma-next/postgres/config";
+import { defineConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
 export default defineConfig({

@@ -8,7 +8,7 @@ import {
   ProjectionItem,
   SelectAst,
   TableSource,
-} from "@prisma-next/sql-relational-core/ast";
+} from "@prisma/orm-family-sql/relational-core/ast";
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 import ltreeRuntimeDescriptor from "../../src/exports/runtime";
 import { createComposedPostgresAdapter } from "../helpers/composed-adapter";
@@ -27,7 +27,7 @@ import {
  */
 
 const contract = createLtreeContract();
-const adapter = createComposedPostgresAdapter({ extensionPacks: [ltreeRuntimeDescriptor] });
+const adapter = createComposedPostgresAdapter({ extensions: [ltreeRuntimeDescriptor] });
 const ops = ltreeRuntimeDescriptor.queryOperations!();
 
 function opExpr(method: string, self: AnyExpression, ...args: unknown[]): AnyExpression {

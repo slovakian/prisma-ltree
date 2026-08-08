@@ -7,17 +7,23 @@ This guide wires the `prisma-ltree` extension pack into a **Prisma Next** Postgr
 
 ## Installation
 
+```bash
+pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.1
+```
+
+Or install `prisma-ltree` alone if you already pin the facade:
+
 <InstallCommand />
 
-`prisma-ltree` pins exact `@prisma-next/*` versions. Align your framework packages with the extension's peer dependency before continuing.
+`prisma-ltree` exact-pins `@prisma/orm-*` packages to **`8.0.0-rc.1`**. Align `@prisma/orm-postgres` (and any other Prisma Next packages you install) with that pin before continuing. Pre-releases do not match caret ranges like `^0.x`.
 
 ## Configuration
 
 Register the pack in `prisma-next.config.ts`:
 
 ```typescript
+import { defineConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
-import { defineConfig } from "@prisma-next/postgres/config";
 
 export default defineConfig({
   contract: "./src/prisma/contract.ts",
@@ -28,7 +34,7 @@ export default defineConfig({
 });
 ```
 
-Projects using the verbose multi-import config shape use the same control import with `extensionPacks: [ltree]` instead of `extensions`.
+Use the config key `extensions` (not `extensionPacks`).
 
 ## Contract
 
@@ -37,27 +43,26 @@ Declare `ltree` columns in either authoring lane: `contract.prisma` (PSL) or `co
 This guide uses the **TypeScript contract** with `ltree()` from `prisma-ltree/column-types`.
 
 ```typescript
-import { int4Column, textColumn } from "@prisma-next/adapter-postgres/column-types";
-import sqlFamily from "@prisma-next/family-sql/pack";
-import { defineContract, field, model } from "@prisma-next/sql-contract-ts/contract-builder";
+import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import { ltree } from "prisma-ltree/column-types";
 import ltreePack from "prisma-ltree/pack";
-import postgres from "@prisma-next/target-postgres/pack";
 
-export const contract = defineContract({
-  family: sqlFamily,
-  target: postgres,
-  extensionPacks: { ltree: ltreePack },
-  models: {
-    Category: model("Category", {
-      fields: {
-        id: field.column(int4Column).id(),
-        name: field.column(textColumn),
-        path: field.column(ltree()),
-      },
-    }).sql({ table: "category" }),
+export const contract = defineContract(
+  {
+    extensions: { ltree: ltreePack },
   },
-});
+  ({ field, model }) => ({
+    models: {
+      Category: model("Category", {
+        fields: {
+          id: field.id.int(),
+          name: field.string(),
+          path: field.column(ltree()),
+        },
+      }).sql({ table: "category" }),
+    },
+  }),
+);
 ```
 
 Re-emit after contract edits:
@@ -71,8 +76,8 @@ pnpm prisma-next contract emit
 Register codecs and query operations at execute time:
 
 ```typescript
+import postgres from "@prisma/orm-postgres/runtime";
 import ltree from "prisma-ltree/runtime";
-import postgres from "@prisma-next/postgres/runtime";
 import type { Contract } from "./contract.d";
 import contractJson from "./contract.json" with { type: "json" };
 
@@ -102,41 +107,25 @@ Paths are plain strings validated by the codec (dot-separated labels, e.g. `elec
 ```typescript
 import { db } from "./prisma/db";
 
-const category = db.schema.tables.category;
-
 async function seedCategories() {
-  const runtime = await db.runtime();
-
-  await runtime.execute(
-    db.sql.public.category
-      .insert([
-        { path: "electronics", name: "Electronics" },
-        { path: "electronics.computers", name: "Computers" },
-        { path: "electronics.computers.laptops", name: "Laptops" },
-      ])
-      .returning("id", "path", "name")
-      .build(),
-  );
+  await db.orm.Category.createMany([
+    { path: "electronics", name: "Electronics" },
+    { path: "electronics.computers", name: "Computers" },
+    { path: "electronics.computers.laptops", name: "Laptops" },
+  ]);
 }
 ```
 
 ## Basic queries
 
-Ltree operators attach to **column references** in the SQL query builder (or on ltree fields in the optional ORM lane). They do not appear as nested Prisma Client `where` objects.
+Ltree operators attach to **ltree-typed fields** in the ORM lane (and to column references in the SQL query builder). They do not appear as nested Prisma Client `where` objects.
 
 ```typescript
 import { db } from "./prisma/db";
-import { param } from "@prisma-next/sql-query/param";
 
-const category = db.schema.tables.category;
-
-const plan = db.sql
-  .from(category)
-  .select({ id: category.columns.id, path: category.columns.path })
-  .where(category.columns.path.isDescendantOf(param("prefix")))
-  .build({ params: { prefix: "electronics" } });
-
-const rows = await db.runtime().execute(plan);
+const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("electronics"))
+  .select("id", "path")
+  .all();
 ```
 
 See [Hierarchy Operators](/docs/operations/hierarchy) and [Pattern Matching](/docs/operations/pattern-matching) for the full operator set.

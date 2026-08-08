@@ -1,4 +1,4 @@
-import { defineContract } from "@prisma-next/postgres/contract-builder";
+import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./core/constants";
 import {
   LTREE_ARRAY_STORAGE_TYPE,

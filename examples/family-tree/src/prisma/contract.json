@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "targetFamily": "sql",
   "target": "postgres",
-  "profileHash": "sha256:9c8aa3114e84ed3b7ea2bd57526d9c2e1bf7c5292be694e9d3801f566fda7ccb",
+  "profileHash": "9c8aa3114e84ed3b7ea2bd57526d9c2e1bf7c5292be694e9d3801f566fda7ccb",
   "roots": {
     "taxon": {
       "model": "Taxon",
@@ -210,7 +210,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "sha256:3598d200521bad542c32c8cdb6d5c2adbe0be4f092857b12dbe5aa2faff59f31",
+    "storageHash": "3598d200521bad542c32c8cdb6d5c2adbe0be4f092857b12dbe5aa2faff59f31",
     "types": {
       "Path": {
         "codecId": "pg/ltree@1",
@@ -220,7 +220,7 @@
     }
   },
   "execution": {
-    "executionHash": "sha256:2eab8e74aa05b3a48a9d465f18981c505d28cf4fe434a88901d95fc416f32cc2",
+    "executionHash": "2eab8e74aa05b3a48a9d465f18981c505d28cf4fe434a88901d95fc416f32cc2",
     "mutations": {
       "defaults": [
         {
@@ -254,7 +254,7 @@
       "returning": true
     }
   },
-  "extensionPacks": {
+  "extensions": {
     "ltree": {
       "capabilities": {
         "postgres": {

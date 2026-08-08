@@ -1,4 +1,4 @@
-import type { ColumnTypeDescriptor } from "@prisma-next/framework-components/codec";
+import type { ColumnTypeDescriptor } from "@prisma/orm-framework/components/codec";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "../core/constants";
 import { LTREE_ARRAY_NATIVE_TYPE, LTREE_NATIVE_TYPE } from "../core/contract-space-constants";
 

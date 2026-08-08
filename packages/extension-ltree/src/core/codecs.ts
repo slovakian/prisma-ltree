@@ -1,16 +1,18 @@
-import type { JsonValue } from "@prisma-next/contract/types";
+import type { JsonValue } from "@prisma/orm-framework/contract/types";
 import {
-  type AnyCodecDescriptor,
   type CodecCallContext,
-  CodecDescriptorImpl,
   CodecImpl,
   type CodecInstanceContext,
   type ColumnHelperFor,
   type ColumnHelperForStrict,
   column,
   voidParamsSchema,
-} from "@prisma-next/framework-components/codec";
-import type { ExtractCodecTypes } from "@prisma-next/sql-relational-core/ast";
+} from "@prisma/orm-framework/components/codec";
+import type { ExtractCodecTypes, ProjectionExpr } from "@prisma/orm-family-sql/relational-core/ast";
+import {
+  definePostgresCodecs,
+  PostgresCodecDescriptor,
+} from "@prisma/orm-target-postgres/target/codec-descriptor";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import {
   LTREE_ARRAY_CODEC_ID,
@@ -76,13 +78,17 @@ export class LtreeCodec extends CodecImpl<
   }
 }
 
-const LTREE_META = { db: { sql: { postgres: { nativeType: LTREE_NATIVE_TYPE } } } } as const;
-
-export class LtreeDescriptor extends CodecDescriptorImpl<void> {
+export class LtreeDescriptor extends PostgresCodecDescriptor<void> {
+  protected override nativeType(): string {
+    return LTREE_NATIVE_TYPE;
+  }
+  protected override jsonProjection(expression: ProjectionExpr): ProjectionExpr {
+    // ltree's text form is already its canonical JSON string.
+    return expression;
+  }
   override readonly codecId = LTREE_CODEC_ID;
   override readonly traits = ["equality", "order"] as const;
   override readonly targetTypes = [LTREE_NATIVE_TYPE] as const;
-  override readonly meta = LTREE_META;
   override readonly paramsSchema: StandardSchemaV1<void> = voidParamsSchema;
   override renderOutputType(): string {
     return "string";
@@ -100,10 +106,6 @@ export const ltree = () =>
 
 ltree satisfies ColumnHelperFor<LtreeDescriptor>;
 ltree satisfies ColumnHelperForStrict<LtreeDescriptor>;
-
-const LTREE_ARRAY_META = {
-  db: { sql: { postgres: { nativeType: LTREE_ARRAY_NATIVE_TYPE } } },
-} as const;
 
 export class LtreeArrayCodec extends CodecImpl<
   typeof LTREE_ARRAY_CODEC_ID,
@@ -140,11 +142,17 @@ export class LtreeArrayCodec extends CodecImpl<
   }
 }
 
-export class LtreeArrayDescriptor extends CodecDescriptorImpl<void> {
+export class LtreeArrayDescriptor extends PostgresCodecDescriptor<void> {
+  protected override nativeType(): string {
+    return LTREE_ARRAY_NATIVE_TYPE;
+  }
+  protected override jsonProjection(expression: ProjectionExpr): ProjectionExpr {
+    // ltree[] text form projects as a JSON string array already.
+    return expression;
+  }
   override readonly codecId = LTREE_ARRAY_CODEC_ID;
   override readonly traits = ["equality"] as const;
   override readonly targetTypes = [LTREE_ARRAY_NATIVE_TYPE] as const;
-  override readonly meta = LTREE_ARRAY_META;
   override readonly paramsSchema: StandardSchemaV1<void> = voidParamsSchema;
   override renderOutputType(): string {
     return "readonly string[]";
@@ -175,4 +183,4 @@ const codecDescriptorMap = {
 
 export type CodecTypes = ExtractCodecTypes<typeof codecDescriptorMap>;
 
-export const codecDescriptors: readonly AnyCodecDescriptor[] = Object.values(codecDescriptorMap);
+export const codecDescriptors = definePostgresCodecs(Object.values(codecDescriptorMap));

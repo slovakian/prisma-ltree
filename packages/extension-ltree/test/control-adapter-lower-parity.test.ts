@@ -6,7 +6,7 @@ import {
   ProjectionItem,
   SelectAst,
   TableSource,
-} from "@prisma-next/sql-relational-core/ast";
+} from "@prisma/orm-family-sql/relational-core/ast";
 import { describe, expect, it } from "vite-plus/test";
 import ltreeControl from "../src/exports/control";
 import ltreeRuntime from "../src/exports/runtime";
@@ -20,8 +20,8 @@ const contract = createLtreeContract();
 
 // Compose ltree on both planes so runtime and control codec lookups both contain
 // `pg/ltree@1` / `pg/ltree-array@1`. Parity requires both sides to see the same set.
-const runtimeAdapter = createComposedPostgresAdapter({ extensionPacks: [ltreeRuntime] });
-const controlAdapter = createComposedPostgresControlAdapter({ extensionPacks: [ltreeControl] });
+const runtimeAdapter = createComposedPostgresAdapter({ extensions: [ltreeRuntime] });
+const controlAdapter = createComposedPostgresControlAdapter({ extensions: [ltreeControl] });
 
 function expectParity(ast: AnyQueryAst): void {
   const runtime = runtimeAdapter.lower(ast, { contract });

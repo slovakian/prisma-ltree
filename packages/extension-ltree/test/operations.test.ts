@@ -1,6 +1,6 @@
-import type { CodecRef } from "@prisma-next/framework-components/codec";
-import { createSqlOperationRegistry } from "@prisma-next/sql-operations";
-import { OperationExpr, ParamRef } from "@prisma-next/sql-relational-core/ast";
+import type { CodecRef } from "@prisma/orm-framework/components/codec";
+import { createSqlOperationRegistry } from "@prisma/orm-family-sql/operations";
+import { OperationExpr, ParamRef } from "@prisma/orm-family-sql/relational-core/ast";
 import { describe, expect, it } from "vite-plus/test";
 import ltreeRuntimeDescriptor from "../src/exports/runtime";
 
