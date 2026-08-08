@@ -19,7 +19,7 @@ catalog:
   tslib: ^2.8.1
   "@vitest/coverage-v8": 4.1.9
   pkg-pr-new: ^0.0.75
-  "@changesets/cli": ^2.31.0
+  "@changesets/cli": ^2.31.1
   "@tanstack/markdown": ^0.0.13
   "@tanstack/highlight": ^0.0.10
 overrides:
