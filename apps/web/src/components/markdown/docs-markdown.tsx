@@ -40,6 +40,18 @@ function MarkdownLink({
   );
 }
 
+/**
+ * Opt fenced blocks out of Fumadocs `.prose` inline-`code` chrome.
+ * Matches how fumadocs-ui `CodeBlock` uses `not-prose` on its figure wrapper.
+ */
+function MarkdownPre({ className, ...props }: React.HTMLAttributes<HTMLPreElement>) {
+  return <pre {...props} className={cn("not-prose", className)} />;
+}
+
+function MarkdownFigure({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
+  return <figure {...props} className={cn("not-prose", className)} />;
+}
+
 export function DocsMarkdown({ document, className }: DocsMarkdownProps) {
   return (
     <div className={cn("markdown-renderer", className)}>
@@ -47,6 +59,8 @@ export function DocsMarkdown({ document, className }: DocsMarkdownProps) {
         highlighter={highlightMarkdownCode}
         components={{
           a: MarkdownLink,
+          pre: MarkdownPre,
+          figure: MarkdownFigure,
           "md-comment-component": MdCommentComponent,
           "md-tab-panel": MdTabPanel,
         }}

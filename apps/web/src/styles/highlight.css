@@ -287,6 +287,22 @@
   line-height: 1.625;
 }
 
+/*
+ * Fumadocs `.prose` styles every `code` like inline code (muted bg, border,
+ * padding). `code` is display:inline, so that background paints per line box
+ * inside fenced blocks. Reset block `<pre><code>` so only bare `code` keeps
+ * the inline look. Mirrors Tailwind Typography's `pre code` exception.
+ */
+.prose :where(pre code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  background: transparent;
+  border-width: 0;
+  border-radius: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
 .markdown-renderer figure.tm-code-frame {
   margin: 1rem 0;
   overflow: hidden;
