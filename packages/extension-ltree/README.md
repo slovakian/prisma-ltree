@@ -149,6 +149,7 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
   })
   .all();
 ```
+
 ## Operations
 
 ### Hierarchy (→ boolean)

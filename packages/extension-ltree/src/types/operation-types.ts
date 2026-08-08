@@ -1,5 +1,8 @@
 import type { SqlQueryOperationTypes } from "@prisma/orm-family-sql/contract/types";
-import type { CodecExpression, Expression } from "@prisma/orm-family-sql/relational-core/expression";
+import type {
+  CodecExpression,
+  Expression,
+} from "@prisma/orm-family-sql/relational-core/expression";
 
 type CodecTypesBase = Record<string, { readonly input: unknown; readonly output: unknown }>;
 
