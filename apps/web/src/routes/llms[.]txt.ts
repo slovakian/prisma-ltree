@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { llms } from "fumadocs-core/source";
-import { source } from "@/lib/source";
+
+import { buildLlmsIndex } from "@/lib/docs/content";
 
 export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
       GET() {
-        return new Response(llms(source).index());
+        return new Response(buildLlmsIndex(), {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+          },
+        });
       },
     },
   },

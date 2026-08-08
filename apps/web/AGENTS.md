@@ -1,26 +1,21 @@
 # Docs Site Implementation Guide
 
-This file documents the Fumadocs integration for `apps/web` and guides future agents through extending the documentation site.
+This file documents the docs site for `apps/web` and guides future agents through extending it.
 
 ## Quick Start
 
 Before working on the docs site, read these in order:
 
 1. **This file** — you're here
-2. **Spec:** `docs/spec/fumadocs-docs-site-spec.md` — architecture assumptions
+2. **Spec:** `docs/spec/fumadocs-docs-site-spec.md` — architecture assumptions (layout/theme still apply; content pipeline updated)
 
 ## Current Status
 
-**Completed tasks (v1):**
+**Completed tasks (v1 + content pipeline refresh):**
 
-- ✓ Task 1 — Fumadocs MDX toolchain
-- ✓ Task 2 — Fumadocs source loader
-- ✓ Task 3 — shadcn theme + RootProvider
-- ✓ Task 4 — `/docs` route + layout
-- ✓ Task 5 — MDX components
-- ✓ Task 6 — Minimal docs content
-- ✓ Task 7 — Landing page integration
-- ✓ Task 9 — AGENTS.md contributor guide (this file)
+- ✓ Task 1–7, 9 — original Fumadocs site
+- ✓ TanStack Markdown + Highlight — replaced Fumadocs MDX + Shiki
+- ✓ SSR-only docs rendering (no `createServerFn` content/highlight path)
 
 **Deferred tasks:**
 
@@ -29,13 +24,13 @@ Before working on the docs site, read these in order:
 
 ## Key Documentation
 
-| What                                   | Where                                                                | When to Read                           |
-| -------------------------------------- | -------------------------------------------------------------------- | -------------------------------------- |
-| Spec & assumptions                     | `docs/spec/fumadocs-docs-site-spec.md`                               | Understanding the why behind decisions |
-| Operator documentation accuracy source | `docs/feature-support.md`                                            | When adding or updating operator docs  |
-| Fumadocs TanStack Start guide          | https://www.fumadocs.dev/docs/manual-installation/tanstack-start.mdx | Setting up routes, loaders             |
-| Fumadocs MDX Vite setup                | https://www.fumadocs.dev/docs/mdx/vite                               | Working with MDX sources               |
-| Fumadocs theme customization           | https://www.fumadocs.dev/docs/ui/theme                               | Modifying colors, fonts, spacing       |
+| What                                   | Where                                  | When to Read                           |
+| -------------------------------------- | -------------------------------------- | -------------------------------------- |
+| Spec & assumptions                     | `docs/spec/fumadocs-docs-site-spec.md` | Understanding the why behind decisions |
+| Operator documentation accuracy source | `docs/feature-support.md`              | When adding or updating operator docs  |
+| TanStack Markdown                      | https://tanstack.com/markdown/latest   | Parsing/rendering docs markdown        |
+| TanStack Highlight                     | https://tanstack.com/highlight/latest  | Code fence highlighting                |
+| Fumadocs theme customization           | https://www.fumadocs.dev/docs/ui/theme | Modifying colors, fonts, spacing       |
 
 ## Skills & Prerequisites
 
@@ -47,8 +42,6 @@ Before working on the docs site, read these in order:
 pnpm dlx @tanstack/intent@latest load web#shadcn
 ```
 
-This ensures you follow the shadcn + Tailwind patterns used in the project. Read `SKILL.md` before adding or modifying components.
-
 ### Before Starting a New Task
 
 Run the skill check:
@@ -56,15 +49,6 @@ Run the skill check:
 ```bash
 pnpm dlx @tanstack/intent@latest list
 ```
-
-The output will list applicable skills for the task. For most docs work:
-
-```bash
-pnpm dlx @tanstack/intent@latest load web#incremental-implementation
-pnpm dlx @tanstack/intent@latest load web#source-driven-development
-```
-
-Add `web#shadcn` if the task involves UI components.
 
 ## Verification Commands
 
@@ -89,28 +73,36 @@ All three must pass before submitting.
 apps/web/
   src/
     components/
-      mdx.tsx               # MDX component registry (CodeBlock, InstallCommand, etc)
-      mode-toggle.tsx       # Theme toggle (shared across landing + docs)
+      markdown/
+        docs-markdown.tsx   # TanStack Markdown renderer + components map
+        md-components.tsx   # Comment components (tabs, install-command)
+      code-block.tsx        # Standalone Highlight code block (landing/demo)
+      install-command.tsx
     lib/
+      docs/
+        content.ts          # Eager markdown loader + page tree
+        markdown.ts         # parseDocsMarkdown (docs extensions)
+        frontmatter.ts      # title/description frontmatter
+      highlight.ts          # TanStack Highlight registry + adapters
       layout.shared.tsx     # Fumadocs nav config (title, links)
-      source.ts             # Fumadocs source loader
     routes/
       __root.tsx            # Root shell (RootProvider wraps app)
       index.tsx             # Landing page (with /docs CTA)
       docs/
-        $.tsx               # Docs catch-all route
-    styles.css              # Imports Fumadocs + shadcn CSS
+        $.tsx               # Docs catch-all route (SSR loader, no server fn)
+    styles/
+      highlight.css         # Generated Highlight theme CSS
+    styles.css
   content/
-    docs/                   # Hand-written MDX docs
-      index.mdx
-      getting-started.mdx
+    docs/                   # Hand-written Markdown docs
+      index.md
+      getting-started.md
       meta.json             # Sidebar structure
       operations/
-        hierarchy.mdx
-        pattern-matching.mdx
+        hierarchy.md
+        pattern-matching.md
         meta.json
-  source.config.ts          # Fumadocs MDX collection config
-  vite.config.ts            # Vite + Fumadocs plugin (explicit registration)
+  vite.config.ts
 ```
 
 ## Content Accuracy
@@ -121,7 +113,7 @@ All operator documentation must be:
 
 1. **Checked against `docs/feature-support.md`** — only document `supported` status operators
 2. **Cross-referenced with the spec** — ensure method signatures match package exports
-3. **Include TypeScript examples** — use fenced code blocks with `ts` language
+3. **Include TypeScript examples** — use fenced code blocks with `ts` / `typescript` language
 
 **Never document:**
 
@@ -131,7 +123,7 @@ All operator documentation must be:
 
 ### Adding New Pages
 
-1. Create `.mdx` file in `content/docs/` with frontmatter:
+1. Create `.md` file in `content/docs/` with frontmatter:
 
    ```yaml
    ---
@@ -144,7 +136,8 @@ All operator documentation must be:
 
    ```json
    {
-     "title": "Section Title"
+     "title": "Section Title",
+     "pages": ["page-a", "page-b"]
    }
    ```
 
@@ -152,21 +145,39 @@ All operator documentation must be:
 
 4. Verify the page renders at `/docs/path-to-page` without 404
 
+### Custom components in Markdown
+
+TanStack Markdown does not evaluate JSX. Use comment components:
+
+```md
+<!-- ::install-command -->
+
+<!-- ::start:tabs -->
+
+## Tab One
+
+…
+
+## Tab Two
+
+…
+
+<!-- ::end:tabs -->
+```
+
+Register handlers in `src/components/markdown/md-components.tsx`.
+
 ## Common Tasks
 
-### Adding a New MDX Component
+### Adding a New Docs Component
 
-1. Create component in `src/components/` (e.g., `src/components/my-component.tsx`)
-2. Import in `src/components/mdx.tsx`
-3. Register in `getMDXComponents()` function:
-   ```typescript
-   MyComponent: MyComponent,
-   ```
-4. Use in MDX: `<MyComponent prop="value" />`
+1. Create component in `src/components/`
+2. Wire it in `md-components.tsx` under the matching `data-component` name
+3. Use the comment form in Markdown
 
 ### Updating Docs Content
 
-1. Edit `.mdx` files in `content/docs/`
+1. Edit `.md` files in `content/docs/`
 2. Cross-check operator claims against `docs/feature-support.md`
 3. Run `vp check --fix` to auto-format
 4. Test in dev: `pnpm --filter web dev` → navigate to `/docs/your-page`
@@ -177,7 +188,7 @@ All operator documentation must be:
 1. Load shadcn skill: `pnpm dlx @tanstack/intent@latest load web#shadcn`
 2. Use `pnpm dlx shadcn@latest add <component>` to add new shadcn components
 3. Modify `src/styles.css` for global CSS changes
-4. Fumadocs CSS variables map to shadcn tokens via `src/styles.css` imports
+4. Highlight themes live in `src/styles/highlight.css` (regenerate from `@tanstack/highlight/theme` when changing themes)
 5. Run `vp check` to verify no CSS conflicts
 
 ## Navigation Structure
@@ -186,60 +197,44 @@ All operator documentation must be:
 
 - Primary CTA: "Get started" → `/docs/getting-started`
 - Footer: "Docs" link → `/docs`
-- Shared theme toggle (top-right)
 
 ### Docs Pages (`/docs/*`)
 
 - Navigation:
   - Title: "prisma-ltree" (clickable → `/docs`)
   - Links: "Home" (→ `/`), "GitHub" (external)
-- Sidebar: Auto-generated from `content/docs/` file structure
-- Shared theme toggle (top-right)
+- Sidebar: Built from `content/docs/**/meta.json` + page frontmatter
+- Shared Fumadocs `RootProvider` theme
 
 ### Routing
 
 - `/` — Landing page
-- `/docs` — Docs root (renders `content/docs/index.mdx`)
+- `/docs` — Docs root (renders `content/docs/index.md`)
 - `/docs/getting-started` — Getting started guide
 - `/docs/operations/hierarchy` — Hierarchy operators
 - `/docs/operations/pattern-matching` — Pattern matching operators
 - `/docs/<any>` — Auto-404 if file doesn't exist
+- `/docs/<path>.md`, `/llms.txt`, `/llms-full.txt` — raw markdown for agents
+
+## Architecture Notes
+
+- **No content `createServerFn` / RSC path.** Docs load via Vite `import.meta.glob` + the route `loader`, which runs under TanStack Start SSR and hydrates with the same isomorphic Markdown/Highlight modules.
+- **Fumadocs UI** still provides `DocsLayout` / `DocsPage` chrome and theming.
+- **Highlight** is synchronous and shared between SSR and the browser.
 
 ## Troubleshooting
 
-### "Cannot assign to this expression" MDX parse error
+### Docs page 404 after adding a file
 
-**Cause:** fumadocs-mdx/vite plugin not explicitly registered in `vite.config.ts`
+**Cause:** Page not listed in the nearest `meta.json`, or wrong filename.
 
-**Fix:** Ensure `vite.config.ts` has:
+**Fix:** Add the page name (without `.md`) to `pages` in `meta.json`, restart/dev refresh.
 
-```typescript
-import { fumadocsMdx } from "fumadocs-mdx/vite";
+### Code blocks unstyled / plaintext only
 
-export default defineConfig({
-  plugins: [fumadocsMdx(), tanstackStart()],
-});
-```
+**Cause:** Language not registered in `src/lib/highlight.ts`.
 
-### `.source/` directory not generated
-
-**Cause:** Missing `source.config.ts` or collection is empty
-
-**Fix:**
-
-1. Create/verify `source.config.ts` with `defineDocs({ dir: 'content/docs' })`
-2. Ensure `content/docs/index.mdx` exists (collection can't be empty)
-3. Restart dev server: `pnpm --filter web dev`
-
-### MDX component not found in render
-
-**Cause:** Component not registered in `mdx.tsx`
-
-**Fix:**
-
-1. Import component in `src/components/mdx.tsx`
-2. Add to `getMDXComponents()` return object
-3. Restart dev server
+**Fix:** Import the language from `@tanstack/highlight/languages/*` and add it to `createHighlighter({ languages: [...] })`. Unknown languages fall back to escaped plaintext.
 
 ### Theme toggle doesn't affect Fumadocs pages
 
@@ -249,24 +244,7 @@ export default defineConfig({
 
 1. Verify `RootProvider` from `fumadocs-ui/provider/tanstack` is imported
 2. Verify children are wrapped: `<RootProvider>{children}</RootProvider>`
-3. Verify `ModeToggle` uses `useTheme()` from `fumadocs-ui/provider/base`
 
 ## Next Steps
 
 Deferred work: Task 8 (search API) and Task 10 (final validation). For new docs pages or operator coverage, follow the common tasks above and verify against `docs/feature-support.md`.
-
-## Skill Checklist
-
-When starting a task, load the appropriate skills:
-
-- **Task 1-2, 4-6:** `incremental-implementation`, `source-driven-development`
-- **Task 3, 5, 7:** Add `shadcn` if UI changes
-- **Task 8:** `source-driven-development`
-- **Task 9:** `documentation-and-adrs`
-- **Task 10:** `code-review-and-quality`
-
-Load skills before coding:
-
-```bash
-pnpm dlx @tanstack/intent@latest load web#<skill-name>
-```

@@ -203,7 +203,7 @@ export const demoOps: readonly DemoOp[] = [
 
 export type DemoOpId = (typeof demoOps)[number]["id"];
 
-/** Raw code snippets, highlighted server-side by the route loader. */
+/** Raw code snippets, highlighted with TanStack Highlight during SSR/hydration. */
 export const demoCodeBlocks = [
   {
     id: "demo.descendants",

@@ -23,9 +23,7 @@ Both comparisons are **inclusive** of the argument path.
 Returns rows whose path is an ancestor of the argument.
 
 ```typescript
-const rows = await db.orm.Category.where((c) =>
-  c.path.isAncestorOf("electronics.computers"),
-)
+const rows = await db.orm.Category.where((c) => c.path.isAncestorOf("electronics.computers"))
   .select("id", "path")
   .all();
 ```
@@ -63,9 +61,7 @@ Mnemonic: **`isDescendantOf(prefix)`** → "my path sits under this prefix."
 **All subcategories under `electronics`:**
 
 ```typescript
-const subcategories = await db.orm.Category.where((c) =>
-  c.path.isDescendantOf("electronics"),
-)
+const subcategories = await db.orm.Category.where((c) => c.path.isDescendantOf("electronics"))
   .select("id", "path")
   .all();
 ```

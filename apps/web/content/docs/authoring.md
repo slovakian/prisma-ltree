@@ -36,9 +36,9 @@ The extension gives you two named-type constructors: `ltree.Ltree()` for a singl
 path (codec `pg/ltree@1`) and `ltree.LtreeArray()` for an `ltree[]` array (codec
 `pg/ltree-array@1`). Author them in either lane:
 
-<Tabs items={["PSL", "TypeScript"]}>
+<!-- ::start:tabs -->
 
-<Tab value="PSL">
+## PSL
 
 ```prisma title="contract.prisma"
 // use prisma-next
@@ -64,9 +64,7 @@ model Page {
 The parentheses are **required**, even though these constructors take no arguments.
 `Path = ltree.Ltree` (no parens) fails with `PSL_INVALID_TYPES_MEMBER`.
 
-</Tab>
-
-<Tab value="TypeScript">
+## TypeScript
 
 ```typescript title="contract.ts"
 import { defineContract } from "@prisma/orm-postgres/contract-builder";
@@ -105,9 +103,7 @@ export default contract;
 The `ltree` namespace on `type` is the same authoring surface the PSL lane exposes as
 `ltree.Ltree()` / `ltree.LtreeArray()`.
 
-</Tab>
-
-</Tabs>
+<!-- ::end:tabs -->
 
 After editing either contract, re-emit:
 

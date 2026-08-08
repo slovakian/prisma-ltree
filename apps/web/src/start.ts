@@ -1,6 +1,7 @@
 import { createMiddleware, createStart } from "@tanstack/react-start";
 import { isMarkdownPreferred } from "fumadocs-core/negotiation";
-import { docsPathnameToSlugs, getDocsMarkdownResponse } from "@/lib/docs-markdown";
+
+import { docsPathnameToSlugs, getDocsMarkdownText, getDocsPage } from "@/lib/docs/content";
 
 const markdownNegotiation = createMiddleware().server(async ({ next, request }) => {
   if (!isMarkdownPreferred(request)) {
@@ -12,12 +13,16 @@ const markdownNegotiation = createMiddleware().server(async ({ next, request }) 
     return next();
   }
 
-  const response = await getDocsMarkdownResponse(slugs);
-  if (!response) {
+  const page = getDocsPage(slugs);
+  if (!page) {
     return next();
   }
 
-  return response;
+  return new Response(getDocsMarkdownText(page), {
+    headers: {
+      "Content-Type": "text/markdown; charset=utf-8",
+    },
+  });
 });
 
 export const startInstance = createStart(() => ({

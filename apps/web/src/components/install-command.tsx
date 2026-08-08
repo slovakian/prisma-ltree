@@ -20,10 +20,8 @@ const MANAGERS = [
 type ManagerId = (typeof MANAGERS)[number]["id"];
 
 /**
- * Client-side install snippet with a package-manager switcher and copy button.
- * Unlike the prose CodeBlocks this is interactive, so it renders on the client
- * and skips the server Shiki pipeline. Colors follow the active light/dark
- * theme via semantic tokens.
+ * Interactive install snippet with a package-manager switcher and copy button.
+ * Colors follow the active light/dark theme via semantic tokens.
  */
 export function InstallCommand({ className }: { className?: string }) {
   const [active, setActive] = useState<ManagerId>("pnpm");

@@ -73,9 +73,7 @@ const rows = await db.orm.Category.where((c) =>
 Match using `ltxtquery` full-text-style patterns over path labels (words combined with `&`, `|`, `!`).
 
 ```typescript
-const rows = await db.orm.Category.where((c) =>
-  c.path.matchesLtxtquery("computer | phone"),
-)
+const rows = await db.orm.Category.where((c) => c.path.matchesLtxtquery("computer | phone"))
   .select("id", "path")
   .all();
 ```
