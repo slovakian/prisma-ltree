@@ -1,5 +1,13 @@
 # prisma-ltree
 
+## 0.3.0
+
+### Minor Changes
+
+- cf5e13a: Target Prisma Next `8.0.0-rc.1` from `prisma/prisma` main.
+
+  **Breaking for consumers:** the retired `@prisma-next/*` scope is replaced by `@prisma/orm-*`. Apps should depend on `@prisma/orm-postgres@8.0.0-rc.1` (exact pin) and compose the pack via `extensions` (not `extensionPacks`). The `prisma-next` CLI name is unchanged.
+
 ## 0.2.3
 
 ### Patch Changes
