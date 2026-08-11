@@ -33,8 +33,7 @@
     "test": "vp test",
     "check": "vp check",
     "build:contract-space": "prisma-next contract emit",
-    "check-pins": "node ./scripts/check-pins.mjs",
-    "prepublishOnly": "vp run build"
+    "check-pins": "node ./scripts/check-pins.mjs"
   },
   "dependencies": {
     "@prisma/orm-family-sql": "8.0.0-rc.1",
