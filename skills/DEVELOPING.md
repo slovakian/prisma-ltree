@@ -4,11 +4,11 @@ Contributor guide for the consumer skill cluster under `skills/`. If you are **u
 
 ## Audience
 
-Skills here are **for application developers** who consume `prisma-ltree` in a Prisma Next Postgres app — not for extension maintainers. Maintainer workflows (SPI, upgrade codemods, contract-space authoring) stay in repo docs (`CLAUDE.md`, `docs/prisma-next/`) and the upstream `prisma-next-extension-upgrade` skill.
+Skills here are **for application developers** who consume `prisma-ltree` in a Prisma Next Postgres app — not for extension maintainers. Maintainer workflows (SPI, upgrade codemods, contract-space authoring) stay in repo docs (`AGENTS.md`, `docs/prisma-next/`) and the upstream `prisma-8-extension-upgrade` skill from [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills).
 
 ## Cluster shape
 
-Follow the upstream Prisma Next cluster conventions (see `vendor/prisma-next/skills/DEVELOPING.md`):
+Follow the upstream Prisma skill conventions (see `prisma/prisma/skills` and the historical notes under `vendor/prisma-next/skills/`):
 
 - **One user goal per skill** — do not merge adoption and queries into a mega-skill.
 - **Router skill** (`prisma-ltree`) only disambiguates; it does not answer workflow questions itself.
@@ -27,7 +27,7 @@ When editing a skill, confirm every API name against:
 | ADR decisions (LCA shape, array receiver, free functions) | `docs/decisions/ADR-*.md`                    |
 | Executable behaviour                                      | `packages/extension-ltree/test/integration/` |
 
-Do not document PSL contract attributes for `ltree` columns until PSL authoring ships — today consumers use the **TypeScript contract builder** only.
+Document both **PSL** (`ltree.Ltree()` / `ltree.LtreeArray()`) and **TypeScript** (`ltree()` / `ltreeArray()`) contract authoring — they are parity-proven.
 
 ## Adding a skill
 
@@ -38,4 +38,8 @@ Do not document PSL contract attributes for `ltree` columns until PSL authoring 
 
 ## Maintainer-only skills
 
-Extension upgrade skills belong under `.agents/skills/` / upstream `prisma/prisma-next/skills/extension-author/`, not in this consumer cluster.
+Extension upgrade skills belong under `.agents/skills/` / upstream [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills) (`prisma-8-extension-upgrade`), not in this consumer cluster. Refresh them with:
+
+```bash
+pnpm dlx skills add prisma/prisma/skills --all
+```

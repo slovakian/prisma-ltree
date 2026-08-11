@@ -28,17 +28,17 @@ Use this skill after `prisma-ltree-adoption` (or when ltree is already wired). A
 ## When Not to Use
 
 - Installing the extension or declaring columns → `prisma-ltree-adoption`.
-- Generic Prisma Next query mechanics (transactions, pagination, ORM vs SQL lane choice) → `prisma-next-queries`.
-- Debugging PN error envelopes → `prisma-next-debug`.
+- Generic Prisma Next query mechanics (transactions, pagination, ORM vs SQL lane choice) → upstream `prisma-8` → `references/queries.md` / `references/queries-postgres.md`.
+- Debugging PN error envelopes → upstream `prisma-8` → `references/debug.md`.
 
 ## Key Concepts
 
 - **Receiver column** — Methods bind to the column you call them on. Hierarchy direction follows PostgreSQL: `path.isAncestorOf(other)` means _this row's path is an ancestor of `other`_ (`path @> other`).
 - **Two query lanes** — Same as Prisma Next Postgres:
-  - **SQL builder** — `sql.from(tables.category).where(tables.category.columns.path.isDescendantOf(param("p")))`. Primary examples below match the package README.
-  - **ORM** — `db.orm.Category.where((c) => c.path.isDescendantOf(value))` when the contract exposes the model; extension ops appear on ltree-typed fields.
-- **Params** — Use `param("name")` in the SQL builder and pass values in `.build({ params: { name: "Top.Science" } })`. Pattern args are plain strings (or `string[]` for `matchesLqueryArray`); the extension casts to `lquery` / `ltxtquery` in SQL.
-- **Scalar vs array receiver** — `ltree()` columns get hierarchy, pattern, scalar, and concat methods. `ltreeArray()` columns get **first-match** methods only (`firstAncestorOf`, …).
+  - **ORM** — `db.orm.Category.where((c) => c.path.isDescendantOf(value))`. Default lane; matches the package README.
+  - **SQL builder** — `db.sql.category` (storage name) when you need explicit joins / projections the ORM cannot express.
+- **Pattern args** — Plain strings (or `string[]` for `matchesLqueryArray`); the extension casts to `lquery` / `ltxtquery` in SQL.
+- **Scalar vs array receiver** — `ltree()` / `ltree.Ltree()` columns get hierarchy, pattern, scalar, and concat methods. `ltreeArray()` / `ltree.LtreeArray()` columns get **first-match** methods (`firstAncestorOf`, …) plus `lcaAll()`.
 
 ## Pick a reference
 
@@ -50,25 +50,22 @@ Load selectively — do not read all references for every task:
 | Wildcard / regex-like / full-text path patterns    | [`references/pattern-matching.md`](./references/pattern-matching.md)       |
 | `ltree[]` column, first-match operators            | [`references/array-columns.md`](./references/array-columns.md)             |
 
-## Workflow — SQL builder (typical)
-
-Import shape varies by project; the operations live on **column accessors** from the emitted contract:
+## Workflow — ORM lane (typical)
 
 ```typescript
-import { sql, tables } from "../prisma/query"; // or your project's query module
-import { param } from "@prisma-next/sql-query/param";
+import { db } from "../prisma/db";
 
-// All descendants of Top.Science (inclusive of Top.Science itself)
-const descendants = sql
-  .from(tables.category)
-  .select({ id: tables.category.columns.id, path: tables.category.columns.path })
-  .where(tables.category.columns.path.isDescendantOf(param("prefix")))
-  .build({ params: { prefix: "Top.Science" } });
-
-const rows = await db.runtime().execute(descendants);
+// Find every descendant of "Top.Science"
+const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Science"))
+  .select("id", {
+    depth: (c) => c.path.nlevel(),
+  })
+  .all();
 ```
 
-The concept: compose `.where()` / `.select()` with ltree methods exactly like core column comparisons — the extension lowers to PostgreSQL operators (`@>`, `<@`, `~`, …) with typed `::ltree` casts on parameters.
+The concept: call ltree methods on field proxies inside `.where()` / `.select()` exactly like core comparisons — the extension lowers to PostgreSQL operators (`@>`, `<@`, `~`, …).
+
+Predicate helpers (`and`, `or`, ranges) follow the upstream `prisma-8` queries guide — ltree methods compose inside `.where()` lambdas like `.eq` on scalar fields.
 
 ### Operator quick map
 
@@ -84,20 +81,13 @@ The concept: compose `.where()` / `.select()` with ltree methods exactly like co
 | LCA with other paths          | `path.lca(other, ...rest)`              | `lca(...)`        |
 | Append path / label           | `path.concat(rhs)`, `concatText(label)` | `\|\|`            |
 | Text column → ltree           | `textCol.toLtree()`                     | `text2ltree(...)` |
+| Array first-match / LCA       | `paths.firstAncestorOf` / `lcaAll()`    | `?@>` / `lca([])` |
 
 Full signatures and edge cases: reference files above.
 
-## Workflow — ORM lane
+## Workflow — SQL builder lane
 
-When the project uses `db.orm`, extension operations surface on ltree fields:
-
-```typescript
-const underScience = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Science"))
-  .select("id", "path")
-  .all();
-```
-
-Predicate helpers (`and`, `or`, ranges) follow `prisma-next-queries` — ltree methods compose inside `.where()` lambdas like `.eq` on scalar fields.
+Reach for `db.sql.<table>` when the ORM cannot express the shape (arbitrary joins, computed projections). Extension methods still live on ltree column accessors — compose them the same way, then `db.runtime().execute(plan)`. See upstream `prisma-8` → `references/queries-postgres.md` for SQL-builder mechanics.
 
 ## Common Pitfalls
 
@@ -110,11 +100,12 @@ Predicate helpers (`and`, `or`, ranges) follow `prisma-next-queries` — ltree m
 
 ## What prisma-ltree doesn't do yet
 
-- **Raw SQL escape hatch for ltree** — use extension methods or file a gap if the SQL builder cannot express your shape. PN raw SQL story is framework-level (`prisma-next-queries`).
-- **`paths.lcaAll()` on `ltree[]`** — `lca(ltree[])`; scalar paths use `path.lca(other, ...)`.
+- **Raw SQL escape hatch for ltree** — use extension methods or file a gap if the SQL builder cannot express your shape. PN raw SQL story is framework-level (`prisma-8` queries guide).
 - **`Ltree.fromText()` static constructor** — use `text.toLtree()` on text columns.
 - **Automatic path maintenance on insert** — you build/store path strings; triggers or app logic maintain hierarchy.
 - **GiST index helpers** — not in this extension.
+
+Note: `paths.lcaAll()` **is supported** on `ltree[]` (array form of `lca`; named separately because operation keys must be unique — see ADR-005).
 
 ## Reference Files
 
@@ -127,7 +118,7 @@ Predicate helpers (`and`, `or`, ranges) follow `prisma-next-queries` — ltree m
 
 - [ ] Confirmed column is `ltree()` vs `ltreeArray()` before choosing methods.
 - [ ] Verified hierarchy direction against the user intent (ancestor vs descendant).
-- [ ] Used `param()` + `.build({ params })` for dynamic values in SQL builder.
-- [ ] For LCA, passed at least one `other` path.
+- [ ] For LCA on scalar columns, passed at least one `other` path (`path.lca(other, ...)`).
+- [ ] For array LCA, used `paths.lcaAll()` on an `ltree[]` column.
 - [ ] Loaded pattern-matching reference when user supplied `lquery` / `ltxtquery` syntax.
 - [ ] Did not confabulate operators listed as out-of-scope in feature-support.md.

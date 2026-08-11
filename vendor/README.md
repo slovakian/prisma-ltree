@@ -5,7 +5,13 @@
 [prisma/prisma-next](https://github.com/prisma/prisma-next) is vendored here as a
 **git subtree** (squashed). Agents and contributors use it as the always-on
 reference for extension SPI types, pack layouts (pgvector / postgis / paradedb),
-architecture docs, and the `extension-author` skill cluster.
+and architecture docs.
+
+**Live agent skills** now ship from [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills)
+(`prisma-8`, `prisma-8-extension-upgrade`, `prisma-next-upgrade`). Install with
+`pnpm dlx skills add prisma/prisma/skills --all`. The skill trees under
+`vendor/prisma-next/skills/` are historical snapshots — do not treat them as
+current.
 
 | Need | Path |
 | ---- | ---- |
@@ -13,7 +19,7 @@ architecture docs, and the `extension-author` skill cluster.
 | postgis reference | `vendor/prisma-next/packages/3-extensions/postgis/` |
 | paradedb reference | `vendor/prisma-next/packages/3-extensions/paradedb/` |
 | Upstream docs | `vendor/prisma-next/docs/` |
-| Extension-author skills | `vendor/prisma-next/skills/extension-author/` |
+| Live agent skills | https://github.com/prisma/prisma/tree/main/skills |
 
 Do **not** edit files under `vendor/prisma-next/` in this repo — changes belong
 upstream. Do **not** add `vendor/*` to the pnpm workspace; it is reference-only.

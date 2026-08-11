@@ -11,7 +11,7 @@ description: >-
   CREATE EXTENSION, wire runtime) — load prisma-ltree-adoption; or queries
   (isAncestorOf, isDescendantOf, matchesLquery, nlevel, subpath, lca,
   concatText, firstAncestorOf) — load prisma-ltree-queries; or base Prisma Next
-  setup with no ltree mention — load prisma-next-quickstart instead.
+  setup with no ltree mention — load the prisma-8 skill instead.
 ---
 
 # prisma-ltree — Router
@@ -30,8 +30,8 @@ This skill disambiguates prompts about PostgreSQL `ltree` in a Prisma Next app. 
 
 - **Installing or wiring the extension** → `prisma-ltree-adoption`.
 - **Writing a specific query** (ancestor check, pattern match, depth, LCA, path concat) → `prisma-ltree-queries`.
-- **No ltree involved** — generic Prisma Next setup, migrations, or ORM usage → upstream `prisma-next` router / `prisma-next-quickstart`.
-- **Maintaining the prisma-ltree package itself** — not covered by this cluster; see repo `CLAUDE.md`.
+- **No ltree involved** — generic Prisma Next setup, migrations, or ORM usage → upstream `prisma-8` skill.
+- **Maintaining the prisma-ltree package itself** — not covered by this cluster; see repo `AGENTS.md`.
 
 ## Routing rules
 
@@ -43,7 +43,7 @@ Otherwise ask **one** disambiguating question:
   - Install / config / contract / migration → `prisma-ltree-adoption`
   - Queries / operators / path logic → `prisma-ltree-queries`
 - _"Is your app already on Prisma Next with Postgres?"_
-  - No → `prisma-next-quickstart` first, then `prisma-ltree-adoption`
+  - No → `prisma-8` (quickstart reference) first, then `prisma-ltree-adoption`
   - Yes → continue to adoption or queries
 
 ## Canonical model (one paragraph)
@@ -53,7 +53,7 @@ PostgreSQL `ltree` stores **dot-separated label paths** (e.g. `Top.Science.Astro
 Three planes consumers wire once:
 
 1. **Control** — `prisma-next.config.ts` lists `prisma-ltree/control` in `extensions`.
-2. **Contract** — TypeScript contract declares `field.column(ltree())` or `ltreeArray()` and registers `prisma-ltree/pack`.
+2. **Contract** — PSL (`ltree.Ltree()` / `ltree.LtreeArray()`) or TypeScript (`ltree()` / `ltreeArray()`) plus `prisma-ltree/pack`.
 3. **Runtime** — `db.ts` passes `prisma-ltree/runtime` in `extensions`.
 
 After that, query authoring is the day-to-day work (`prisma-ltree-queries`).
@@ -61,5 +61,5 @@ After that, query authoring is the day-to-day work (`prisma-ltree-queries`).
 ## Checklist
 
 - [ ] If the prompt matches adoption or queries, route directly — do not answer from this skill.
-- [ ] If the user lacks a Prisma Next Postgres project, route to `prisma-next-quickstart` before ltree adoption.
+- [ ] If the user lacks a Prisma Next Postgres project, route to `prisma-8` before ltree adoption.
 - [ ] Do not attempt full setup or query examples from this skill — load the specific skill first.
