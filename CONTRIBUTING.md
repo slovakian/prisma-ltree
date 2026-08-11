@@ -53,7 +53,7 @@ vp run --filter ./packages/extension-ltree test
 
 ## Changesets (required for user-facing changes)
 
-This project uses [Changesets](https://github.com/changesets/changesets) for versioning and
+This project uses [Changesets](https://changesets.dev) for versioning and
 npm publishing. **Add a changeset for anything that affects the published `prisma-ltree`
 package:**
 
@@ -63,8 +63,8 @@ pnpm run changeset    # select prisma-ltree, pick bump type, write a summary
 
 Commit the generated `.changeset/*.md` alongside your change. Doc-only or repo-meta changes
 that do not affect the package don't need one — add `[skip-version]` to the commit message
-instead. Full details (bump types, the Version PR flow, OIDC trusted publishing) live in
-[`docs/CHANGESETS.md`](docs/CHANGESETS.md).
+instead. Full details (bump types, the Version PR → pack → publish flow, OIDC trusted
+publishing) live in [`docs/CHANGESETS.md`](docs/CHANGESETS.md).
 
 ## Dependency pins
 
