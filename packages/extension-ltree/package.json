@@ -48,7 +48,7 @@
     "@prisma/orm-target-postgres": "8.0.0-rc.1",
     "@types/node": "catalog:",
     "@typescript/native-preview": "7.0.0-dev.20260509.2",
-    "@vitest/coverage-v8": "4.1.8",
+    "@vitest/coverage-v8": "4.1.10",
     "prisma-next": "8.0.0-rc.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
