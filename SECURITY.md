@@ -29,7 +29,7 @@ Please include, where possible:
 
 - A description of the vulnerability and its impact
 - Steps to reproduce (a minimal contract/query or migration that triggers it)
-- Affected version(s) and environment (Node, PostgreSQL, `@prisma-next/*` versions)
+- Affected version(s) and environment (Node, PostgreSQL, `@prisma/orm-*` versions)
 
 ## What to expect
 

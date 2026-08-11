@@ -84,7 +84,8 @@ See [`vendor/README.md`](vendor/README.md) for re-add / pull details.
 | postgis reference (multi-operator)    | `vendor/prisma-next/packages/3-extensions/postgis/`    |
 | paradedb reference                    | `vendor/prisma-next/packages/3-extensions/paradedb/`   |
 | Extension architecture docs (source)  | `vendor/prisma-next/docs/`                             |
-| Extension author skills               | `vendor/prisma-next/skills/extension-author/`          |
+| Extension author skills (live)        | [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills) (`prisma-8-extension-upgrade`) |
+| Historical skill cluster (subtree)    | `vendor/prisma-next/skills/` (stale — do not install from here) |
 
 ## Key Documentation (consult these before coding)
 

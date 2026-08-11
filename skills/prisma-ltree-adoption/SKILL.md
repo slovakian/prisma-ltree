@@ -2,22 +2,21 @@
 name: prisma-ltree-adoption
 description: >-
   Adopt prisma-ltree in a Prisma Next Postgres app — install the npm package,
-  add prisma-ltree/control to prisma-next.config.ts, declare ltree() and
-  ltreeArray() columns in the TypeScript contract, wire prisma-ltree/runtime
-  in db.ts, and apply CREATE EXTENSION ltree via db init or migrate. Use for
-  "add ltree", "install prisma-ltree", "enable ltree extension", "ltree
-  column", "category path column", "hierarchical path in schema", "wire
-  prisma-ltree", "CREATE EXTENSION ltree", "ltree migration", "taxonomy
-  table", and brownfield Postgres that already has ltree enabled. Requires
-  @prisma-next/* version matching prisma-ltree's pin. Also use when agents need
-  to know ltree is TS-contract-only today or how path strings are validated.
+  add prisma-ltree/control to prisma-next.config.ts, declare ltree columns via
+  ltree.Ltree() / ltree.LtreeArray() (PSL) or ltree() / ltreeArray() (TypeScript),
+  wire prisma-ltree/runtime in db.ts, and apply CREATE EXTENSION ltree via db
+  init or migrate. Use for "add ltree", "install prisma-ltree", "enable ltree
+  extension", "ltree column", "category path column", "hierarchical path in
+  schema", "wire prisma-ltree", "CREATE EXTENSION ltree", "ltree migration",
+  "taxonomy table", and brownfield Postgres that already has ltree enabled.
+  Requires @prisma/orm-* version matching prisma-ltree's pin.
 ---
 
 # prisma-ltree — Adoption
 
 > **Wire once across control, contract, and runtime — then query.**
 
-This skill takes a Prisma Next **Postgres** app from "no ltree" to "typed `ltree` columns ready for queries." It does not teach generic Prisma Next setup — if the project has no PN scaffold yet, run `prisma-next-quickstart` first.
+This skill takes a Prisma Next **Postgres** app from "no ltree" to "typed `ltree` columns ready for queries." It does not teach generic Prisma Next setup — if the project has no PN scaffold yet, load the upstream `prisma-8` skill (quickstart reference) first.
 
 ## When to Use
 
@@ -30,24 +29,24 @@ This skill takes a Prisma Next **Postgres** app from "no ltree" to "typed `ltree
 
 - User already has ltree columns wired and wants query examples → `prisma-ltree-queries`.
 - User wants GiST indexes, raw SQL only, or non-Postgres targets → see _What prisma-ltree doesn't do yet_.
-- User is authoring the extension package → not this skill.
+- User is authoring the extension package → not this skill; use `prisma-8-extension-upgrade` / repo `AGENTS.md`.
 
 ## Prerequisites
 
 Read the project's `package.json` before changing deps:
 
-| Requirement      | Typical value (verify in npm)                                                   |
-| ---------------- | ------------------------------------------------------------------------------- |
-| Node             | `>=24`                                                                          |
-| `@prisma-next/*` | Exact pin matching `prisma-ltree`'s `peerDependencies` / README (e.g. `0.14.0`) |
-| Target           | Postgres only                                                                   |
+| Requirement     | Typical value (verify in npm / `prisma-ltree` README) |
+| --------------- | ----------------------------------------------------- |
+| Node            | `>=24`                                                |
+| `@prisma/orm-*` | Exact pin matching `prisma-ltree` (e.g. `8.0.0-rc.1`) |
+| Target          | Postgres only                                         |
 
-If the app's `@prisma-next/*` version is **newer** than `prisma-ltree` allows, stop and ask the user to upgrade `prisma-ltree` or align framework versions — do not bump past the extension pin silently.
+If the app's `@prisma/orm-*` version is **newer** than `prisma-ltree` allows, stop and ask the user to upgrade `prisma-ltree` or align framework versions — do not bump past the extension pin silently.
 
-Install upstream PN skills when the agent lacks Prisma Next context:
+Install upstream Prisma skills when the agent lacks Prisma Next context:
 
 ```bash
-pnpm dlx skills add prisma/prisma-next#v0.14.0 --all
+pnpm dlx skills add prisma/prisma/skills --all
 pnpm dlx skills add slovakian/prisma-ltree --all
 ```
 
@@ -59,7 +58,7 @@ pnpm dlx skills add slovakian/prisma-ltree --all
   - **Contract pack + column helper** — declares storage type and registers extension metadata in the contract.
   - **Runtime descriptor** — registers codecs and query operations for execution.
 - **Baseline migration** — The pack ships `CREATE EXTENSION IF NOT EXISTS ltree` (invariant `ltree:install-ltree-v1`). Applied under `migrations/ltree/` when you run `db init` / `migrate` — not something app authors hand-author.
-- **TS contract only (today)** — Declare columns with `ltree()` / `ltreeArray()` from `prisma-ltree/column-types` in a **TypeScript** contract (`contract.ts`). PSL attributes like `postgis.Geometry(...)` are not available for ltree yet.
+- **PSL and TypeScript parity** — Author columns in `contract.prisma` (`ltree.Ltree()` / `ltree.LtreeArray()`) or `contract.ts` (`ltree()` / `ltreeArray()`). Both emit a byte-identical compiled contract when composed through `extensions: [ltree]`.
 
 ## Workflow — Install and wire
 
@@ -69,54 +68,73 @@ The concept: add one npm dependency, register the pack in three places, emit the
 
 ```bash
 pnpm add prisma-ltree
+# Consumer apps typically also pin the Postgres façade:
+pnpm add @prisma/orm-postgres@8.0.0-rc.1
 ```
+
+Confirm the version against `prisma-ltree`'s published pin before using a newer RC.
 
 ### 2. Control — `prisma-next.config.ts`
 
-Prefer the Postgres façade when the project already uses it:
-
 ```typescript
+import { defineConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
-import { defineConfig } from "@prisma-next/postgres/config";
 
 export default defineConfig({
-  contract: "./src/prisma/contract.ts",
+  contract: "./src/prisma/contract.ts", // or ./prisma/contract.prisma
   extensions: [ltree],
-  db: { connection: process.env.DATABASE_URL! },
 });
 ```
 
-Projects on the verbose multi-import config shape use the same control import with `extensionPacks: [ltree]` — match whichever style the repo already uses.
+Use `extensions` (not the retired `extensionPacks` key).
 
-### 3. Contract — declare columns (TypeScript)
+### 3. Contract — declare columns
+
+**PSL lane** (`contract.prisma`) — compose `ltree` into `extensions` in config, then:
+
+```prisma
+types {
+  Path  = ltree.Ltree()      // → pg/ltree@1 / ltree
+  Paths = ltree.LtreeArray() // → pg/ltree-array@1 / ltree[]
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+  path Path
+
+  @@map("category")
+}
+```
+
+**TypeScript lane** (`contract.ts`):
 
 ```typescript
-import { int4Column, textColumn } from "@prisma-next/adapter-postgres/column-types";
-import sqlFamily from "@prisma-next/family-sql/pack";
-import { defineContract, field, model } from "@prisma-next/sql-contract-ts/contract-builder";
+import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import { ltree, ltreeArray } from "prisma-ltree/column-types";
 import ltreePack from "prisma-ltree/pack";
-import postgres from "@prisma-next/target-postgres/pack";
 
-export const contract = defineContract({
-  family: sqlFamily,
-  target: postgres,
-  extensionPacks: { ltree: ltreePack },
-  models: {
-    Category: model("Category", {
-      fields: {
-        id: field.column(int4Column).id(),
-        name: field.column(textColumn),
-        path: field.column(ltree()),
-        // Optional: ltree[] for first-match array operators
-        // altPaths: field.column(ltreeArray()),
-      },
-    }).sql({ table: "category" }),
+export const contract = defineContract(
+  {
+    extensions: { ltree: ltreePack },
   },
-});
+  ({ field, model }) => ({
+    models: {
+      Category: model("Category", {
+        fields: {
+          id: field.id.int(),
+          name: field.string(),
+          path: field.column(ltree()),
+          // Optional: ltree[] for first-match array operators
+          // altPaths: field.column(ltreeArray()),
+        },
+      }).sql({ table: "category" }),
+    },
+  }),
+);
 ```
 
-Mirror **existing import paths** in the project — many apps use `@prisma-next/postgres/contract-builder` façade re-exports instead of the granular imports above. Copy the style already in the repo; do not introduce a second convention.
+Mirror **existing import paths** in the project — copy the style already in the repo; do not introduce a second convention.
 
 Re-emit after edits:
 
@@ -127,17 +145,19 @@ pnpm prisma-next contract emit
 ### 4. Runtime — `src/prisma/db.ts`
 
 ```typescript
+import postgres from "@prisma/orm-postgres/runtime";
 import ltree from "prisma-ltree/runtime";
-import { postgres } from "@prisma-next/postgres/runtime";
-import contractJson from "./contract.json";
+import type { Contract } from "./contract.d";
+import contractJson from "./contract.json" with { type: "json" };
 
-export const db = postgres({
+export const db = postgres<Contract>({
   contractJson,
   extensions: [ltree],
+  url: process.env.DATABASE_URL!,
 });
 ```
 
-Match the factory shape your scaffold uses (`postgres<Contract>({ ... })`, connection options, etc.) — only add `ltree` to the `extensions` array.
+Match the factory shape your scaffold uses — only add `ltree` to the `extensions` array.
 
 ### 5. Database — extension + tables
 
@@ -183,31 +203,32 @@ When inserting rows, build paths in application code (`parentPath.concatText("Ch
 ## Common Pitfalls
 
 1. **Skipping runtime wiring.** Control + contract alone do not register codecs at execute time — queries fail or lack ltree methods if `prisma-ltree/runtime` is missing from `db.ts`.
-2. **Framework / extension version mismatch.** `prisma-ltree` pins exact `@prisma-next/*` versions. Upgrading PN without a matching extension release breaks types and runtime identity.
-3. **Expecting PSL `ltree` types in `contract.prisma`.** Use TypeScript contract authoring until PSL support ships.
+2. **Framework / extension version mismatch.** `prisma-ltree` pins exact `@prisma/orm-*` versions. Upgrading PN without a matching extension release breaks types and runtime identity.
+3. **Using retired package names.** Prefer `@prisma/orm-postgres` / `@prisma/orm-*` — not the retired `@prisma-next/*` scope.
 4. **Invalid path strings.** Empty labels, double dots, or special characters in labels fail codec validation — normalize slugs before insert.
-5. **Confusing `ltree` and `ltree[]`.** Scalar hierarchy ops live on `ltree()` columns; first-match ops live on `ltreeArray()` columns — different column helpers and methods.
+5. **Confusing `ltree` and `ltree[]`.** Scalar hierarchy ops live on `ltree()` / `ltree.Ltree()` columns; first-match ops live on `ltreeArray()` / `ltree.LtreeArray()` columns.
 6. **Hand-running `CREATE EXTENSION` when PN already manages it.** Prefer pack migrations; manual DDL is only for exceptional brownfield cases.
 
 ## What prisma-ltree doesn't do yet
 
-- **PSL contract authoring** — no `ltree` type in `contract.prisma` today. Workaround: TypeScript contract with `ltree()` / `ltreeArray()`.
 - **Non-Postgres targets** — Mongo, SQLite, etc. Workaround: not supported; use Postgres for ltree.
 - **GiST / specialized ltree indexes via the extension** — index DDL is owned by Prisma Next's index story. Workaround: express indexes through PN's index APIs when available, or track as a feature request on the repo.
 - **`lquery` / `ltxtquery` as column types** — patterns are **string parameters** to `matchesLquery` / `matchesLtxtquery`, not stored column types.
 - **Boolean `ltree[]` operators** (`ltree[] @> ltree`, etc.) — out of scope; use scalar ops or first-match array ops instead.
+- **`@db.Ltree` native attribute** — out of scope (no extension hook in core); use the `ltree` namespace constructors or TS helpers instead.
 
 ## Reference Files
 
 - Package README: `node_modules/prisma-ltree/README.md` (after install)
 - Feature matrix: https://github.com/slovakian/prisma-ltree/blob/main/docs/feature-support.md
 - PostgreSQL ltree semantics: https://www.postgresql.org/docs/current/ltree.html
+- Upstream skills: https://github.com/prisma/prisma/tree/main/skills
 
 ## Checklist
 
-- [ ] Confirmed Postgres target and `@prisma-next/*` pin compatible with installed `prisma-ltree`.
-- [ ] Added `prisma-ltree/control` to config `extensions` / `extensionPacks`.
-- [ ] Registered `prisma-ltree/pack` in contract `extensionPacks` and declared `ltree()` / `ltreeArray()` columns.
+- [ ] Confirmed Postgres target and `@prisma/orm-*` pin compatible with installed `prisma-ltree`.
+- [ ] Added `prisma-ltree/control` to config `extensions`.
+- [ ] Declared columns via PSL `ltree.Ltree()` / `ltree.LtreeArray()` or TS `ltree()` / `ltreeArray()`, with pack registered.
 - [ ] Added `prisma-ltree/runtime` to `db.ts` `extensions`.
 - [ ] Ran `contract emit` after contract edits.
 - [ ] Applied or signed DB state so `ltree` extension and tables match contract.
