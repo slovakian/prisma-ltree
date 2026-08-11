@@ -78,14 +78,14 @@ See [`vendor/README.md`](vendor/README.md) for re-add / pull details.
 
 ### Reference path map
 
-| What                                  | Path                                                   |
-| ------------------------------------- | ------------------------------------------------------ |
-| pgvector reference (closest to ltree) | `vendor/prisma-next/packages/3-extensions/pgvector/`   |
-| postgis reference (multi-operator)    | `vendor/prisma-next/packages/3-extensions/postgis/`    |
-| paradedb reference                    | `vendor/prisma-next/packages/3-extensions/paradedb/`   |
-| Extension architecture docs (source)  | `vendor/prisma-next/docs/`                             |
+| What                                  | Path                                                                                                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| pgvector reference (closest to ltree) | `vendor/prisma-next/packages/3-extensions/pgvector/`                                                       |
+| postgis reference (multi-operator)    | `vendor/prisma-next/packages/3-extensions/postgis/`                                                        |
+| paradedb reference                    | `vendor/prisma-next/packages/3-extensions/paradedb/`                                                       |
+| Extension architecture docs (source)  | `vendor/prisma-next/docs/`                                                                                 |
 | Extension author skills (live)        | [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills) (`prisma-8-extension-upgrade`) |
-| Historical skill cluster (subtree)    | `vendor/prisma-next/skills/` (stale — do not install from here) |
+| Historical skill cluster (subtree)    | `vendor/prisma-next/skills/` (stale — do not install from here)                                            |
 
 ## Key Documentation (consult these before coding)
 
@@ -241,3 +241,34 @@ Do **not** bump `@prisma/orm-*` pins casually. Follow
 `docs/prisma-next/versioning-and-compatibility.md` and the
 `prisma-8-extension-upgrade` skill (from `prisma/prisma/skills`).
 One RC / minor step per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.
+
+## Cursor Cloud specific instructions
+
+Standard commands are already documented above (Development Workflow) and in
+`apps/web/AGENTS.md`. Only the non-obvious environment caveats are captured here.
+
+- **Node 24 is required** (`engines.node: ">=24"`; `vp pack` targets `node24`). The
+  cloud VM's default `node` on `PATH` (`/exec-daemon/node`) is **v22**. Node 24 is
+  installed via `nvm` and made the default, and a snippet in `~/.bashrc` prepends the
+  nvm Node 24 `bin` ahead of `/exec-daemon`. **Login shells get Node 24 automatically**
+  (`bash -l`, tmux started with `bash -l`). A plain non-login shell may still resolve
+  Node 22 — run `source ~/.bashrc` (or start a login shell) before `vp`/`pnpm`
+  build/test commands so the engine check and toolchain use Node 24.
+- **Use the `vp` toolchain, not bare binaries.** The `apps/web` `package.json` scripts
+  reference `vite` / `vitest` / `eslint` executables that are **not installed** (the
+  `vite`/`vitest` catalog entries are `@voidzero-dev/vite-plus-*`, which expose `vp`).
+  Run `vp dev` / `vp test` / `vp check` / `vp build` (from `apps/web`, or
+  `vp <cmd> apps/web` / `vp run --filter ./... <script>` from the root). Root
+  `pnpm dev` currently fails with "Failed to find executable vite" for this reason.
+- **`apps/web` dev server (`vp dev`) is currently broken** — every route returns
+  `Cannot GET /`. Root cause: with the pinned `vite-plus@0.1.24`,
+  `isRunnableDevEnvironment(ssr)` returns `true`, so the `tanstackStartViteplusDevSsr`
+  guard in `apps/web/vite.config.ts` short-circuits and defers to upstream TanStack
+  Start, whose own `instanceof` check still fails, so no SSR middleware mounts (see
+  `docs/temporary-fixes.md`). **To run the docs site, use the production preview:**
+  `cd apps/web && vp build && vp preview --port 3000` (serves fully SSR-rendered pages).
+- **`examples/family-tree` is a standalone package** (excluded from the pnpm workspace;
+  it has its own lockfile and installs `prisma-ltree` from npm) and requires **Docker +
+  PostgreSQL on port 5434**. Docker is **not** installed on the base VM and this example
+  is **not** covered by the update script. Follow `examples/family-tree/README.md`
+  (`pnpm setup` → `pnpm dev`) if you need the end-to-end demo.
