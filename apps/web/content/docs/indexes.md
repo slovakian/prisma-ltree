@@ -1,34 +1,23 @@
 ---
-title: Index ltree columns
-description: Use Prisma Next GiST indexes so ancestor, descendant, and pattern queries stay fast
+title: Add a GiST index
+description: Index path columns so ancestor, descendant, and pattern queries can use an index
 ---
 
-Hierarchy and pattern operators on `ltree` (`@>`, `<@`, `~`, `@`, `?`) need a
-**GiST** index. A B-tree (the Prisma default) only helps comparisons (`<`, `=`,
-`>`). `prisma-ltree` does not register a custom index type: Prisma Next
-`8.0.0-rc.1` already registers `gist` on the postgres target, so you author the
-index in the contract like any other Postgres access method.
+Ancestor, descendant, and pattern queries on `ltree` need a Generalized Search Tree (GiST) index. Prisma’s default B-tree index only helps comparisons (`<`, `=`, `>`). Declare GiST in your contract, then emit and migrate.
 
-## Why GiST
+## Why you need GiST
 
-PostgreSQL's `ltree` module ships two GiST operator classes:
+`isAncestorOf`, `isDescendantOf`, `matchesLquery`, and `matchesLtxtquery` use PostgreSQL operators that a B-tree doesn’t cover. Without GiST, those queries still run, and PostgreSQL reads every row.
 
-- `gist_ltree_ops` for `ltree` columns (default when the column type is `ltree`)
-- `gist__ltree_ops` for `ltree[]` columns (default when the column type is `ltree[]`)
+## Declare GiST on the path column
 
-`CREATE INDEX … USING gist (path)` uses that default. You do not name the
-operator class unless you are tuning `siglen` (see [Limitations](#limitations)).
-
-Without GiST, `path.isDescendantOf("Top.Science")` and
-`path.matchesLquery("Top.*")` still run, but Postgres seq-scans the table.
-
-## Author a GiST index
-
-Compose `ltree` as usual, then add `type: "gist"` on the path column.
+Add `type: "gist"` on your path column. `Path` below is `ltree.Ltree()` from [Authoring Contracts](/docs/authoring).
 
 <!-- ::start:tabs -->
 
 ## PSL
+
+This model indexes `path` with GiST:
 
 ```prisma title="contract.prisma"
 model Page {
@@ -40,9 +29,9 @@ model Page {
 }
 ```
 
-`Path` is `ltree.Ltree()` from [Authoring Contracts](/docs/authoring).
-
 ## TypeScript
+
+Index `path` with GiST. Pass `options: {}` because the TypeScript builder requires `options` whenever you set `type`:
 
 ```typescript title="contract.ts"
 Page.sql(({ cols, constraints }) => ({
@@ -56,47 +45,28 @@ Page.sql(({ cols, constraints }) => ({
 }));
 ```
 
-When `type` is set, the TypeScript builder also requires `options`. Use `{}`
-unless you are passing GiST **storage** parameters (`fillfactor`, `buffering`).
-
 <!-- ::end:tabs -->
 
-Re-emit and plan a migration (`prisma-next contract emit`, then `db update` or
-`migration plan`). Prisma renders:
+Emit the contract:
+
+```bash
+pnpm prisma-next contract emit
+```
+
+Apply the change with `db update` or `migration plan`. Prisma creates a GiST index on the column:
 
 ```sql
 CREATE INDEX … ON "page" USING "gist" ("path")
 ```
 
-The same `type: "gist"` works on an `ltree[]` column (`ltree.LtreeArray()` /
-`ltreeArray()`).
+Use `type: "gist"` on an `ltree[]` column too (`ltree.LtreeArray()` or `ltreeArray()`).
 
-## Other access methods
+You can keep `@unique` on the column. That unique constraint is a B-tree, and GiST is a second index.
 
-| `type` | Use when |
-| ------ | -------- |
-| omit / `"btree"` | Equality and order (`=`, `<`, `>`). `@unique` already creates a B-tree |
-| `"hash"` | Equality only |
-| `"gist"` | Ancestor, descendant, `lquery`, `ltxtquery` |
+## Prisma doesn’t support `siglen` yet
 
-You can have both a unique B-tree and a GiST index on the same column.
+`siglen` is a PostgreSQL operator-class argument (`gist_ltree_ops(siglen=N)`). You can’t pass it in `@@index` or in TypeScript `options`.
 
-## Limitations
+Your index uses PostgreSQL defaults: 8 bytes for `ltree`, 28 bytes for `ltree[]`. Ancestor, descendant, and pattern queries still use the index.
 
-Prisma's index `options` become `WITH (…)` **storage** parameters, not
-operator-class arguments. That means:
-
-- **No `gist_ltree_ops(siglen=N)`.** Signature length stays at Postgres defaults
-  (8 bytes for `ltree`, 28 bytes for `ltree[]`).
-- **No first-class operator class field.** Prisma does not model per-column
-  opclasses. The default class for `ltree` / `ltree[]` is what you want for
-  almost every query this pack exposes.
-- **PSL `options` values are strings.** `options: { fillfactor: "70" }` in PSL;
-  numbers and booleans belong on the TypeScript surface.
-
-`expression:` and `where:` still work (functional and partial indexes). Putting
-an opclass in `expression:` is opaque SQL: Prisma byte-compares it to Postgres's
-reprint, so drift is likely. Prefer the default GiST column index.
-
-`prisma-ltree` does not add `indexTypes` of its own. A second `gist`
-registration would fail emit with a duplicate index-type error.
+If you need a different `siglen`, create the index in SQL yourself. Prisma won’t manage that index on later `db update` runs.

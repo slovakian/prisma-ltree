@@ -76,5 +76,4 @@ const ancestors = await db.orm.Category.where((c) =>
   .all();
 ```
 
-These operators use GiST. Add `@@index([path], type: "gist")` so Postgres can
-avoid a sequential scan. See [Index ltree columns](/docs/indexes).
+These operators use a Generalized Search Tree (GiST) index. Add `@@index([path], type: "gist")` so PostgreSQL can avoid a sequential scan. See [Add a GiST index](/docs/indexes).

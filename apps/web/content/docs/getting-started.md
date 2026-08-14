@@ -132,12 +132,10 @@ See [Hierarchy Operators](/docs/operations/hierarchy) and [Pattern Matching](/do
 
 ## Index path columns
 
-Ancestor, descendant, and pattern queries need a **GiST** index. Prisma Next
-registers `gist` on the postgres target, so you author it in the contract:
+Ancestor, descendant, and pattern queries need a Generalized Search Tree (GiST) index. Declare it on the path column:
 
 ```prisma
 @@index([path], type: "gist")
 ```
 
-See [Index ltree columns](/docs/indexes) for TypeScript authoring, `ltree[]`,
-and what Prisma still cannot express (`siglen`, operator classes).
+See [Add a GiST index](/docs/indexes) for TypeScript, `ltree[]`, and `siglen` (Prisma doesn’t support that yet).
