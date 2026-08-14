@@ -91,3 +91,5 @@ const rows = await db.orm.Category.where((c) => c.path.matchesLtxtquery("compute
 | `&` (ltxtquery)   | Boolean AND         | `computer & laptop`                               |
 
 Refer to [PostgreSQL ltree documentation](https://www.postgresql.org/docs/current/ltree.html) for full pattern syntax.
+
+Pattern operators also use GiST. See [Index ltree columns](/docs/indexes).

@@ -114,4 +114,5 @@ pnpm prisma-next contract emit
 ## Next steps
 
 Once your columns are declared, see [Getting Started](/docs/getting-started) for runtime
-wiring, the baseline migration, and your first queries.
+wiring, the baseline migration, and your first queries. Add a GiST index on
+path columns so those queries stay fast: [Index ltree columns](/docs/indexes).

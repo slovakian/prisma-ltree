@@ -18,6 +18,8 @@ raw SQL.
 - **Array first-match** — find the first matching path in an `ltree[]` column
 - **Baseline migration** — installs the Postgres extension via
   `CREATE EXTENSION IF NOT EXISTS ltree` when the pack is composed
+- **GiST indexes** — author `@@index([path], type: "gist")` (Prisma Next
+  postgres target; default `gist_ltree_ops`)
 
 See the [feature support matrix](https://github.com/slovakian/prisma-ltree/blob/main/docs/feature-support.md)
 for what is supported, planned, or out of scope.
@@ -96,6 +98,23 @@ model Page {
   @@map("page")
 }
 ```
+
+**GiST index** (recommended for ancestor / descendant / `lquery` queries):
+
+```prisma
+model Page {
+  id   String @id @default(uuid())
+  path Path
+
+  @@index([path], type: "gist")
+  @@map("page")
+}
+```
+
+Prisma Next `8.0.0-rc.1` registers `gist` on the postgres target. `prisma-ltree`
+does not add a second index type. See the
+[indexes guide](https://prisma-ltree.procka.org/docs/indexes) for TypeScript
+authoring, `ltree[]`, and operator-class limits (`siglen` is not expressible).
 
 **TypeScript lane**:
 

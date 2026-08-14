@@ -10,7 +10,7 @@ Author your contract in either lane and get the same compiled result:
 - **PSL**: `contract.prisma` with `ltree.Ltree()` and `ltree.LtreeArray()`
 - **TypeScript**: `contract.ts` with `defineContract` and `ltree()` / `ltreeArray()`
 
-See [Authoring Contracts](/docs/authoring) for side-by-side examples. The [Getting Started](/docs/getting-started) guide covers install, runtime wiring, migrations, and your first queries.
+See [Authoring Contracts](/docs/authoring) for side-by-side examples. The [Getting Started](/docs/getting-started) guide covers install, runtime wiring, migrations, and your first queries. Add a [GiST index](/docs/indexes) on path columns so hierarchy and pattern queries can use an index.
 
 ## What is ltree?
 

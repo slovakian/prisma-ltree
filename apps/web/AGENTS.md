@@ -211,6 +211,8 @@ Register handlers in `src/components/markdown/md-components.tsx`.
 - `/` — Landing page
 - `/docs` — Docs root (renders `content/docs/index.md`)
 - `/docs/getting-started` — Getting started guide
+- `/docs/authoring` — PSL and TypeScript contract authoring
+- `/docs/indexes` — GiST indexes on ltree columns
 - `/docs/operations/hierarchy` — Hierarchy operators
 - `/docs/operations/pattern-matching` — Pattern matching operators
 - `/docs/<any>` — Auto-404 if file doesn't exist

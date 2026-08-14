@@ -103,7 +103,7 @@ Reach for `db.sql.<table>` when the ORM cannot express the shape (arbitrary join
 - **Raw SQL escape hatch for ltree** — use extension methods or file a gap if the SQL builder cannot express your shape. PN raw SQL story is framework-level (`prisma-8` queries guide).
 - **`Ltree.fromText()` static constructor** — use `text.toLtree()` on text columns.
 - **Automatic path maintenance on insert** — you build/store path strings; triggers or app logic maintain hierarchy.
-- **GiST index helpers** — not in this extension.
+- **GiST operator-class `siglen`** — not in this extension. Default GiST is `@@index([path], type: "gist")` on the postgres target (see adoption skill).
 
 Note: `paths.lcaAll()` **is supported** on `ltree[]` (array form of `lca`; named separately because operation keys must be unique — see ADR-005).
 

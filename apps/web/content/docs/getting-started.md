@@ -129,3 +129,15 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("electroni
 ```
 
 See [Hierarchy Operators](/docs/operations/hierarchy) and [Pattern Matching](/docs/operations/pattern-matching) for the full operator set.
+
+## Index path columns
+
+Ancestor, descendant, and pattern queries need a **GiST** index. Prisma Next
+registers `gist` on the postgres target, so you author it in the contract:
+
+```prisma
+@@index([path], type: "gist")
+```
+
+See [Index ltree columns](/docs/indexes) for TypeScript authoring, `ltree[]`,
+and what Prisma still cannot express (`siglen`, operator classes).

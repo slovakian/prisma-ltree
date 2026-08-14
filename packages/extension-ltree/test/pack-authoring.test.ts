@@ -36,4 +36,8 @@ describe("prisma-ltree pack authoring contributions", () => {
       | undefined;
     expect(ltreeType?.args).toBeUndefined();
   });
+
+  it("does not register gist (Postgres target already owns btree/hash/gin/gist/spgist/brin)", () => {
+    expect(ltreePack).not.toHaveProperty("indexTypes");
+  });
 });
