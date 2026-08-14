@@ -5,7 +5,7 @@ Doc-writing agents read this file to accurately reflect the extension's surface.
 
 **Status values:** `supported` · `in-progress` · `planned` · `out-of-scope` (tracked, not built)
 **Scope decision:** "Everything reasonable" — Tier 1 + Tier 2 + Tier 3 (first-match array ops)
-**Last updated:** 2026-07-06
+**Last updated:** 2026-08-14
 
 See `packages/extension-ltree/README.md` for usage documentation and `docs/decisions/` for design ADRs.
 
@@ -91,6 +91,20 @@ Named `lcaAll` (not `lca`) because prisma-next keys operations by name only and
 rejects duplicates; `lca` is already the variadic scalar method (ADR-001). See
 ADR-005 for the naming decision and the shared `nullable: false` gap.
 
+## Indexes (DDL)
+
+Index access methods are registered by Prisma Next's postgres **target**, not by
+`prisma-ltree`. Author them with `@@index` / `constraints.index`. See
+[ADR-006](decisions/ADR-006-gist-index-ownership.md).
+
+| Feature                                      | SQL / Prisma                         | Status    | Notes                                                                                         |
+| -------------------------------------------- | ------------------------------------ | --------- | --------------------------------------------------------------------------------------------- |
+| GiST on `ltree`                              | `@@index([path], type: "gist")`      | supported | Default opclass `gist_ltree_ops`. Accelerates `@>`, `<@`, `~`, `@`, `?`                       |
+| GiST on `ltree[]`                            | `@@index([paths], type: "gist")`     | supported | Default opclass `gist__ltree_ops`                                                             |
+| B-tree on `ltree`                            | omit `type`, or `type: "btree"`      | supported | `<,<=,=,>=,>` only                                                                            |
+| Hash on `ltree`                              | `type: "hash"`                       | supported | Equality only                                                                                 |
+| GiST opclass `siglen` / `gist_ltree_ops(…)`  | `USING gist (path gist_ltree_ops(…))` | out-of-scope | Prisma `options` map to `WITH` storage parameters, not operator-class arguments            |
+
 ## Out-of-Scope (Tracked)
 
 | Feature                                 | SQL                   | Status       | Reason / Revisit                                                                             |
@@ -100,10 +114,6 @@ ADR-005 for the naming decision and the shared `nullable: false` gap.
 | Boolean array variant                   | `ltree[] ~ lquery`    | out-of-scope | same                                                                                         |
 | Boolean array variant                   | `ltree[] ? lquery[]`  | out-of-scope | same                                                                                         |
 | Boolean array variant                   | `ltree[] @ ltxtquery` | out-of-scope | same                                                                                         |
-| GiST index (`gist_ltree_ops`, `siglen`) | DDL                   | out-of-scope | DDL/index story owned by Prisma's index system                                               |
-| GiST array index (`gist__ltree_ops`)    | DDL                   | out-of-scope | same                                                                                         |
-| Hash index over `ltree`                 | DDL                   | out-of-scope | same                                                                                         |
-| B-tree index over `ltree`               | DDL                   | out-of-scope | Automatic for `<,<=,=,>=,>`; no extension op needed                                          |
 
 ---
 
@@ -114,4 +124,5 @@ ADR-005 for the naming decision and the shared `nullable: false` gap.
 - 2026-06-19 — Tier 2 complete (Checkpoint 3). Concatenation (`concat`, `concatText`, `prependText`) and conversion (`toText`, `toLtree`) → `supported`, each with golden + PGlite integration + type-level coverage. Free-function lowering resolved by re-rooting on a natural `self` (ADR-002): `text2ltree` ships as `text.toLtree()` (text-rooted); the self-less `Ltree.fromText()` constructor stays `planned` pending a free-function call surface.
 - 2026-06-19 — Tier 3 complete (Checkpoint 4). Array receiver resolved via dedicated `pg/ltree-array@1` codec + `ltreeArray()` column helper (ADR-003). All four first-match operators → `supported` with golden + PGlite integration + type-level coverage. `lca(ltree[])` deferred pending array-receiver method.
 - 2026-07-06 — `lca(ltree[])` → `paths.lcaAll()` shipped on `pg/ltree-array@1` (ADR-005). Distinct name required: prisma-next's operation registry keys by name only and rejects duplicates; scalar `path.lca(...)` already occupies `lca`. Return stays `nullable: false` for parity with first-match ops despite PG's empty-array NULL (family-wide gap, pinned by an integration test).
+- 2026-08-14 — GiST / hash / btree indexes on `ltree` and `ltree[]` → `supported` via Prisma Next 8.0.0-rc.1's postgres target `indexTypes` (`type: "gist"`). prisma-ltree does **not** register `gist` (would collide with the target). Operator-class `siglen` stays out of scope (ADR-006).
 - 2026-06-19 — Phase 6 polish. Coverage threshold set to 95% in `vite.config.ts`; gaps filled to **100%** statements/branches/functions/lines (116 tests). Package `README.md` and per-tier `docs/progress/` logs written. Matrix verified accurate against shipped surface (no status changes). Pending: npm publish over the `0.0.1` stub (Task 6.3, awaiting approval).

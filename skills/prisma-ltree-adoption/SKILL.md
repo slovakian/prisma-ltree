@@ -28,7 +28,7 @@ This skill takes a Prisma Next **Postgres** app from "no ltree" to "typed `ltree
 ## When Not to Use
 
 - User already has ltree columns wired and wants query examples → `prisma-ltree-queries`.
-- User wants GiST indexes, raw SQL only, or non-Postgres targets → see _What prisma-ltree doesn't do yet_.
+- User wants raw SQL only, or non-Postgres targets → see _What prisma-ltree doesn't do yet_.
 - User is authoring the extension package → not this skill; use `prisma-8-extension-upgrade` / repo `AGENTS.md`.
 
 ## Prerequisites
@@ -103,6 +103,7 @@ model Category {
   name String
   path Path
 
+  @@index([path], type: "gist")
   @@map("category")
 }
 ```
@@ -128,7 +129,12 @@ export const contract = defineContract(
           // Optional: ltree[] for first-match array operators
           // altPaths: field.column(ltreeArray()),
         },
-      }).sql({ table: "category" }),
+      }).sql(({ cols, constraints }) => ({
+        table: "category",
+        indexes: [
+          constraints.index([cols.path], { type: "gist", options: {} }),
+        ],
+      })),
     },
   }),
 );
@@ -212,7 +218,7 @@ When inserting rows, build paths in application code (`parentPath.concatText("Ch
 ## What prisma-ltree doesn't do yet
 
 - **Non-Postgres targets** — Mongo, SQLite, etc. Workaround: not supported; use Postgres for ltree.
-- **GiST / specialized ltree indexes via the extension** — index DDL is owned by Prisma Next's index story. Workaround: express indexes through PN's index APIs when available, or track as a feature request on the repo.
+- **GiST operator-class `siglen`** — Prisma `options` are `WITH` storage parameters, not `gist_ltree_ops(siglen=…)`. Default GiST is `@@index([path], type: "gist")` (postgres target; do **not** register `gist` on prisma-ltree).
 - **`lquery` / `ltxtquery` as column types** — patterns are **string parameters** to `matchesLquery` / `matchesLtxtquery`, not stored column types.
 - **Boolean `ltree[]` operators** (`ltree[] @> ltree`, etc.) — out of scope; use scalar ops or first-match array ops instead.
 - **`@db.Ltree` native attribute** — out of scope (no extension hook in core); use the `ltree` namespace constructors or TS helpers instead.
@@ -229,6 +235,7 @@ When inserting rows, build paths in application code (`parentPath.concatText("Ch
 - [ ] Confirmed Postgres target and `@prisma/orm-*` pin compatible with installed `prisma-ltree`.
 - [ ] Added `prisma-ltree/control` to config `extensions`.
 - [ ] Declared columns via PSL `ltree.Ltree()` / `ltree.LtreeArray()` or TS `ltree()` / `ltreeArray()`, with pack registered.
+- [ ] Added `@@index([path], type: "gist")` (or TS `constraints.index`) so hierarchy/pattern queries can use an index.
 - [ ] Added `prisma-ltree/runtime` to `db.ts` `extensions`.
 - [ ] Ran `contract emit` after contract edits.
 - [ ] Applied or signed DB state so `ltree` extension and tables match contract.

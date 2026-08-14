@@ -129,3 +129,13 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("electroni
 ```
 
 See [Hierarchy Operators](/docs/operations/hierarchy) and [Pattern Matching](/docs/operations/pattern-matching) for the full operator set.
+
+## Index path columns
+
+Ancestor, descendant, and pattern queries need a Generalized Search Tree (GiST) index. Declare it on the path column:
+
+```prisma
+@@index([path], type: "gist")
+```
+
+See [Add a GiST index](/docs/indexes) for TypeScript, `ltree[]`, and `siglen` (Prisma doesn’t support that yet).

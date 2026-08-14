@@ -12,6 +12,8 @@ Author your contract in either lane and get the same compiled result:
 
 See [Authoring Contracts](/docs/authoring) for side-by-side examples. The [Getting Started](/docs/getting-started) guide covers install, runtime wiring, migrations, and your first queries.
 
+Add a [GiST index](/docs/indexes) on path columns so ancestor, descendant, and pattern queries can use an index.
+
 ## What is ltree?
 
 The PostgreSQL `ltree` type stores dot-separated path labels (e.g. `Top.Science.Astronomy`). It fits org hierarchies, category trees, taxonomies, and any model where ancestor or descendant queries matter.
