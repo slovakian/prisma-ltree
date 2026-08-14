@@ -38,8 +38,8 @@ export function LtreeDemo({ codeBlocks }: LtreeDemoProps) {
   const code = codeBlocks[`demo.${activeOp.id}`];
 
   return (
-    <div className="overflow-hidden border border-border">
-      <div className="grid gap-px bg-border md:grid-cols-[210px_1fr]">
+    <div className="min-w-0 max-w-full overflow-hidden border border-border">
+      <div className="grid min-w-0 gap-px bg-border md:grid-cols-[210px_minmax(0,1fr)]">
         {/* Operations rail (desktop) / pills (mobile) */}
         <div className="order-2 flex flex-col bg-background md:order-none md:col-start-1 md:row-start-1">
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
@@ -85,7 +85,7 @@ export function LtreeDemo({ codeBlocks }: LtreeDemoProps) {
         </div>
 
         {/* Tree */}
-        <div className="order-1 flex items-center bg-background p-4 md:order-none md:col-start-2 md:row-start-1">
+        <div className="order-1 flex min-w-0 items-center overflow-hidden bg-background p-4 md:order-none md:col-start-2 md:row-start-1">
           <LtreeTree
             nodes={treeNodes}
             edges={treeEdges}
@@ -95,7 +95,7 @@ export function LtreeDemo({ codeBlocks }: LtreeDemoProps) {
         </div>
 
         {/* Code strip */}
-        <div className="order-3 bg-background md:col-span-2 md:col-start-1 md:row-start-2">
+        <div className="order-3 min-w-0 overflow-hidden bg-background md:col-span-2 md:col-start-1 md:row-start-2">
           <div className="border-t border-border px-4 py-3">
             <p className="mb-3 text-sm text-muted-foreground">{activeOp.caption}</p>
             {code ? <CodeBlock code={code.code} lang={code.lang} /> : null}

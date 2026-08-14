@@ -115,7 +115,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function Home() {
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-16 md:py-24">
+    <main className="mx-auto w-full min-w-0 max-w-5xl overflow-x-clip px-6 py-16 md:py-24">
       {/* Hero */}
       <header className="border-b border-border pb-12">
         <p className="text-xs tracking-widest text-muted-foreground uppercase">
