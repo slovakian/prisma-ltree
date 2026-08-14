@@ -44,7 +44,7 @@ export function LtreeTree({ nodes, edges, render, ariaLabel }: LtreeTreeProps) {
       viewBox="0 0 760 360"
       role="img"
       aria-label={ariaLabel}
-      className="h-auto w-full select-none"
+      className="block h-auto w-full max-w-full select-none"
       preserveAspectRatio="xMidYMid meet"
     >
       {/* Edges */}
