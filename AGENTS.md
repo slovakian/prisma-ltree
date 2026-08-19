@@ -241,3 +241,71 @@ Do **not** bump `@prisma/orm-*` pins casually. Follow
 `docs/prisma-next/versioning-and-compatibility.md` and the
 `prisma-8-extension-upgrade` skill (from `prisma/prisma/skills`).
 One RC / minor step per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.
+
+## Cursor Cloud specific instructions
+
+Durable, non-obvious notes for cloud agents. The startup update script already runs
+`pnpm install` on Node 24; standard commands live in the README / `CONTRIBUTING.md` /
+`package.json`. Only the gotchas below are worth remembering.
+
+### Node 24 vs the base image's Node 22
+
+`engines.node` is `>=24`, but the base image ships Node 22 at `/exec-daemon/node`, which
+sits at the front of `PATH` and wins over `nvm`. Node 24 is provisioned via `nvm` and its
+bin is prepended in `~/.bashrc`, so **interactive shells already resolve Node 24** (`node -v`
+→ v24). If a non-login/non-interactive context resolves Node 22, run
+`. "$HOME/.nvm/nvm.sh" && nvm use 24` first. `pnpm` (11.7.0) comes via `corepack`.
+
+### Toolchain is Vite+ (`vp`) — there is no `vite`/`vitest` binary
+
+Run everything through `vp` (`node_modules/.bin/vp` at the repo root): `vp dev`, `vp build`,
+`vp test`, `vp check`, `vp pack`. The `apps/web` / `examples/family-tree` `package.json`
+`dev` scripts literally call `vite`, which only resolves when invoked via `vp` (e.g.
+`vp dev`); running the raw script fails with `vite: not found`. Core gate: `pnpm run ready`.
+
+### Core product tests need no external DB
+
+`packages/extension-ltree` integration tests (`test/integration/tier*.integration.test.ts`)
+run against in-memory PGlite (`@electric-sql/pglite`), so `vp test` / `pnpm run ready`
+require no Postgres.
+
+### Docs site (`apps/web`): use build + preview, not `vp dev`
+
+`vp dev` currently returns `Cannot GET /` (HTTP 404) for every route. Cause: the
+Vite+ × TanStack Start SSR dev workaround in `apps/web/vite.config.ts`
+(`tanstackStartViteplusDevSsr`, see `docs/temporary-fixes.md`) gates on
+`isRunnableDevEnvironment(ssr)`, which now returns `true` under
+`@voidzero-dev/vite-plus-core@0.1.24`, so the workaround skips mounting SSR while upstream
+still doesn't serve it. Until that's resolved, run/verify the docs site with
+`cd apps/web && vp build && vp preview --port 3000` (SSR renders correctly there). Port 3000,
+`strictPort`.
+
+### `examples/family-tree`: standalone, needs Postgres, and needs the local build
+
+This example is **not a workspace member** — `cd examples/family-tree && pnpm install`
+separately (it pins `pnpm@11.8.0` via `packageManager`; corepack switches automatically).
+Two pre-existing version-drift gotchas make the committed setup fail with the pinned
+`prisma-next@8.0.0-rc.1` CLI:
+
+1. It depends on the npm-published `prisma-ltree@^0.2.1`, whose baked contract is
+   incompatible with the current CLI (`prisma-next contract emit` →
+   `headRef.hash does not match its contractJson`). Point it at the local build:
+   `pnpm add prisma-ltree@link:../../packages/extension-ltree` (after `vp build` in the
+   package).
+2. Its committed migrations reference a `migrations/snapshots/` dir that isn't present, so
+   `pnpm db:plan` fails with `CLI.FILE_NOT_FOUND`. Regenerate fresh:
+   `rm -rf migrations/app migrations/ltree migrations/snapshots` then re-run `db:plan`.
+
+Both of the above are working-tree changes — revert them (`git checkout -- examples/family-tree`
+plus removing regenerated `migrations/**`) if you don't intend to commit an example fix.
+
+### Postgres for the example (Docker is not preinstalled)
+
+`pnpm db:up` uses `docker compose` (postgres:17 on host port 5434), but Docker is **not**
+installed. Equivalent substitute used during setup: a local PostgreSQL 16 (has `ltree 1.2`)
+listening on **5434**, role/password `postgres`/`postgres`, database `family_tree` — matching
+`.env.example`'s `DATABASE_URL`. systemd is unavailable, so start it with
+`sudo pg_ctlcluster 16 main start` (the cluster's `postgresql.conf` port is set to 5434).
+With the DB already running, skip `pnpm db:up` and run `pnpm emit && pnpm db:plan &&
+pnpm db:init && pnpm seed` (seed pulls Wikipedia thumbnails over the network), then
+`pnpm dev` → http://localhost:3000.
