@@ -71,6 +71,12 @@ minimumReleaseAgeExclude:
   - '@prisma/orm-target-postgres@8.0.0-rc.4'
   - '@prisma/orm-toolchain@8.0.0-rc.4'
   - prisma@8.0.0-rc.6
+  - '@prisma/orm-family-sql@8.0.0-rc.5'
+  - '@prisma/orm-framework@8.0.0-rc.5'
+  - '@prisma/orm-postgres@8.0.0-rc.5'
+  - '@prisma/orm-target-postgres@8.0.0-rc.5'
+  - '@prisma/orm-toolchain@8.0.0-rc.5'
+  - prisma@8.0.0-rc.9
   - '@changesets/apply-release-plan@8.0.0'
   - '@changesets/assemble-release-plan@7.0.0'
   - '@changesets/changelog-git@1.0.0'
