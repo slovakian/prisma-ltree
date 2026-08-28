@@ -1,9 +1,7 @@
 /// <reference types="node" />
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { executeContractEmit } from "@prisma/orm-toolchain/cli/control-api";
+import { rm } from "node:fs/promises";
 import { afterAll, describe, expect, it } from "vite-plus/test";
+import { emitFixture } from "./emit-fixture";
 
 // Directory holding the PSL/TS fixtures and their configs.
 const fixtureDir = new URL(".", import.meta.url).pathname;
@@ -12,13 +10,7 @@ const tmpDirs: string[] = [];
 
 /** Emit a fixture config to a temp dir and return the parsed contract.json. */
 async function emit(configFile: string): Promise<Record<string, unknown>> {
-  const out = await mkdtemp(join(tmpdir(), "ltree-psl-parity-"));
-  tmpDirs.push(out);
-  await executeContractEmit({
-    configPath: join(fixtureDir, configFile),
-    outputPath: out,
-  });
-  return JSON.parse(await readFile(join(out, "contract.json"), "utf-8")) as Record<string, unknown>;
+  return emitFixture(fixtureDir, configFile, "ltree-psl-parity-", tmpDirs);
 }
 
 type Diagnostic = { readonly code: string; readonly message: string };
@@ -93,7 +85,7 @@ describe("PSL lane parity", () => {
 
   it("reports PSL_EXTENSION_NAMESPACE_NOT_COMPOSED naming ltree when the extension is not composed", async () => {
     await expect(emit("no-ext.config.ts")).rejects.toMatchObject({
-      code: "CONTRACT.VERIFY_FAILED",
+      code: "CONTRACT.SOURCE_LOAD_FAILED",
     });
 
     let caught: unknown;

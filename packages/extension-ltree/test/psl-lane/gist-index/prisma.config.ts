@@ -1,7 +1,10 @@
-import { defineConfig } from "@prisma/orm-postgres/config";
+import { defineConfig } from "@prisma/cli-engine";
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
 export default defineConfig({
-  contract: "./contract.prisma",
-  extensions: [ltree],
+  orm: ormConfig({
+    contract: "./contract.prisma",
+    extensions: [ltree],
+  }),
 });

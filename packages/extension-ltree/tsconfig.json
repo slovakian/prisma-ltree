@@ -31,6 +31,6 @@
       "prisma-ltree/operation-types": ["./src/exports/operation-types.ts"]
     }
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "prisma-next.config.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts", "prisma.config.ts"],
   "exclude": ["dist", "dist-tsc"]
 }

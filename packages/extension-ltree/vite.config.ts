@@ -1,6 +1,6 @@
 import { defineConfig } from "vite-plus";
 
-export default defineConfig({
+const config = {
   pack: {
     entry: [
       "src/exports/control.ts",
@@ -39,4 +39,6 @@ export default defineConfig({
     },
   },
   fmt: {},
-});
+};
+
+export default defineConfig(config);

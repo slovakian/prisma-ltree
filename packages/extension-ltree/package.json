@@ -36,16 +36,17 @@
     "check-pins": "node ./scripts/check-pins.mjs"
   },
   "dependencies": {
-    "@prisma/orm-family-sql": "8.0.0-rc.1",
-    "@prisma/orm-framework": "8.0.0-rc.1",
-    "@prisma/orm-toolchain": "8.0.0-rc.1",
+    "@prisma/orm-family-sql": "8.0.0-rc.2",
+    "@prisma/orm-framework": "8.0.0-rc.2",
+    "@prisma/orm-toolchain": "8.0.0-rc.2",
     "@standard-schema/spec": "^1.1.0",
     "arktype": "^2.2.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "catalog:",
-    "@prisma/orm-postgres": "8.0.0-rc.1",
-    "@prisma/orm-target-postgres": "8.0.0-rc.1",
+    "@prisma/cli-engine": "0.1.1",
+    "@prisma/orm-postgres": "8.0.0-rc.2",
+    "@prisma/orm-target-postgres": "8.0.0-rc.2",
     "@types/node": "catalog:",
     "@typescript/native-preview": "7.0.0-dev.20260509.2",
     "@vitest/coverage-v8": "4.1.8",
@@ -54,7 +55,7 @@
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@prisma/orm-target-postgres": "8.0.0-rc.1",
+    "@prisma/orm-target-postgres": "8.0.0-rc.2",
     "typescript": ">=5.9"
   },
   "peerDependenciesMeta": {
