@@ -31,7 +31,7 @@ describe("PSL lane parity", () => {
     const fromTs = await emit("ts.config.ts");
 
     // The two authoring surfaces lower to the same Contract IR. No source-path
-    // normalization is needed: prisma-next 0.14.0 threads no per-lane metadata
+    // normalization is needed: emit threads no per-lane metadata
     // into contract.json, so even profileHash/storageHash match.
     expect(fromPsl).toEqual(fromTs);
   });

@@ -1,22 +1,25 @@
 export const homeCodeBlocks = [
   {
     id: "config",
-    code: `// prisma-next.config.ts
-import { defineConfig } from "@prisma/orm-postgres/config";
+    code: `// prisma.config.ts
+import { definePrismaConfig } from "prisma/config";
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
-export default defineConfig({
-  contract: "./src/prisma/contract.ts",
-  extensions: [ltree],
-  db: {
-    connection: process.env.DATABASE_URL!,
-  },
+export default definePrismaConfig({
+  orm: ormConfig({
+    contract: "./src/prisma/contract.ts",
+    extensions: [ltree],
+    db: {
+      connection: process.env.DATABASE_URL!,
+    },
+  }),
 });`,
     lang: "typescript",
   },
   {
     id: "contract",
-    code: `// TypeScript lane — PSL uses ltree.Ltree() in contract.prisma
+    code: `// TypeScript lane. PSL uses ltree.Ltree() in contract.prisma
 import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import { ltree } from "prisma-ltree/column-types";
 import ltreePack from "prisma-ltree/pack";

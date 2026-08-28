@@ -121,7 +121,7 @@ export async function getMrcaViaOpsHandler(a: string, b: string): Promise<TaxonR
   const rows = await db.orm.public.Taxon.where((t) => t.path.isAncestorOf(a))
     .where((t) => t.path.isAncestorOf(b))
     .orderBy((t) => t.path.nlevel().desc())
-    .take(1)
+    .limit(1)
     .all();
   return rows[0] ?? null;
 }

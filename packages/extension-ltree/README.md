@@ -1,24 +1,24 @@
 # prisma-ltree
 
-A [Prisma Next](https://github.com/prisma/prisma) extension pack for PostgreSQL's
+A [Prisma 8](https://www.prisma.io/docs/orm) extension pack for PostgreSQL’s
 [`ltree`](https://www.postgresql.org/docs/current/ltree.html) hierarchical-tree data type.
 
 Model category trees, org charts, taxonomies, and filesystem-like paths in Postgres and query
-them with type-safe, prisma-native operators — ancestor/descendant checks, `lquery`/`ltxtquery`
-pattern matching, path manipulation, and lowest-common-ancestor computation — without dropping to
+them with type-safe operators: ancestor/descendant checks, `lquery`/`ltxtquery`
+pattern matching, path manipulation, and lowest-common-ancestor computation, without dropping to
 raw SQL.
 
 ## Features
 
-- **`ltree` and `ltree[]` columns** — `ltree()` / `ltreeArray()` column helpers
-- **Hierarchy operators** — ancestor and descendant checks
-- **Pattern matching** — `lquery`, `lquery[]`, and `ltxtquery`
-- **Scalar functions** — depth, subpaths, label index, lowest common ancestor
-- **Concatenation & conversion** — path building and `ltree` ↔ `text` conversion
-- **Array first-match** — find the first matching path in an `ltree[]` column
-- **Baseline migration** — installs the Postgres extension via
+- **`ltree` and `ltree[]` columns**: `ltree()` / `ltreeArray()` column helpers
+- **Hierarchy operators**: ancestor and descendant checks
+- **Pattern matching**: `lquery`, `lquery[]`, and `ltxtquery`
+- **Scalar functions**: depth, subpaths, label index, lowest common ancestor
+- **Concatenation & conversion**: path building and `ltree` ↔ `text` conversion
+- **Array first-match**: find the first matching path in an `ltree[]` column
+- **Baseline migration**: installs the Postgres extension via
   `CREATE EXTENSION IF NOT EXISTS ltree` when the pack is composed
-- **GiST indexes** — author `@@index([path], type: "gist")` (Prisma Next
+- **GiST indexes**: author `@@index([path], type: "gist")` (Prisma 8
   postgres target; default `gist_ltree_ops`)
 
 See the [feature support matrix](https://github.com/slovakian/prisma-ltree/blob/main/docs/feature-support.md)
@@ -30,13 +30,17 @@ for what is supported, planned, or out of scope.
 pnpm add prisma-ltree
 ```
 
-Requires Node `>=24` and Prisma Next **`8.0.0-rc.1`** (exact `@prisma/orm-*` pins — see
-[versioning & compatibility](https://github.com/slovakian/prisma-ltree/blob/main/docs/prisma-next/versioning-and-compatibility.md)).
+Requires Node `>=24`. This pack exact-pins `@prisma/orm-*` to **`8.0.0-rc.8`**.
+`prisma-ltree` itself stays on independent `0.x` semver: install it with a caret.
+You do not need `prisma-ltree@8.0.0-rc.8`. See
+[versioning and compatibility](https://github.com/slovakian/prisma-ltree/blob/main/docs/prisma-next/versioning-and-compatibility.md).
 
-Consumer apps typically depend on the Postgres facade at the same version:
+Consumer apps also depend on the Postgres facade at the same SPI version, plus the
+`prisma` CLI:
 
 ```bash
-pnpm add @prisma/orm-postgres@8.0.0-rc.1 prisma-ltree
+pnpm add @prisma/orm-postgres@8.0.0-rc.8 prisma-ltree
+pnpm add -D prisma
 ```
 
 ### Agent skills (optional)
@@ -51,7 +55,7 @@ pnpm dlx skills add slovakian/prisma-ltree --all
 ## Database setup
 
 The extension ships an on-disk baseline migration that installs `ltree` when the pack is composed
-into an application. `prisma-next db init` / `db update` apply it automatically. The equivalent
+into an application. `prisma db init` / `db update` apply it automatically. The equivalent
 manual DDL is:
 
 ```sql
@@ -60,15 +64,18 @@ CREATE EXTENSION IF NOT EXISTS ltree;
 
 ## Configuration
 
-Add the pack to your `prisma-next.config.ts`:
+Add the pack to your `prisma.config.ts`:
 
 ```typescript
-import { defineConfig } from "@prisma/orm-postgres/config";
+import { definePrismaConfig } from "prisma/config";
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
-export default defineConfig({
-  contract: "./src/prisma/contract.ts",
-  extensions: [ltree],
+export default definePrismaConfig({
+  orm: ormConfig({
+    contract: "./src/prisma/contract.ts",
+    extensions: [ltree],
+  }),
 });
 ```
 
@@ -76,14 +83,14 @@ export default defineConfig({
 
 ### Contract definition
 
-Author ltree columns in either lane — `contract.prisma` (PSL) or `contract.ts`
+Author ltree columns in either lane: `contract.prisma` (PSL) or `contract.ts`
 (TypeScript). Both emit a byte-identical compiled contract.
 
-**PSL lane** — reference the `ltree` namespace constructors (parens required) and compose
-`ltree` into `extensions` in `prisma-next.config.ts`:
+**PSL lane.** Reference the `ltree` namespace constructors (parens required) and compose
+`ltree` into `extensions` in `prisma.config.ts`:
 
 ```prisma
-// contract.prisma — use prisma-next
+// contract.prisma: use prisma
 
 types {
   Path  = ltree.Ltree()      // → pg/ltree@1 / ltree
@@ -111,7 +118,7 @@ model Page {
 }
 ```
 
-Prisma Next `8.0.0-rc.1` registers `gist` on the postgres target. `prisma-ltree`
+Prisma 8 registers `gist` on the postgres target. `prisma-ltree`
 does not add a second index type. See the
 [indexes guide](https://prisma-ltree.procka.org/docs/indexes) for TypeScript
 authoring, `ltree[]`, and operator-class limits (`siglen` is not expressible).
@@ -223,10 +230,10 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
 
 Use `ltreeArray()` for `ltree[]` columns that expose these methods.
 
-`lcaAll` is the array form of `lca`. It is not named `lca` because prisma-next
+`lcaAll` is the array form of `lca`. It is not named `lca` because Prisma 8
 keys operations by name only and rejects duplicates; scalar columns already
 expose `path.lca(other, ...)` (see ADR-005). Note it returns SQL NULL for an
-empty `ltree[]`, matching the first-match ops' `nullable: false` convention.
+empty `ltree[]`, matching the first-match ops’ `nullable: false` convention.
 
 ## Types
 

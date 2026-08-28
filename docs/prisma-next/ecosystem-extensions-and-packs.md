@@ -26,7 +26,7 @@ A pack is a TS/JS package that may provide any subset of four slices:
 
 | Entrypoint                                          | Role                                                                    |
 | --------------------------------------------------- | ----------------------------------------------------------------------- |
-| `/control`                                          | Descriptor for `prisma-next.config.ts`; migration/contract-space wiring |
+| `/control`                                          | Descriptor for `prisma.config.ts`; migration/contract-space wiring      |
 | `/runtime`                                          | Codecs + query operations at execution time                             |
 | `/pack`                                             | Pure metadata for TS contract authoring                                 |
 | `/codec-types`, `/operation-types`, `/column-types` | Types for emitted `contract.d.ts`                                       |

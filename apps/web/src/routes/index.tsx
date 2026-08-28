@@ -11,12 +11,12 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title: "prisma-ltree — PostgreSQL ltree for Prisma Next",
+        title: "prisma-ltree: PostgreSQL ltree for Prisma 8",
       },
       {
         name: "description",
         content:
-          "A Prisma Next extension pack for PostgreSQL's ltree hierarchical-tree type. Type-safe ancestor/descendant checks, lquery/ltxtquery matching, and path manipulation — without raw SQL.",
+          "A Prisma 8 extension pack for PostgreSQL's ltree hierarchical-tree type. Type-safe ancestor/descendant checks, lquery/ltxtquery matching, and path manipulation, without raw SQL.",
       },
     ],
   }),
@@ -119,7 +119,7 @@ function Home() {
       {/* Hero */}
       <header className="border-b border-border pb-12">
         <p className="text-xs tracking-widest text-muted-foreground uppercase">
-          Prisma Next extension pack
+          Prisma 8 extension pack
         </p>
         <h1 className="mt-4 text-4xl font-medium md:text-5xl">prisma-ltree</h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
@@ -130,7 +130,7 @@ function Home() {
           >
             <code>ltree</code>
           </a>{" "}
-          hierarchical-tree type for Prisma Next. Model category trees, org charts, and taxonomies,
+          hierarchical-tree type for Prisma 8. Model category trees, org charts, and taxonomies,
           then query them with typed operators. No raw SQL.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -159,13 +159,13 @@ function Home() {
 
       {/* Quickstart */}
       <section id="setup" className="scroll-mt-8 border-b border-border py-12">
-        <SectionLabel>Quickstart</SectionLabel>
+        <SectionLabel>Setup</SectionLabel>
         <h2 className="text-2xl font-medium">Three steps to your first query</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Requires Node <code>&gt;=24</code> and Prisma Next{" "}
-          <code>@prisma/orm-postgres@8.0.0-rc.1</code> (exact pin). Full setup in the{" "}
+          Requires Node <code>&gt;=24</code> and <code>@prisma/orm-postgres@8.0.0-rc.8</code> (exact
+          SPI pin). Install <code>prisma-ltree</code> with a caret. Full setup in the{" "}
           <a href="/docs/getting-started" className="underline underline-offset-4">
-            Getting Started guide
+            Get started guide
           </a>
           .
         </p>

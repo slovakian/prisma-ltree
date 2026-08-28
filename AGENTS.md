@@ -29,9 +29,9 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 ---
 
-# Prisma Next LTREE Extension Development
+# Prisma 8 LTREE Extension Development
 
-This project builds `prisma-ltree`, an extension pack for PostgreSQL's `ltree` (hierarchical tree) data type, following the prisma-next extension architecture.
+This project builds `prisma-ltree`, an extension pack for PostgreSQL's `ltree` (hierarchical tree) data type, following the Prisma 8 extension architecture.
 
 ## Project Layout
 
@@ -59,8 +59,8 @@ Working on `apps/web` documentation? Start here:
 
 ## Prisma Next reference (git subtree)
 
-Upstream Prisma Next now lives in [`prisma/prisma`](https://github.com/prisma/prisma)
-(Early Access / `8.0.0-rc` line). A historical layout from
+Upstream Prisma 8 now lives in [`prisma/orm`](https://github.com/prisma/orm)
+(`prisma/prisma` redirects here; Early Access / `8.0.0-rc` line). A historical layout from
 [prisma/prisma-next](https://github.com/prisma/prisma-next) is vendored at
 `vendor/prisma-next/` as a **git subtree** (committed in this repo) for
 **reference implementations, SPI types, and test patterns** — it is always
@@ -84,7 +84,7 @@ See [`vendor/README.md`](vendor/README.md) for re-add / pull details.
 | postgis reference (multi-operator)    | `vendor/prisma-next/packages/3-extensions/postgis/`    |
 | paradedb reference                    | `vendor/prisma-next/packages/3-extensions/paradedb/`   |
 | Extension architecture docs (source)  | `vendor/prisma-next/docs/`                             |
-| Extension author skills (live)        | [`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills) (`prisma-8-extension-upgrade`) |
+| Extension author skills (live)        | [`prisma/orm/skills/prisma-8`](https://github.com/prisma/orm/tree/main/skills/prisma-8) (`references/upgrade-extension.md`) |
 | Historical skill cluster (subtree)    | `vendor/prisma-next/skills/` (stale — do not install from here) |
 
 ## Key Documentation (consult these before coding)
@@ -190,7 +190,7 @@ migrations/
   <timestamp>_install_ltree/
     migration.json
     ops.json
-prisma-next.config.ts
+prisma.config.ts
 ```
 
 ## Query Operator Pattern
@@ -235,11 +235,11 @@ Mirror tests from postgis (`operations.test.ts` pattern: descriptor metadata, op
 4. `vp run build` — build packages
 5. `vp run ready` — full validation (includes `check-pins` for exact `@prisma/orm-*` alignment)
 
-### Upgrading Prisma Next
+### Upgrading Prisma 8
 
 Do **not** bump `@prisma/orm-*` pins casually. Follow
 `docs/prisma-next/versioning-and-compatibility.md` and the
-`prisma-8-extension-upgrade` skill (from `prisma/prisma/skills`).
+`upgrade-extension` reference in [`prisma/orm/skills/prisma-8`](https://github.com/prisma/orm/tree/main/skills/prisma-8).
 One RC / minor step per commit; run `pnpm run check-pins` in `packages/extension-ltree/`.
 
 ## Cursor Cloud specific instructions
@@ -285,10 +285,10 @@ still doesn't serve it. Until that's resolved, run/verify the docs site with
 This example is **not a workspace member** — `cd examples/family-tree && pnpm install`
 separately (it pins `pnpm@11.8.0` via `packageManager`; corepack switches automatically).
 Two pre-existing version-drift gotchas make the committed setup fail with the pinned
-`prisma-next@8.0.0-rc.1` CLI:
+`prisma` CLI until you point the example at this repo’s local pack:
 
-1. It depends on the npm-published `prisma-ltree@^0.2.1`, whose baked contract is
-   incompatible with the current CLI (`prisma-next contract emit` →
+1. It depends on the npm-published `prisma-ltree`, whose baked contract can be
+   incompatible with the current CLI (`prisma contract emit` →
    `headRef.hash does not match its contractJson`). Point it at the local build:
    `pnpm add prisma-ltree@link:../../packages/extension-ltree` (after `vp build` in the
    package).

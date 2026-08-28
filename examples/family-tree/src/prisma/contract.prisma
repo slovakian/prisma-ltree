@@ -1,4 +1,4 @@
-// use prisma-next
+// use prisma
 
 types {
   // A single ltree path. Resolves to codec `pg/ltree@1`, native type `ltree`.
@@ -13,7 +13,7 @@ types {
 /// This model is the data layer of the Tree-of-Life showcase viewer. `path`
 /// is the materialized ltree path from the root `Catarrhini` down to this
 /// taxon — every query the showcase surfaces (`isAncestorOf`, `lca()`,
-/// `matchesLquery`, ...) is dispatched to Postgres via prisma-next and the
+/// `matchesLquery`, ...) is dispatched to Postgres via Prisma 8 and the
 /// `prisma-ltree` extension; no lineage, MRCA, or subtree math is done in the
 /// client.
 ///

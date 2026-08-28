@@ -1,47 +1,44 @@
 ---
-title: Authoring Contracts
+title: Author ltree columns
 description: Declare ltree columns in the PSL lane or the TypeScript lane; both produce the same contract
 ---
 
-Prisma Next gives you two ways to author your data contract, and `prisma-ltree`
-supports both:
+Prisma 8 has two contract-authoring lanes, and `prisma-ltree` supports both:
 
-- the **PSL lane**: `contract.prisma`, the surface the official extensions document
-- the **TypeScript lane**: `contract.ts` via `defineContract`
+- **PSL lane**: `contract.prisma`, the surface the official extensions document
+- **TypeScript lane**: `contract.ts` via `defineContract`
 
-Both produce the same compiled contract. Pick whichever surface fits your project and
-get exactly the same result.
+Both emit the same compiled contract. Choose the surface that fits your project.
 
 ## Composing the extension
 
-Whichever lane you author in, add `ltree` to `extensions` in `prisma-next.config.ts` so
-the `ltree` namespace resolves during emit:
+Whichever lane you author in, add `ltree` to `extensions` in `prisma.config.ts` so the `ltree` namespace resolves during emit:
 
-```typescript title="prisma-next.config.ts"
-import { defineConfig } from "@prisma/orm-postgres/config";
+```typescript title="prisma.config.ts"
+import { definePrismaConfig } from "prisma/config";
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
-export default defineConfig({
-  contract: "./contract.prisma", // or "./contract.ts"
-  extensions: [ltree],
+export default definePrismaConfig({
+  orm: ormConfig({
+    contract: "./contract.prisma", // or "./contract.ts"
+    extensions: [ltree],
+  }),
 });
 ```
 
-Omitting `ltree` from `extensions` while a `contract.prisma` references `ltree.Ltree()`
-fails emit with `PSL_EXTENSION_NAMESPACE_NOT_COMPOSED`.
+Omitting `ltree` from `extensions` while a `contract.prisma` references `ltree.Ltree()` fails emit with `PSL_EXTENSION_NAMESPACE_NOT_COMPOSED`.
 
 ## Declaring ltree columns
 
-The extension gives you two named-type constructors: `ltree.Ltree()` for a single `ltree`
-path (codec `pg/ltree@1`) and `ltree.LtreeArray()` for an `ltree[]` array (codec
-`pg/ltree-array@1`). Author them in either lane:
+Two named-type constructors cover the Postgres types: `ltree.Ltree()` for a single `ltree` path (codec `pg/ltree@1`) and `ltree.LtreeArray()` for an `ltree[]` array (codec `pg/ltree-array@1`). Author them in either lane:
 
 <!-- ::start:tabs -->
 
 ## PSL
 
 ```prisma title="contract.prisma"
-// use prisma-next
+// use prisma
 
 types {
   // Single ltree path → codec `pg/ltree@1`, native type `ltree`.
@@ -61,8 +58,7 @@ model Page {
 }
 ```
 
-The parentheses are **required**, even though these constructors take no arguments.
-`Path = ltree.Ltree` (no parens) fails with `PSL_INVALID_TYPES_MEMBER`.
+The parentheses are **required**, even though these constructors take no arguments. `Path = ltree.Ltree` (no parens) fails with `PSL_INVALID_TYPES_MEMBER`.
 
 ## TypeScript
 
@@ -100,19 +96,18 @@ export const contract = defineContract(
 export default contract;
 ```
 
-The `ltree` namespace on `type` is the same authoring surface the PSL lane exposes as
-`ltree.Ltree()` / `ltree.LtreeArray()`.
+The `ltree` namespace on `type` is the same authoring surface the PSL lane exposes as `ltree.Ltree()` / `ltree.LtreeArray()`.
 
 <!-- ::end:tabs -->
 
 After editing either contract, re-emit:
 
 ```bash
-pnpm prisma-next contract emit
+pnpm prisma contract emit
 ```
 
-## Next steps
+## Runtime, migrations, and indexes
 
-Once your columns are declared, see [Getting Started](/docs/getting-started) for runtime wiring, the baseline migration, and your first queries.
+See [Get started](/docs/getting-started) for runtime wiring, the baseline migration, and your first queries.
 
 Add a GiST index on path columns so ancestor, descendant, and pattern queries can use an index. See [Add a GiST index](/docs/indexes).

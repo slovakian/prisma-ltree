@@ -27,7 +27,7 @@ export const Route = createFileRoute("/docs/$")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.title ?? "Docs"} — prisma-ltree` },
+      { title: `${loaderData?.title ?? "Docs"}: prisma-ltree` },
       ...(loaderData?.description
         ? [{ name: "description", content: loaderData.description }]
         : []),
