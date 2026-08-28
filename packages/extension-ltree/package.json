@@ -32,30 +32,30 @@
     "dev": "vp pack --watch",
     "test": "vp test",
     "check": "vp check",
-    "build:contract-space": "prisma-next contract emit",
+    "build:contract-space": "prisma contract emit",
     "check-pins": "node ./scripts/check-pins.mjs"
   },
   "dependencies": {
-    "@prisma/orm-family-sql": "8.0.0-rc.3",
-    "@prisma/orm-framework": "8.0.0-rc.3",
-    "@prisma/orm-toolchain": "8.0.0-rc.3",
+    "@prisma/orm-family-sql": "8.0.0-rc.4",
+    "@prisma/orm-framework": "8.0.0-rc.4",
+    "@prisma/orm-toolchain": "8.0.0-rc.4",
     "@standard-schema/spec": "^1.1.0",
     "arktype": "^2.2.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "catalog:",
     "@prisma/cli-engine": "0.2.0",
-    "@prisma/orm-postgres": "8.0.0-rc.3",
-    "@prisma/orm-target-postgres": "8.0.0-rc.3",
+    "@prisma/orm-postgres": "8.0.0-rc.4",
+    "@prisma/orm-target-postgres": "8.0.0-rc.4",
     "@types/node": "catalog:",
     "@typescript/native-preview": "7.0.0-dev.20260509.2",
     "@vitest/coverage-v8": "4.1.8",
-    "prisma-next": "8.0.0-rc.1",
+    "prisma": "8.0.0-rc.6",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@prisma/orm-target-postgres": "8.0.0-rc.3",
+    "@prisma/orm-target-postgres": "8.0.0-rc.4",
     "typescript": ">=5.9"
   },
   "peerDependenciesMeta": {

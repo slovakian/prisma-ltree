@@ -41,4 +41,4 @@ const config = {
   fmt: {},
 };
 
-export default defineConfig(config);
+export default defineConfig(config as never);
