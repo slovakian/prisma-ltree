@@ -36,26 +36,26 @@
     "check-pins": "node ./scripts/check-pins.mjs"
   },
   "dependencies": {
-    "@prisma/orm-family-sql": "8.0.0-rc.6",
-    "@prisma/orm-framework": "8.0.0-rc.6",
-    "@prisma/orm-toolchain": "8.0.0-rc.6",
+    "@prisma/orm-family-sql": "8.0.0-rc.7",
+    "@prisma/orm-framework": "8.0.0-rc.7",
+    "@prisma/orm-toolchain": "8.0.0-rc.7",
     "@standard-schema/spec": "^1.1.0",
     "arktype": "^2.2.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "catalog:",
-    "@prisma/cli-engine": "0.2.2",
-    "@prisma/orm-postgres": "8.0.0-rc.6",
-    "@prisma/orm-target-postgres": "8.0.0-rc.6",
+    "@prisma/cli-engine": "0.2.3",
+    "@prisma/orm-postgres": "8.0.0-rc.7",
+    "@prisma/orm-target-postgres": "8.0.0-rc.7",
     "@types/node": "catalog:",
     "@typescript/native-preview": "7.0.0-dev.20260509.2",
     "@vitest/coverage-v8": "4.1.8",
-    "prisma": "8.0.0-rc.9",
+    "prisma": "8.0.0-rc.10",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@prisma/orm-target-postgres": "8.0.0-rc.6",
+    "@prisma/orm-target-postgres": "8.0.0-rc.7",
     "typescript": ">=5.9"
   },
   "peerDependenciesMeta": {
