@@ -1,25 +1,25 @@
 ---
 title: prisma-ltree
-description: PostgreSQL ltree extension for Prisma Next
+description: PostgreSQL ltree extension for Prisma 8
 ---
 
-PostgreSQL `ltree` brings hierarchical tree data to **Prisma Next**. This extension pack gives you typed codecs, query operators, and a baseline migration for tree-structured data, with no raw SQL.
+PostgreSQL `ltree` stores hierarchical tree data. This extension pack adds typed codecs, query operators, and a baseline migration so you can query that data from Prisma 8 without raw SQL.
 
-Author your contract in either lane and get the same compiled result:
+Author your contract in either lane. Both emit the same compiled result:
 
 - **PSL**: `contract.prisma` with `ltree.Ltree()` and `ltree.LtreeArray()`
 - **TypeScript**: `contract.ts` with `defineContract` and `ltree()` / `ltreeArray()`
 
-See [Authoring Contracts](/docs/authoring) for side-by-side examples. The [Getting Started](/docs/getting-started) guide covers install, runtime wiring, migrations, and your first queries.
+See [Author ltree columns](/docs/authoring) for side-by-side examples. The [Get started](/docs/getting-started) guide covers install, runtime wiring, migrations, and your first queries.
 
 Add a [GiST index](/docs/indexes) on path columns so ancestor, descendant, and pattern queries can use an index.
 
-## What is ltree?
+## The ltree type
 
 The PostgreSQL `ltree` type stores dot-separated path labels (e.g. `Top.Science.Astronomy`). It fits org hierarchies, category trees, taxonomies, and any model where ancestor or descendant queries matter.
 
-## Query Operations
+## Query operations
 
-- [Hierarchy Operators](/docs/operations/hierarchy): ancestor and descendant checks
-- [Pattern Matching Operators](/docs/operations/pattern-matching): `lquery` and `ltxtquery` patterns
-- [Lowest Common Ancestor](/docs/operations/lca): shared ancestor of paths, including `ltree[]` columns
+- [Hierarchy operators](/docs/operations/hierarchy): ancestor and descendant checks
+- [Pattern matching operators](/docs/operations/pattern-matching): `lquery` and `ltxtquery` patterns
+- [Lowest common ancestor](/docs/operations/lca): shared ancestor of paths, including `ltree[]` columns

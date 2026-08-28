@@ -11,7 +11,7 @@ Ancestor, descendant, and pattern queries on `ltree` need a Generalized Search T
 
 ## Declare GiST on the path column
 
-Add `type: "gist"` on your path column. `Path` below is `ltree.Ltree()` from [Authoring Contracts](/docs/authoring).
+Add `type: "gist"` on your path column. `Path` below is `ltree.Ltree()` from [Author ltree columns](/docs/authoring).
 
 <!-- ::start:tabs -->
 
@@ -50,7 +50,7 @@ Page.sql(({ cols, constraints }) => ({
 Emit the contract:
 
 ```bash
-pnpm prisma-next contract emit
+pnpm prisma contract emit
 ```
 
 Apply the change with `db update` or `migration plan`. Prisma creates a GiST index on the column:

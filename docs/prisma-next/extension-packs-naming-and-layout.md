@@ -57,7 +57,7 @@ packages/3-extensions/<name>/
     <timestamp>_install_<ext>/
       migration.json
       ops.json
-  prisma-next.config.ts
+  prisma.config.ts
 ```
 
 ## Package Exports

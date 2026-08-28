@@ -1,5 +1,5 @@
 ---
-title: Pattern Matching Operators
+title: Pattern matching operators
 description: Query paths using lquery and ltxtquery patterns
 ---
 

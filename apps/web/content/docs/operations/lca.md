@@ -1,5 +1,5 @@
 ---
-title: Lowest Common Ancestor
+title: Lowest common ancestor
 description: Compute the shared ancestor of two or more ltree paths
 ---
 
@@ -11,7 +11,7 @@ import { db } from "../prisma/db";
 
 ## lcaAll()
 
-`lcaAll()` computes the LCA across all paths held in an `ltree[]` column. It takes no arguments — the array column is the input.
+`lcaAll()` computes the LCA across all paths held in an `ltree[]` column. It takes no arguments: the array column is the input.
 
 ```typescript
 const rows = await db.orm.Page.select("id", {
@@ -23,7 +23,7 @@ const rows = await db.orm.Page.select("id", {
 
 An empty array yields `null`.
 
-Use `ltreeArray()` (TypeScript) or `ltree.LtreeArray()` (PSL) for the `ltree[]` column — see [Authoring Contracts](/docs/authoring).
+Use `ltreeArray()` (TypeScript) or `ltree.LtreeArray()` (PSL) for the `ltree[]` column. See [Author ltree columns](/docs/authoring).
 
 ## lca()
 

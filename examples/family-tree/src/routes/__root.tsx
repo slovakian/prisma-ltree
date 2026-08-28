@@ -14,7 +14,7 @@ export const Route = createRootRoute({
       ...seo({
         title: "prisma-ltree · Family Tree",
         description:
-          "Explore a dynasty modeled with PostgreSQL ltree via prisma-next and the prisma-ltree extension.",
+          "Explore a dynasty modeled with PostgreSQL ltree via Prisma 8 and the prisma-ltree extension.",
       }),
     ],
     links: [

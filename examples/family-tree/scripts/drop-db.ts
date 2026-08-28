@@ -1,5 +1,5 @@
 /**
- * Reset the database to a clean slate: drop the app schema and the prisma-next
+ * Reset the database to a clean slate: drop the app schema and the Prisma 8
  * contract bookkeeping schema. Run with `pnpm db:drop`, then re-run
  * `pnpm db:init && pnpm seed`.
  */

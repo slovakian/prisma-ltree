@@ -5,7 +5,7 @@ import contractJson from "./contract.json" with { type: "json" };
 import type { Contract } from "./contract.d";
 
 /**
- * The typed prisma-next client for this app.
+ * The typed Prisma 8 client for this app.
  *
  * The `.server.ts` suffix is a TanStack Start convention: this module — and the
  * Postgres runtime it pulls in — is guaranteed to stay on the server and is

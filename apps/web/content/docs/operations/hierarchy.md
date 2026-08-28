@@ -1,5 +1,5 @@
 ---
-title: Hierarchy Operators
+title: Hierarchy operators
 description: Ancestor and descendant checks for tree paths
 ---
 

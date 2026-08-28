@@ -5,13 +5,13 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![Docs](https://img.shields.io/badge/docs-prisma--ltree.procka.org-blue)](https://prisma-ltree.procka.org)
 
-A [Prisma Next](https://github.com/prisma/prisma) extension pack for PostgreSQL's
+A [Prisma 8](https://www.prisma.io/docs/orm) extension pack for PostgreSQL’s
 [`ltree`](https://www.postgresql.org/docs/current/ltree.html) hierarchical-tree data type.
 
 Model category trees, org charts, taxonomies, and filesystem-like paths in Postgres and
-query them with type-safe, prisma-native operators — ancestor/descendant checks,
+query them with type-safe operators: ancestor/descendant checks,
 `lquery`/`ltxtquery` pattern matching, path manipulation, and lowest-common-ancestor
-computation — without dropping to raw SQL.
+computation, without dropping to raw SQL.
 
 - 📦 **npm:** [`prisma-ltree`](https://www.npmjs.com/package/prisma-ltree)
 - 📖 **Docs:** [prisma-ltree.procka.org](https://prisma-ltree.procka.org)
@@ -20,26 +20,33 @@ computation — without dropping to raw SQL.
 ## Install
 
 ```bash
-pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.1
+pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.8
+pnpm add -D prisma
 ```
 
-Requires Node `>=24` and Prisma Next **`8.0.0-rc.1`** via `@prisma/orm-postgres` (exact pin —
-see [versioning & compatibility](docs/prisma-next/versioning-and-compatibility.md)).
-The CLI remains `prisma-next` (`npx prisma-next@latest`).
+Requires Node `>=24`. Pin `@prisma/orm-postgres` to **`8.0.0-rc.8`** (exact SPI pin).
+Install `prisma-ltree` with a caret. You do not need `prisma-ltree@8.0.0-rc.8`.
+See [versioning and compatibility](docs/prisma-next/versioning-and-compatibility.md).
+
+The CLI is `prisma` (`npx prisma@latest`). Today that is `8.0.0-rc.12`, which
+depends on `@prisma/orm-toolchain@8.0.0-rc.8`.
 
 ## Quickstart
 
-Add the pack to your `prisma-next.config.ts`, author `ltree` columns, then query them with
+Add the pack to your `prisma.config.ts`, author `ltree` columns, then query them with
 type-safe operators:
 
 ```typescript
-// prisma-next.config.ts
-import { defineConfig } from "@prisma/orm-postgres/config";
+// prisma.config.ts
+import { definePrismaConfig } from "prisma/config";
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
-export default defineConfig({
-  contract: "./src/prisma/contract.prisma",
-  extensions: [ltree],
+export default definePrismaConfig({
+  orm: ormConfig({
+    contract: "./src/prisma/contract.prisma",
+    extensions: [ltree],
+  }),
 });
 ```
 
@@ -66,7 +73,7 @@ This is a [Vite+](https://viteplus.dev) (`vp`) + pnpm workspace monorepo.
 | `vendor/prisma-next/`       | Historical prisma-next git subtree (agent / contributor reference)                         |
 | `examples/family-tree/`     | Tree-of-Life demo app exercising the extension                                             |
 | `skills/`, `.agents/`       | Agent skills for adoption and query patterns                                               |
-| `docs/`                     | Prisma Next architecture notes, ltree reference, specs, and ADRs                           |
+| `docs/`                     | Prisma 8 architecture notes, ltree reference, specs, and ADRs                              |
 
 ## Development
 
@@ -75,18 +82,18 @@ pnpm install          # install dependencies
 pnpm run ready        # check-pins + build + check + test (full gate)
 ```
 
-Upstream Prisma Next source for agents lives at
+Upstream Prisma source for agents lives at
 [`vendor/prisma-next/`](vendor/prisma-next/) (git subtree; historical
 [`prisma/prisma-next`](https://github.com/prisma/prisma-next) layout). The active product
-home is [`prisma/prisma`](https://github.com/prisma/prisma). Refresh the subtree with
-`pnpm run sync-prisma-next` when needed.
+home is [`prisma/orm`](https://github.com/prisma/orm) (`prisma/prisma` redirects there).
+Refresh the subtree with `pnpm run sync-prisma-next` when needed.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full workflow (changesets, branch model,
 skills) and [`AGENTS.md`](AGENTS.md) for extension-author conventions.
 
 ## Contributing
 
-Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) and our
+Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and our
 [Code of Conduct](CODE_OF_CONDUCT.md). For security reports, see [`SECURITY.md`](SECURITY.md).
 
 ## License

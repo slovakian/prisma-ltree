@@ -68,11 +68,11 @@ publishing) live in [`docs/CHANGESETS.md`](docs/CHANGESETS.md).
 
 ## Dependency pins
 
-`@prisma/orm-*` dependencies are **exact-pinned by design** (currently `8.0.0-rc.1`). Do not
-bump them casually — `pnpm run check-pins` enforces alignment, and upgrades follow
+`@prisma/orm-*` dependencies are **exact-pinned by design** (currently `8.0.0-rc.8`). Do not
+bump them casually. `pnpm run check-pins` enforces alignment, and upgrades follow
 [`docs/prisma-next/versioning-and-compatibility.md`](docs/prisma-next/versioning-and-compatibility.md)
-(one RC / minor step per commit). Use the `prisma-8-extension-upgrade` skill from
-[`prisma/prisma/skills`](https://github.com/prisma/prisma/tree/main/skills).
+(one RC / minor step per commit). Use the Prisma 8 `upgrade-extension` reference from
+[`prisma/orm/skills/prisma-8`](https://github.com/prisma/orm/tree/main/skills/prisma-8).
 
 ## Conventions & where things live
 

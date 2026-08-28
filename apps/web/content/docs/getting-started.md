@@ -1,46 +1,54 @@
 ---
-title: Getting Started
-description: Install and configure prisma-ltree in a Prisma Next Postgres app
+title: Get started
+description: Install and configure prisma-ltree in a Prisma 8 Postgres app
 ---
 
-This guide wires the `prisma-ltree` extension pack into a **Prisma Next** Postgres project. It assumes you already have a Prisma Next app scaffold (`prisma-next.config.ts`, emitted contract, and a `db.ts` runtime entrypoint).
+This guide adds the `prisma-ltree` extension pack to a Prisma 8 Postgres project. You need a `prisma.config.ts`, an emitted contract, and a `db.ts` runtime entrypoint.
 
 ## Installation
 
+Install the pack and pin the Postgres facade to the SPI this pack was tested against. Leave `prisma-ltree` on a caret range. You do not install `prisma-ltree@8.0.0-rc.8`.
+
 ```bash
-pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.1
+pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.8
+pnpm add -D prisma
 ```
 
 Or install `prisma-ltree` alone if you already pin the facade:
 
 <!-- ::install-command -->
 
-`prisma-ltree` exact-pins `@prisma/orm-*` packages to **`8.0.0-rc.1`**. Align `@prisma/orm-postgres` (and any other Prisma Next packages you install) with that pin before continuing. Pre-releases do not match caret ranges like `^0.x`.
+`prisma-ltree` exact-pins every `@prisma/orm-*` SPI package to `8.0.0-rc.8`. Match `@prisma/orm-postgres` (and any other `@prisma/orm-*` package you install) to that pin. Pre-releases do not match caret ranges such as `^8.0.0`.
+
+The CLI package is `prisma@latest` (today `8.0.0-rc.12`). That CLI version can differ from the SPI pin. `prisma@8.0.0-rc.12` depends on `@prisma/orm-toolchain@8.0.0-rc.8`.
 
 ## Configuration
 
-Register the pack in `prisma-next.config.ts`:
+Register the pack in `prisma.config.ts`. Wrap the ORM options in `definePrismaConfig` from `prisma/config`:
 
 ```typescript
-import { defineConfig } from "@prisma/orm-postgres/config";
+import { definePrismaConfig } from "prisma/config";
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
 import ltree from "prisma-ltree/control";
 
-export default defineConfig({
-  contract: "./src/prisma/contract.ts",
-  extensions: [ltree],
-  db: {
-    connection: process.env.DATABASE_URL!,
-  },
+export default definePrismaConfig({
+  orm: ormConfig({
+    contract: "./src/prisma/contract.ts",
+    extensions: [ltree],
+    db: {
+      connection: process.env.DATABASE_URL!,
+    },
+  }),
 });
 ```
 
-Use the config key `extensions` (not `extensionPacks`).
+Use the config key `extensions` (not `extensionPacks`). If this file reads `process.env`, import `dotenv/config` first. The loader does not load `.env` for you.
 
 ## Contract
 
-Declare `ltree` columns in either authoring lane: `contract.prisma` (PSL) or `contract.ts` (TypeScript). Both emit the same compiled contract. See [Authoring Contracts](/docs/authoring) for the PSL surface (`ltree.Ltree()` and `ltree.LtreeArray()`) and a side-by-side comparison.
+Declare `ltree` columns in either authoring lane: `contract.prisma` (PSL) or `contract.ts` (TypeScript). Both emit the same compiled contract. See [Author ltree columns](/docs/authoring) for the PSL surface (`ltree.Ltree()` and `ltree.LtreeArray()`) and a side-by-side comparison.
 
-This guide uses the **TypeScript contract** with `ltree()` from `prisma-ltree/column-types`.
+This guide uses the TypeScript contract with `ltree()` from `prisma-ltree/column-types`.
 
 ```typescript
 import { defineContract } from "@prisma/orm-postgres/contract-builder";
@@ -68,7 +76,7 @@ export const contract = defineContract(
 Re-emit after contract edits:
 
 ```bash
-pnpm prisma-next contract emit
+pnpm prisma contract emit
 ```
 
 ## Runtime
@@ -92,10 +100,10 @@ Control and contract wiring alone are not enough. Queries fail or lack ltree met
 
 ## Database setup
 
-The pack ships a baseline migration that runs `CREATE EXTENSION IF NOT EXISTS ltree`. Apply it with Prisma Next's control plane:
+The pack ships a baseline migration that runs `CREATE EXTENSION IF NOT EXISTS ltree`. Apply it with Prisma 8’s control plane:
 
 ```bash
-pnpm prisma-next db init
+pnpm prisma db init
 ```
 
 For projects using migration history, use `migration plan` and `migrate` instead. On brownfield databases that already have `ltree` enabled, emit the contract and run `db sign` / `db verify` to align the marker.
@@ -118,7 +126,7 @@ async function seedCategories() {
 
 ## Basic queries
 
-Ltree operators attach to **ltree-typed fields** in the ORM lane (and to column references in the SQL query builder). They do not appear as nested Prisma Client `where` objects.
+Ltree operators attach to ltree-typed fields in the ORM lane, and to column references in the SQL query builder. They do not appear as nested Prisma Client `where` objects.
 
 ```typescript
 import { db } from "./prisma/db";
@@ -128,7 +136,7 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("electroni
   .all();
 ```
 
-See [Hierarchy Operators](/docs/operations/hierarchy) and [Pattern Matching](/docs/operations/pattern-matching) for the full operator set.
+See [Hierarchy operators](/docs/operations/hierarchy) and [Pattern matching operators](/docs/operations/pattern-matching) for the full operator set.
 
 ## Index path columns
 
