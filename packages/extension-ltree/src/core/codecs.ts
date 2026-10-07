@@ -18,7 +18,6 @@ import {
   LTREE_MAX_LABEL_LENGTH,
   LTREE_MAX_LABELS,
 } from "./constants";
-import { LTREE_ARRAY_NATIVE_TYPE, LTREE_NATIVE_TYPE } from "./contract-space-constants";
 import { ltreeArrayDataType, ltreeDataType } from "./data-types";
 
 const LABEL_PATTERN = /^[A-Za-z0-9_-]+$/;
@@ -78,9 +77,6 @@ export class LtreeCodec extends CodecImpl<
 }
 
 export class LtreeDescriptor extends PostgresCodecDescriptor<void> {
-  protected override nativeType(): string {
-    return LTREE_NATIVE_TYPE;
-  }
   protected override jsonProjection(expression: ProjectionExpr): ProjectionExpr {
     // ltree's text form is already its canonical JSON string.
     return expression;
@@ -88,7 +84,6 @@ export class LtreeDescriptor extends PostgresCodecDescriptor<void> {
   override readonly dataType = ltreeDataType.id;
   override readonly codecId = LTREE_CODEC_ID;
   override readonly traits = ["equality", "order"] as const;
-  override readonly targetTypes = [LTREE_NATIVE_TYPE] as const;
   override readonly paramsSchema = undefined;
   override renderOutputType(): string {
     return "string";
@@ -101,8 +96,7 @@ export class LtreeDescriptor extends PostgresCodecDescriptor<void> {
 
 export const ltreeDescriptor = new LtreeDescriptor();
 
-export const ltree = () =>
-  column(ltreeDescriptor.factory(), ltreeDescriptor.codecId, undefined, LTREE_NATIVE_TYPE);
+export const ltree = () => column(ltreeDescriptor.factory(), ltreeDescriptor.codecId, undefined);
 
 ltree satisfies ColumnHelperFor<LtreeDescriptor>;
 ltree satisfies ColumnHelperForStrict<LtreeDescriptor>;
@@ -143,9 +137,6 @@ export class LtreeArrayCodec extends CodecImpl<
 }
 
 export class LtreeArrayDescriptor extends PostgresCodecDescriptor<void> {
-  protected override nativeType(): string {
-    return LTREE_ARRAY_NATIVE_TYPE;
-  }
   protected override jsonProjection(expression: ProjectionExpr): ProjectionExpr {
     // ltree[] text form projects as a JSON string array already.
     return expression;
@@ -153,7 +144,6 @@ export class LtreeArrayDescriptor extends PostgresCodecDescriptor<void> {
   override readonly dataType = ltreeArrayDataType.id;
   override readonly codecId = LTREE_ARRAY_CODEC_ID;
   override readonly traits = ["equality"] as const;
-  override readonly targetTypes = [LTREE_ARRAY_NATIVE_TYPE] as const;
   override readonly paramsSchema = undefined;
   override renderOutputType(): string {
     return "readonly string[]";
@@ -167,12 +157,7 @@ export class LtreeArrayDescriptor extends PostgresCodecDescriptor<void> {
 export const ltreeArrayDescriptor = new LtreeArrayDescriptor();
 
 export const ltreeArray = () =>
-  column(
-    ltreeArrayDescriptor.factory(),
-    ltreeArrayDescriptor.codecId,
-    undefined,
-    LTREE_ARRAY_NATIVE_TYPE,
-  );
+  column(ltreeArrayDescriptor.factory(), ltreeArrayDescriptor.codecId, undefined);
 
 ltreeArray satisfies ColumnHelperFor<LtreeArrayDescriptor>;
 ltreeArray satisfies ColumnHelperForStrict<LtreeArrayDescriptor>;

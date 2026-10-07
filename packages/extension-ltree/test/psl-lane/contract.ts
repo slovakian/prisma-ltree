@@ -10,9 +10,9 @@ export const contract = defineContract(
   },
   ({ field, model, type }) => {
     const types = {
-      // Single ltree path. Resolves to codec `pg/ltree@1`, native type `ltree`.
+      // Single ltree path. Resolves to codec `pg/ltree@1`, data type `ltree/ltree`.
       Path: type.ltree.Ltree(),
-      // ltree[] array. Resolves to codec `pg/ltree-array@1`, native type `ltree[]`.
+      // ltree[] array. Resolves to codec `pg/ltree-array@1`, data type `ltree/ltree-array`.
       Paths: type.ltree.LtreeArray(),
     } as const;
 

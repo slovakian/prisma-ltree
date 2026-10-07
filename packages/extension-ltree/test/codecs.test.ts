@@ -14,6 +14,8 @@ import {
   LTREE_MAX_LABEL_LENGTH,
   LTREE_MAX_LABELS,
 } from "../src/core/constants";
+import { renderSqlCatalogText, renderSqlTypeName } from "@prisma/orm-family-sql/contract/data-type";
+import { ltreeArrayDataType, ltreeDataType } from "../src/core/data-types";
 
 type AsyncLtreeCodec = {
   readonly encode: (value: string) => Promise<string>;
@@ -36,7 +38,7 @@ function asAsyncArrayCodec(): AsyncLtreeArrayCodec {
 describe("prisma-ltree codecs", () => {
   it("has ltree codec registered with correct metadata", () => {
     expect(ltreeDescriptor.codecId).toBe(LTREE_CODEC_ID);
-    expect(ltreeDescriptor.targetTypes).toEqual(["ltree"]);
+    expect(ltreeDescriptor.dataType).toBe(ltreeDataType.id);
     expect(ltreeDescriptor.traits).toEqual(["equality", "order"]);
   });
 
@@ -77,7 +79,9 @@ describe("prisma-ltree codecs", () => {
 
   it("has ltree-array codec registered with correct metadata", () => {
     expect(ltreeArrayDescriptor.codecId).toBe(LTREE_ARRAY_CODEC_ID);
-    expect(ltreeArrayDescriptor.targetTypes).toEqual(["ltree[]"]);
+    expect(ltreeArrayDescriptor.dataType).toBe(ltreeArrayDataType.id);
+    expect(renderSqlTypeName(ltreeArrayDataType, {})).toBe("ltree[]");
+    expect(renderSqlCatalogText(ltreeArrayDataType, {})).toBe("ltree[]");
     expect(ltreeArrayDescriptor.traits).toEqual(["equality"]);
   });
 
@@ -198,10 +202,9 @@ describe("prisma-ltree codec validation", () => {
 });
 
 describe("ltree column helper", () => {
-  it("produces a ColumnSpec with the codec id and ltree nativeType", () => {
+  it("produces a ColumnSpec with the ltree codec id", () => {
     const spec = ltree();
     expect(spec.codecId).toBe(LTREE_CODEC_ID);
-    expect(spec.nativeType).toBe("ltree");
     expect(spec.typeParams).toBeUndefined();
   });
 
@@ -213,9 +216,8 @@ describe("ltree column helper", () => {
 });
 
 describe("ltreeArray column helper", () => {
-  it("produces a ColumnSpec with the array codec id and ltree[] nativeType", () => {
+  it("produces a ColumnSpec with the array codec id", () => {
     const spec = ltreeArray();
     expect(spec.codecId).toBe(LTREE_ARRAY_CODEC_ID);
-    expect(spec.nativeType).toBe("ltree[]");
   });
 });

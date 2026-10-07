@@ -30,7 +30,7 @@ import type {
 } from "@prisma/orm-postgres/contract/types";
 
 export type StorageHash =
-  StorageHashBase<"ca70941530ea2af306b38e95be66ab1deac79357bcfafb48302d07c8f2c9aa92">;
+  StorageHashBase<"5842622c2779cd02acd640ab4a5c8979fc94a2af8ed034222391fbd4f7cb3706">;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<"3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2">;
@@ -70,13 +70,13 @@ type ContractBase = Omit<
       readonly ltree: {
         readonly kind: "codec-instance";
         readonly codecId: "pg/ltree@1";
-        readonly nativeType: "ltree";
+        readonly dataType: "ltree/ltree";
         readonly typeParams: Record<string, never>;
       };
       readonly ltreeArray: {
         readonly kind: "codec-instance";
         readonly codecId: "pg/ltree-array@1";
-        readonly nativeType: "ltree[]";
+        readonly dataType: "ltree/ltree-array";
         readonly typeParams: Record<string, never>;
       };
     };

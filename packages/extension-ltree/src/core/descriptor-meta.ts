@@ -11,7 +11,6 @@ import type { QueryOperationTypes } from "../types/operation-types";
 import { ltreeAuthoringTypes } from "./authoring";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./constants";
 import { ltreeDataTypes } from "./data-types";
-import { LTREE_ARRAY_NATIVE_TYPE, LTREE_NATIVE_TYPE } from "./contract-space-constants";
 import { ltreeCodecRegistry } from "./registry";
 
 type CodecTypesBase = Record<string, { readonly input: unknown; readonly output: unknown }>;
@@ -26,7 +25,6 @@ const LTREE_RETURN = { codecId: "pg/ltree@1", nullable: false } as const;
 const INT_RETURN = { codecId: "pg/int4@1", nullable: false } as const;
 const TEXT_RETURN = { codecId: "pg/text@1", nullable: false } as const;
 const TEXT_CODEC_ID = "pg/text@1" as const;
-const TEXT_ARRAY_CODEC_ID = "pg/text-array@1" as const;
 const INT_CODEC_ID = "pg/int4@1" as const;
 
 /**
@@ -83,14 +81,17 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     method: string,
     operator: string,
     castType: string,
-    argCodecId: typeof TEXT_CODEC_ID | typeof TEXT_ARRAY_CODEC_ID,
     self: CodecExpression<typeof LTREE_CODEC_ID, boolean, CT>,
     arg: unknown,
+    many = false,
   ): BoolReturn => {
     const selfCodec = codecOf(self);
     return buildOperation({
       method,
-      args: [toExpr(self, selfCodec), toExpr(arg, { codecId: argCodecId })],
+      args: [
+        toExpr(self, selfCodec),
+        toExpr(arg, many ? { codecId: TEXT_CODEC_ID, many: true } : { codecId: TEXT_CODEC_ID }),
+      ],
       returns: BOOL_RETURN,
       lowering: {
         targetFamily: "sql",
@@ -149,18 +150,16 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     },
     matchesLquery: {
       self: { codecId: LTREE_CODEC_ID },
-      impl: (self, pattern) =>
-        patternOp("matchesLquery", "~", "lquery", TEXT_CODEC_ID, self, pattern),
+      impl: (self, pattern) => patternOp("matchesLquery", "~", "lquery", self, pattern),
     },
     matchesLqueryArray: {
       self: { codecId: LTREE_CODEC_ID },
       impl: (self, patterns) =>
-        patternOp("matchesLqueryArray", "?", "lquery[]", TEXT_ARRAY_CODEC_ID, self, patterns),
+        patternOp("matchesLqueryArray", "?", "lquery[]", self, patterns, true),
     },
     matchesLtxtquery: {
       self: { codecId: LTREE_CODEC_ID },
-      impl: (self, query) =>
-        patternOp("matchesLtxtquery", "@", "ltxtquery", TEXT_CODEC_ID, self, query),
+      impl: (self, query) => patternOp("matchesLtxtquery", "@", "ltxtquery", self, query),
     },
     nlevel: {
       self: { codecId: LTREE_CODEC_ID },
@@ -335,20 +334,6 @@ const ltreePackMetaBase = {
         alias: "LtreeQueryOperationTypes",
       },
     },
-    storage: [
-      {
-        typeId: LTREE_CODEC_ID,
-        familyId: "sql",
-        targetId: "postgres",
-        nativeType: LTREE_NATIVE_TYPE,
-      },
-      {
-        typeId: LTREE_ARRAY_CODEC_ID,
-        familyId: "sql",
-        targetId: "postgres",
-        nativeType: LTREE_ARRAY_NATIVE_TYPE,
-      },
-    ],
   },
 } as const;
 
