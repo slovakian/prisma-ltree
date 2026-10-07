@@ -116,3 +116,12 @@ minimumReleaseAgeExclude:
   - "@changesets/should-skip-package@1.0.0"
   - "@changesets/types@7.0.0"
   - "@changesets/write@1.0.0"
+  - "@prisma/cli-engine@0.6.3"
+  - "@prisma/composer-cli@0.28.0"
+  - "@prisma/composer@0.28.0"
+  - "@prisma/orm-family-sql@8.0.0-rc.16"
+  - "@prisma/orm-framework@8.0.0-rc.16"
+  - "@prisma/orm-postgres@8.0.0-rc.16"
+  - "@prisma/orm-target-postgres@8.0.0-rc.16"
+  - "@prisma/orm-toolchain@8.0.0-rc.16"
+  - prisma@8.0.0-rc.21
