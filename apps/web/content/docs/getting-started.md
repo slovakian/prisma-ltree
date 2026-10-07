@@ -7,10 +7,10 @@ This guide adds the `prisma-ltree` extension pack to a Prisma 8 Postgres project
 
 ## Installation
 
-Install the pack and pin the Postgres facade to the SPI this pack was tested against. Leave `prisma-ltree` on a caret range. You do not install `prisma-ltree@8.0.0-rc.8`.
+Install the pack and pin the Postgres facade to the SPI this pack was tested against. Leave `prisma-ltree` on a caret range. You do not install `prisma-ltree@8.0.0-rc.16`.
 
 ```bash
-pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.8
+pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.16
 pnpm add -D prisma
 ```
 
@@ -18,9 +18,11 @@ Or install `prisma-ltree` alone if you already pin the facade:
 
 <!-- ::install-command -->
 
-`prisma-ltree` exact-pins every `@prisma/orm-*` SPI package to `8.0.0-rc.8`. Match `@prisma/orm-postgres` (and any other `@prisma/orm-*` package you install) to that pin. Pre-releases do not match caret ranges such as `^8.0.0`.
+`prisma-ltree` exact-pins every `@prisma/orm-*` SPI package to `8.0.0-rc.16`. Match `@prisma/orm-postgres` (and any other `@prisma/orm-*` package you install) to that pin. Pre-releases do not match caret ranges such as `^8.0.0`.
 
-The CLI package is `prisma@latest` (today `8.0.0-rc.12`). That CLI version can differ from the SPI pin. `prisma@8.0.0-rc.12` depends on `@prisma/orm-toolchain@8.0.0-rc.8`.
+The CLI package is `prisma@latest` (today `8.0.0-rc.21`). That CLI version can differ from the SPI pin. `prisma@8.0.0-rc.21` depends on `@prisma/orm-toolchain@8.0.0-rc.16`.
+
+A contract from SPI `8.0.0-rc.14` or earlier stores `nativeType`. SPI `8.0.0-rc.16` stores `dataType`. Codec ids stay `pg/ltree@1` and `pg/ltree-array@1`. Data type ids are `ltree/ltree` and `ltree/ltree-array`. Rewrite a stored contract with the 8.0.0-rc.15 data-type script and these lines: `--data-type pg/ltree@1=ltree/ltree` and `--data-type pg/ltree-array@1=ltree/ltree-array`.
 
 ## Configuration
 

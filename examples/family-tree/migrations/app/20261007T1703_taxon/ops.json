@@ -1,5 +1,22 @@
 [
   {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
     "id": "table.taxon",
     "label": "Create table \"taxon\"",
     "summary": "Creates table \"taxon\"",
@@ -24,7 +41,7 @@
     "execute": [
       {
         "description": "create table \"taxon\"",
-        "sql": "CREATE TABLE \"public\".\"taxon\" (\n  \"common_name\" text,\n  \"extinct\" bool NOT NULL,\n  \"id\" character(36) NOT NULL,\n  \"ma_extinct\" float8,\n  \"ma_origin\" float8,\n  \"path\" \"ltree\" NOT NULL,\n  \"rank\" text NOT NULL,\n  \"scientific_name\" text NOT NULL,\n  \"thumbnail_url\" text,\n  \"wiki_url\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "sql": "CREATE TABLE \"public\".\"taxon\" (\n  \"common_name\" text,\n  \"extinct\" bool NOT NULL,\n  \"id\" text NOT NULL,\n  \"ma_extinct\" float8,\n  \"ma_origin\" float8,\n  \"path\" ltree NOT NULL,\n  \"rank\" text NOT NULL,\n  \"scientific_name\" text NOT NULL,\n  \"thumbnail_url\" text,\n  \"wiki_url\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
         "params": []
       }
     ],

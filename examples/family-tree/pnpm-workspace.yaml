@@ -1,9 +1,19 @@
 # Standalone project root. This file exists so pnpm treats examples/family-tree
 # as its own workspace instead of joining the prisma-ltree monorepo above it.
-# Everything installs from npm — the example is meant to be copied out and run on
-# its own.
+# prisma-ltree is a file: dependency on the local pack until the rc.16 release
+# is on npm. After that release, install prisma-ltree from npm.
 packages: []
 allowBuilds:
   esbuild: true
+  workerd: set this to true or false
 minimumReleaseAgeExclude:
   - prisma-ltree@0.2.1
+  - "@prisma/cli-engine@0.6.3"
+  - "@prisma/composer-cli@0.28.0"
+  - "@prisma/composer@0.28.0"
+  - "@prisma/orm-family-sql@8.0.0-rc.16"
+  - "@prisma/orm-framework@8.0.0-rc.16"
+  - "@prisma/orm-postgres@8.0.0-rc.16"
+  - "@prisma/orm-target-postgres@8.0.0-rc.16"
+  - "@prisma/orm-toolchain@8.0.0-rc.16"
+  - prisma@8.0.0-rc.21

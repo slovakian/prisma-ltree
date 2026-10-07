@@ -27,7 +27,7 @@ export default definePrismaConfig({
 });
 ```
 
-Omitting `ltree` from `extensions` while a `contract.prisma` references `ltree.Ltree()` fails emit with `PSL_EXTENSION_NAMESPACE_NOT_COMPOSED`.
+Omitting `ltree` from `extensions` while a `contract.prisma` references `ltree.Ltree()` fails emit with `PSL_UNSUPPORTED_NAMED_TYPE_CONSTRUCTOR`.
 
 ## Declaring ltree columns
 
@@ -38,12 +38,12 @@ Two named-type constructors cover the Postgres types: `ltree.Ltree()` for a sing
 ## PSL
 
 ```prisma title="contract.prisma"
-// use prisma
+// use prisma-8
 
 types {
-  // Single ltree path → codec `pg/ltree@1`, native type `ltree`.
+  // Single ltree path → codec `pg/ltree@1`, data type `ltree/ltree`.
   Path = ltree.Ltree()
-  // ltree[] array → codec `pg/ltree-array@1`, native type `ltree[]`.
+  // ltree[] array → codec `pg/ltree-array@1`, data type `ltree/ltree-array`.
   Paths = ltree.LtreeArray()
 }
 
@@ -72,9 +72,9 @@ export const contract = defineContract(
   },
   ({ field, model, type }) => {
     const types = {
-      // Single ltree path → codec `pg/ltree@1`, native type `ltree`.
+      // Single ltree path → codec `pg/ltree@1`, data type `ltree/ltree`.
       Path: type.ltree.Ltree(),
-      // ltree[] array → codec `pg/ltree-array@1`, native type `ltree[]`.
+      // ltree[] array → codec `pg/ltree-array@1`, data type `ltree/ltree-array`.
       Paths: type.ltree.LtreeArray(),
     } as const;
 

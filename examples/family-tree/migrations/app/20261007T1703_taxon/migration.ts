@@ -1,29 +1,24 @@
 #!/usr/bin/env -S node
-import { Migration, MigrationCLI, col, primaryKey } from "@prisma/orm-target-postgres/target/migration";
+import type { Contract as End } from "../../snapshots/fae0c94c760d88923664ac8fd0fb3730bc6402f7703718c8daa707b2f123b788/contract";
+import endContract from "../../snapshots/fae0c94c760d88923664ac8fd0fb3730bc6402f7703718c8daa707b2f123b788/contract.json" with { type: "json" };
+import { Migration, MigrationCLI, col, primaryKey } from "@prisma/orm-postgres/migration";
 
-export default class M extends Migration {
-  override describe() {
-    return {
-      from: null,
-      to: "3598d200521bad542c32c8cdb6d5c2adbe0be4f092857b12dbe5aa2faff59f31",
-    };
-  }
+export default class M extends Migration<never, End> {
+  override readonly endContractJson = endContract;
 
   override get operations() {
     return [
+      this.createSchema({ schema: "public" }),
       this.createTable({
         schema: "public",
         table: "taxon",
         columns: [
           col("common_name", "text", { codecRef: { codecId: "pg/text@1" } }),
           col("extinct", "bool", { notNull: true, codecRef: { codecId: "pg/bool@1" } }),
-          col("id", "character(36)", {
-            notNull: true,
-            codecRef: { codecId: "sql/char@1", typeParams: { length: 36 } },
-          }),
+          col("id", "text", { notNull: true, codecRef: { codecId: "pg/text@1" } }),
           col("ma_extinct", "float8", { codecRef: { codecId: "pg/float8@1" } }),
           col("ma_origin", "float8", { codecRef: { codecId: "pg/float8@1" } }),
-          col("path", '"ltree"', {
+          col("path", "ltree", {
             notNull: true,
             codecRef: { codecId: "pg/ltree@1", typeParams: {} },
           }),

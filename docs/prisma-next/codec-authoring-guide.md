@@ -7,7 +7,7 @@ Source: prisma-next `docs/reference/codec-authoring-guide.md`
 A codec is **three artifacts**:
 
 1. A **codec class** extending `CodecImpl<Id, TTraits, TWire, TInput>` — implements `encode`/`decode`/`encodeJson`/`decodeJson`
-2. A **descriptor class** extending `CodecDescriptorImpl<P>` — declares codec id, traits, target types, params schema, factory
+2. A **descriptor class** extending `PostgresCodecDescriptor<P>` — declares codec id, traits, data type, params schema, factory
 3. A **per-codec column helper** calling `descriptor.factory(...)` directly, packaging into a `ColumnSpec` via `column(...)`. Carries `satisfies ColumnHelperFor<D>`
 
 ## Framework Imports
@@ -17,8 +17,8 @@ From `@prisma/orm-framework/components/codec`:
 - `CodecImpl<Id, TTraits, TWire, TInput>` — abstract codec base class
 - `CodecDescriptorImpl<P>` — abstract descriptor base class
 - `ColumnHelperFor<D>` / `ColumnHelperForStrict<D>` — `satisfies` shapes
-- `column(codecFactory, codecId, typeParams, nativeType)` — column-spec packager
-- `voidParamsSchema` — Standard Schema validator for `P = void`
+- `column(codecFactory, codecId, typeParams)` — column-spec packager
+- `sqlDataType` from `@prisma/orm-family-sql/contract/data-type` — SQL data type the codec represents
 
 ## Case 1 — Non-parameterized codec (pattern for `ltree`)
 
@@ -32,11 +32,11 @@ class LtreeCodec extends CodecImpl<"pg/ltree@1", readonly ["equality", "order"],
   }
 }
 
-class LtreeDescriptor extends CodecDescriptorImpl<void> {
+class LtreeDescriptor extends PostgresCodecDescriptor<void> {
+  override readonly dataType = ltreeDataType.id;
   override readonly codecId = "pg/ltree@1" as const;
   override readonly traits = ["equality", "order"] as const;
-  override readonly targetTypes = ["ltree"] as const;
-  override readonly paramsSchema = voidParamsSchema;
+  override readonly paramsSchema = undefined;
   override renderOutputType(): string {
     return "string";
   }
@@ -48,8 +48,7 @@ class LtreeDescriptor extends CodecDescriptorImpl<void> {
 
 export const ltreeDescriptor = new LtreeDescriptor();
 
-export const ltree = () =>
-  column(ltreeDescriptor.factory(), ltreeDescriptor.codecId, undefined, "ltree");
+export const ltree = () => column(ltreeDescriptor.factory(), ltreeDescriptor.codecId, undefined);
 ltree satisfies ColumnHelperFor<LtreeDescriptor>;
 ```
 
@@ -81,7 +80,7 @@ class VectorCodec<N extends number> extends CodecImpl<
 class PgVectorDescriptor extends CodecDescriptorImpl<{ readonly length: number }> {
   override readonly codecId = "pg/vector@1" as const;
   override readonly traits = ["equality"] as const;
-  override readonly targetTypes = ["vector"] as const;
+  override readonly dataType = pgvectorVector.id;
   override readonly paramsSchema = type({ length: "number > 0" });
   override renderOutputType({ length }: { length: number }) {
     return `Vector<${length}>`;
@@ -94,7 +93,7 @@ class PgVectorDescriptor extends CodecDescriptorImpl<{ readonly length: number }
 }
 
 export const vector = <N extends number>(length: N) =>
-  column(pgVectorDescriptor.factory({ length }), pgVectorDescriptor.codecId, { length }, "vector");
+  column(pgVectorDescriptor.factory({ length }), pgVectorDescriptor.codecId, { length });
 vector satisfies ColumnHelperFor<PgVectorDescriptor>;
 ```
 
@@ -110,4 +109,4 @@ vector satisfies ColumnHelperFor<PgVectorDescriptor>;
 - **`override` discipline.** With `noImplicitOverride`, every concrete-subclass member touching inherited members must carry `override`.
 - **Don't widen the factory return at the descriptor.** Concrete descriptors should declare typed return like `(ctx) => VectorCodec<N>`, not `(ctx) => Codec<...>`.
 - **Don't extract codec types via `Parameters`/`ReturnType` of descriptor's `factory`.** TypeScript widens method generics to constraint. Use per-codec helper's typed return.
-- **Don't reach through the codec instance for metadata.** Read traits/target types/meta from `descriptor` (e.g. `context.codecDescriptors.descriptorFor(codecId).traits`).
+- **Don't reach through the codec instance for metadata.** Read traits and the data type from `descriptor` (e.g. `context.codecDescriptors.descriptorFor(codecId).traits`).

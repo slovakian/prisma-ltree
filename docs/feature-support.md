@@ -17,8 +17,8 @@ See `packages/extension-ltree/README.md` for usage documentation and `docs/decis
 | ------------------------------------------------------------------------ | ------------ | ------------------------------------------------------- |
 | `pg/ltree@1` codec (string↔string, label validation)                     | supported    | Case 1, traits `['equality','order']`, constant factory |
 | `pg/ltree-array@1` codec (`string[]`↔`string[]`, per-element validation) | supported    | Mirrors core `pg/text-array@1` pattern (ADR-003)        |
-| `ltree()` column helper                                                  | supported    | Non-parameterized; `nativeType: 'ltree'`                |
-| `ltreeArray()` column helper                                             | supported    | Non-parameterized; `nativeType: 'ltree[]'`              |
+| `ltree()` column helper                                                  | supported    | Non-parameterized; data type `ltree/ltree`              |
+| `ltreeArray()` column helper                                             | supported    | Non-parameterized; data type `ltree/ltree-array`        |
 | `CREATE EXTENSION IF NOT EXISTS ltree` migration                         | supported    | invariantId `ltree:install-ltree-v1`                    |
 | Contract storage type `ltree` (codec-instance)                           | supported    | TS contract source (not PSL)                            |
 | Contract storage type `ltree[]` (codec-instance)                         | supported    | ADR-003                                                 |
@@ -42,15 +42,15 @@ See `packages/extension-ltree/README.md` for usage documentation and `docs/decis
 
 ## Scalar Functions
 
-| SQL                           | API method                    | Returns      | Status                                                     | Tier |
-| ----------------------------- | ----------------------------- | ------------ | ---------------------------------------------------------- | ---- |
-| `nlevel(ltree)`               | `path.nlevel()`               | `pg/int4@1`  | supported                                                  | 1    |
-| `subltree(ltree, start, end)` | `path.subltree(start, end)`   | `pg/ltree@1` | supported                                                  | 1    |
-| `subpath(ltree, offset, len)` | `path.subpath(offset, len?)`  | `pg/ltree@1` | supported                                                  | 1    |
-| `subpath(ltree, offset)`      | (overload of above)           | `pg/ltree@1` | supported                                                  | 1    |
-| `index(a, b)`                 | `path.indexOf(other)`         | `pg/int4@1`  | supported                                                  | 1    |
-| `index(a, b, offset)`         | `path.indexOf(other, offset)` | `pg/int4@1`  | supported                                                  | 1    |
-| `lca(ltree, ltree, ...)`      | `path.lca(other, ...rest)`    | `pg/ltree@1` | supported (≥2 paths; ADR-001)                              | 1    |
+| SQL                           | API method                    | Returns      | Status                        | Tier |
+| ----------------------------- | ----------------------------- | ------------ | ----------------------------- | ---- |
+| `nlevel(ltree)`               | `path.nlevel()`               | `pg/int4@1`  | supported                     | 1    |
+| `subltree(ltree, start, end)` | `path.subltree(start, end)`   | `pg/ltree@1` | supported                     | 1    |
+| `subpath(ltree, offset, len)` | `path.subpath(offset, len?)`  | `pg/ltree@1` | supported                     | 1    |
+| `subpath(ltree, offset)`      | (overload of above)           | `pg/ltree@1` | supported                     | 1    |
+| `index(a, b)`                 | `path.indexOf(other)`         | `pg/int4@1`  | supported                     | 1    |
+| `index(a, b, offset)`         | `path.indexOf(other, offset)` | `pg/int4@1`  | supported                     | 1    |
+| `lca(ltree, ltree, ...)`      | `path.lca(other, ...rest)`    | `pg/ltree@1` | supported (≥2 paths; ADR-001) | 1    |
 
 ## Concatenation (→ `pg/ltree@1`)
 
@@ -85,7 +85,7 @@ Receiver is `ltree[]` via `pg/ltree-array@1` (ADR-003).
 | `ltree[] ?<@ ltree`    | `paths.firstDescendantOf(rhs)`     | supported | 3    |
 | `ltree[] ?~ lquery`    | `paths.firstMatchLquery(pattern)`  | supported | 3    |
 | `ltree[] ?@ ltxtquery` | `paths.firstMatchLtxtquery(query)` | supported | 3    |
-| `lca(ltree[])`         | `paths.lcaAll()`           | supported | 3    |
+| `lca(ltree[])`         | `paths.lcaAll()`                   | supported | 3    |
 
 Named `lcaAll` (not `lca`) because prisma-next keys operations by name only and
 rejects duplicates; `lca` is already the variadic scalar method (ADR-001). See
@@ -97,23 +97,23 @@ Index access methods are registered by Prisma Next's postgres **target**, not by
 `prisma-ltree`. Author them with `@@index` / `constraints.index`. See
 [ADR-006](decisions/ADR-006-gist-index-ownership.md).
 
-| Feature                                      | SQL / Prisma                         | Status    | Notes                                                                                         |
-| -------------------------------------------- | ------------------------------------ | --------- | --------------------------------------------------------------------------------------------- |
-| GiST on `ltree`                              | `@@index([path], type: "gist")`      | supported | Default opclass `gist_ltree_ops`. Accelerates `@>`, `<@`, `~`, `@`, `?`                       |
-| GiST on `ltree[]`                            | `@@index([paths], type: "gist")`     | supported | Default opclass `gist__ltree_ops`                                                             |
-| B-tree on `ltree`                            | omit `type`, or `type: "btree"`      | supported | `<,<=,=,>=,>` only                                                                            |
-| Hash on `ltree`                              | `type: "hash"`                       | supported | Equality only                                                                                 |
-| GiST opclass `siglen` / `gist_ltree_ops(…)`  | `USING gist (path gist_ltree_ops(…))` | out-of-scope | Prisma `options` map to `WITH` storage parameters, not operator-class arguments            |
+| Feature                                     | SQL / Prisma                          | Status       | Notes                                                                           |
+| ------------------------------------------- | ------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| GiST on `ltree`                             | `@@index([path], type: "gist")`       | supported    | Default opclass `gist_ltree_ops`. Accelerates `@>`, `<@`, `~`, `@`, `?`         |
+| GiST on `ltree[]`                           | `@@index([paths], type: "gist")`      | supported    | Default opclass `gist__ltree_ops`                                               |
+| B-tree on `ltree`                           | omit `type`, or `type: "btree"`       | supported    | `<,<=,=,>=,>` only                                                              |
+| Hash on `ltree`                             | `type: "hash"`                        | supported    | Equality only                                                                   |
+| GiST opclass `siglen` / `gist_ltree_ops(…)` | `USING gist (path gist_ltree_ops(…))` | out-of-scope | Prisma `options` map to `WITH` storage parameters, not operator-class arguments |
 
 ## Out-of-Scope (Tracked)
 
-| Feature                                 | SQL                   | Status       | Reason / Revisit                                                                             |
-| --------------------------------------- | --------------------- | ------------ | -------------------------------------------------------------------------------------------- |
-| Boolean array variant                   | `ltree[] @> ltree`    | out-of-scope | "Less useful" per scope; low marginal cost once array receiver exists — revisit after Tier 3 |
-| Boolean array variant                   | `ltree[] <@ ltree`    | out-of-scope | same                                                                                         |
-| Boolean array variant                   | `ltree[] ~ lquery`    | out-of-scope | same                                                                                         |
-| Boolean array variant                   | `ltree[] ? lquery[]`  | out-of-scope | same                                                                                         |
-| Boolean array variant                   | `ltree[] @ ltxtquery` | out-of-scope | same                                                                                         |
+| Feature               | SQL                   | Status       | Reason / Revisit                                                                             |
+| --------------------- | --------------------- | ------------ | -------------------------------------------------------------------------------------------- |
+| Boolean array variant | `ltree[] @> ltree`    | out-of-scope | "Less useful" per scope; low marginal cost once array receiver exists — revisit after Tier 3 |
+| Boolean array variant | `ltree[] <@ ltree`    | out-of-scope | same                                                                                         |
+| Boolean array variant | `ltree[] ~ lquery`    | out-of-scope | same                                                                                         |
+| Boolean array variant | `ltree[] ? lquery[]`  | out-of-scope | same                                                                                         |
+| Boolean array variant | `ltree[] @ ltxtquery` | out-of-scope | same                                                                                         |
 
 ---
 

@@ -162,8 +162,8 @@ function Home() {
         <SectionLabel>Setup</SectionLabel>
         <h2 className="text-2xl font-medium">Three steps to your first query</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Requires Node <code>&gt;=24</code> and <code>@prisma/orm-postgres@8.0.0-rc.8</code> (exact
-          SPI pin). Install <code>prisma-ltree</code> with a caret. Full setup in the{" "}
+          Requires Node <code>&gt;=24</code> and <code>@prisma/orm-postgres@8.0.0-rc.16</code>{" "}
+          (exact SPI pin). Install <code>prisma-ltree</code> with a caret. Full setup in the{" "}
           <a href="/docs/getting-started" className="underline underline-offset-4">
             Get started guide
           </a>

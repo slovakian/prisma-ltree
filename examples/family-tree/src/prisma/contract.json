@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "targetFamily": "sql",
   "target": "postgres",
-  "profileHash": "9c8aa3114e84ed3b7ea2bd57526d9c2e1bf7c5292be694e9d3801f566fda7ccb",
+  "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
     "taxon": {
       "model": "Taxon",
@@ -32,11 +32,8 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "sql/char@1",
-                  "kind": "scalar",
-                  "typeParams": {
-                    "length": 36
-                  }
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
                 }
               },
               "maExtinct": {
@@ -140,56 +137,53 @@
               "columns": {
                 "common_name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "extinct": {
                   "codecId": "pg/bool@1",
-                  "nativeType": "bool",
+                  "dataType": "pg/bool",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "sql/char@1",
-                  "nativeType": "character",
-                  "nullable": false,
-                  "typeParams": {
-                    "length": 36
-                  }
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
                 },
                 "ma_extinct": {
                   "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "dataType": "pg/float8",
                   "nullable": true
                 },
                 "ma_origin": {
                   "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "dataType": "pg/float8",
                   "nullable": true
                 },
                 "path": {
                   "codecId": "pg/ltree@1",
-                  "nativeType": "ltree",
+                  "dataType": "ltree/ltree",
                   "nullable": false,
                   "typeRef": "Path"
                 },
                 "rank": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "scientific_name": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 },
                 "thumbnail_url": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "wiki_url": {
                   "codecId": "pg/text@1",
-                  "nativeType": "text",
+                  "dataType": "pg/text",
                   "nullable": false
                 }
               },
@@ -210,17 +204,17 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "3598d200521bad542c32c8cdb6d5c2adbe0be4f092857b12dbe5aa2faff59f31",
+    "storageHash": "fae0c94c760d88923664ac8fd0fb3730bc6402f7703718c8daa707b2f123b788",
     "types": {
       "Path": {
         "codecId": "pg/ltree@1",
-        "kind": "codec-instance",
-        "nativeType": "ltree"
+        "dataType": "ltree/ltree",
+        "kind": "codec-instance"
       }
     }
   },
   "execution": {
-    "executionHash": "2eab8e74aa05b3a48a9d465f18981c505d28cf4fe434a88901d95fc416f32cc2",
+    "executionHash": "21ae50faa9b7f351acd36d70398e24ff6d5c92eb08cfda85753524a43fa74f75",
     "mutations": {
       "defaults": [
         {
@@ -229,9 +223,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "taxon"
+            "entry": "taxon",
+            "field": "id",
+            "namespace": "public"
           }
         }
       ]
@@ -240,6 +234,8 @@
   "capabilities": {
     "postgres": {
       "distinctOn": true,
+      "forKeyShare": true,
+      "forNoKeyUpdate": true,
       "jsonAgg": true,
       "lateral": true,
       "limit": true,
@@ -248,10 +244,19 @@
       "returning": true
     },
     "sql": {
+      "checkConstraint": true,
       "defaultInInsert": true,
       "enums": true,
+      "forShare": true,
+      "forUpdate": true,
+      "insertOnConflictSkip": true,
+      "insertOnConflictWithoutTarget": true,
       "lateral": true,
-      "returning": true
+      "lockNowait": true,
+      "lockOf": true,
+      "lockSkipLocked": true,
+      "returning": true,
+      "scalarList": true
     }
   },
   "extensions": {
@@ -286,21 +291,7 @@
             "named": "QueryOperationTypes",
             "package": "prisma-ltree/operation-types"
           }
-        },
-        "storage": [
-          {
-            "familyId": "sql",
-            "nativeType": "ltree",
-            "targetId": "postgres",
-            "typeId": "pg/ltree@1"
-          },
-          {
-            "familyId": "sql",
-            "nativeType": "ltree[]",
-            "targetId": "postgres",
-            "typeId": "pg/ltree-array@1"
-          }
-        ]
+        }
       },
       "version": "0.1.0"
     }
@@ -308,7 +299,7 @@
   "meta": {},
   "_generated": {
     "warning": "⚠️  GENERATED FILE - DO NOT EDIT",
-    "message": "This file is automatically generated by \"prisma-next contract emit\".",
-    "regenerate": "To regenerate, run: prisma-next contract emit"
+    "message": "This file is automatically generated by \"prisma contract emit\".",
+    "regenerate": "To regenerate, run: prisma contract emit"
   }
 }

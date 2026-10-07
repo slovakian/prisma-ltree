@@ -87,7 +87,7 @@ Full signatures and edge cases: reference files above.
 
 ## Workflow — SQL builder lane
 
-Reach for `db.sql.<table>` when the ORM cannot express the shape (arbitrary joins, computed projections). Extension methods still live on ltree column accessors — compose them the same way, then `db.runtime().execute(plan)`. See upstream `prisma-8` → `references/queries-postgres.md` for SQL-builder mechanics.
+Reach for `db.sql.<table>` when the ORM cannot express the shape (arbitrary joins, computed projections). Extension methods still live on ltree column accessors — compose them the same way. Read the rows with `db.runtime().query(plan)`. Write with `db.runtime().execute(plan)` (`insert`, `update`, `delete`). See upstream `prisma-8` → `references/queries-postgres.md` for SQL-builder mechanics.
 
 ## Common Pitfalls
 

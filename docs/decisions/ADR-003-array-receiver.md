@@ -67,11 +67,11 @@ Concretely:
 | Artifact         | Value                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------ |
 | Codec id         | `pg/ltree-array@1`                                                                         |
-| Native type      | `ltree[]`                                                                                  |
+| Data type        | `ltree/ltree-array` (written and reported as `ltree[]`)                                    |
 | JS input/output  | `readonly string[]` with per-element `assertValidLtree` on encode/json                     |
 | Traits           | `['equality']` (same as `text[]`; no order trait on arrays)                                |
-| Column helper    | `ltreeArray()` → `{ codecId, nativeType: 'ltree[]' }`                                      |
-| Contract storage | `ltreeArray` key (valid identifier for emit); `nativeType: 'ltree[]'`                      |
+| Column helper    | `ltreeArray()` → `{ codecId }`                                                             |
+| Contract storage | `ltreeArray` key (valid identifier for emit); `dataType: 'ltree/ltree-array'`              |
 | Tier 3 `self`    | `{ codecId: 'pg/ltree-array@1' }` on all four first-match ops                              |
 | Return type      | `pg/ltree@1` (SQL may return NULL; typed `nullable: false` like other ltree-returning ops) |
 
