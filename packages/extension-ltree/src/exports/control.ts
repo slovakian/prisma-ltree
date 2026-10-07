@@ -14,7 +14,6 @@ import { LTREE_SPACE_ID, LTREE_BASELINE_MIGRATION_NAME } from "../core/contract-
 import { ltreePackMeta, ltreeQueryOperations } from "../core/descriptor-meta";
 
 const ltreeControlPlaneHooks: CodecControlHooks = {
-  expandNativeType: ({ nativeType }) => nativeType,
   resolveIdentityValue: () => null,
 };
 

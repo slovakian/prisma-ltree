@@ -6,6 +6,7 @@ const ltreeRuntimeDescriptor: SqlRuntimeExtensionDescriptor<"postgres"> = {
   kind: "extension" as const,
   id: ltreePackMeta.id,
   version: ltreePackMeta.version,
+  dataTypes: ltreePackMeta.dataTypes,
   familyId: "sql" as const,
   targetId: "postgres" as const,
   types: {

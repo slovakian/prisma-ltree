@@ -12,8 +12,10 @@ most-recent-common-ancestor (`lca`), `lquery` / `ltxtquery` searches, generation
 depth, lineage slices, and graft-a-taxon are all dispatched to Postgres. No
 tree math happens in the client.
 
-This example is **standalone**: it installs everything from npm and is not part
-of the prisma-ltree monorepo build. Copy the folder anywhere and it still runs.
+This example is not part of the prisma-ltree monorepo build. It depends on the
+local `prisma-ltree` pack with a `file:` dependency until the `8.0.0-rc.16`
+release is on npm. After that release, install `prisma-ltree` from npm and copy
+the folder anywhere.
 
 ---
 
@@ -98,27 +100,21 @@ assertion guards the 46-taxon count and rejects duplicate / malformed paths.
 
 ## Stack
 
-| Piece    | Choice                                                  |
-| -------- | ------------------------------------------------------- |
-| Database | Postgres 17 (Docker) — `ltree` ships in the stock image |
-| ORM      | Prisma 8 (`@prisma/orm-postgres@8.0.0-rc.8`) + `prisma-ltree` |
-| App      | TanStack Start (React 19, server functions, Vite)       |
-| Layout   | `d3-hierarchy` (dendrogram) + `@xyflow/react` (canvas)  |
-| UI       | shadcn / radix-ui primitives, Tailwind v4               |
-| Runtime  | Node ≥ 24, pnpm                                         |
+| Piece    | Choice                                                         |
+| -------- | -------------------------------------------------------------- |
+| Database | Postgres 17 (Docker) — `ltree` ships in the stock image        |
+| ORM      | Prisma 8 (`@prisma/orm-postgres@8.0.0-rc.16`) + `prisma-ltree` |
+| App      | TanStack Start (React 19, server functions, Vite)              |
+| Layout   | `d3-hierarchy` (dendrogram) + `@xyflow/react` (canvas)         |
+| UI       | shadcn / radix-ui primitives, Tailwind v4                      |
+| Runtime  | Node ≥ 24, pnpm                                                |
 
 ---
 
 ## Quickstart
 
-This example pins `@prisma/orm-postgres` to `8.0.0-rc.8` and uses the `prisma` CLI.
-Install `prisma-ltree` with a caret. You do not need `prisma-ltree@8.0.0-rc.8`.
-
-Until the matching `prisma-ltree` release is on npm, link the local pack:
-
-```bash
-pnpm add prisma-ltree@link:../../packages/extension-ltree
-```
+This example pins `@prisma/orm-postgres` to `8.0.0-rc.16` and `prisma` to `8.0.0-rc.21`.
+It depends on the local `prisma-ltree` pack with `file:../../packages/extension-ltree`. Install `prisma-ltree` from npm with a caret after the `8.0.0-rc.16` release is published. You do not need `prisma-ltree@8.0.0-rc.16`.
 
 ```bash
 pnpm install

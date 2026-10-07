@@ -4,13 +4,13 @@ import { sqlContractCanonicalizationHooks } from "@prisma/orm-family-sql/contrac
 import { describe, expect, it } from "vite-plus/test";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "../src/core/constants";
 import {
-  LTREE_ARRAY_NATIVE_TYPE,
   LTREE_ARRAY_STORAGE_TYPE,
   LTREE_BASELINE_MIGRATION_NAME,
   LTREE_INVARIANTS,
   LTREE_NATIVE_TYPE,
   LTREE_SPACE_ID,
 } from "../src/core/contract-space-constants";
+import { ltreeArrayDataType, ltreeDataType } from "../src/core/data-types";
 import ltreeExtensionDescriptor from "../src/exports/control";
 
 describe("prisma-ltree extension descriptor (contract-space package layout)", () => {
@@ -23,7 +23,7 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     });
   });
 
-  it("exposes a contractSpace declaring the ltree native type", () => {
+  it("exposes a contractSpace declaring the ltree data types", () => {
     const space = ltreeExtensionDescriptor.contractSpace;
     expect(space).toBeDefined();
     const namespaces = space!.contractJson.storage.namespaces as Record<
@@ -34,11 +34,11 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     expect(space!.contractJson.storage.types).toBeDefined();
     expect(space!.contractJson.storage.types?.[LTREE_NATIVE_TYPE]).toMatchObject({
       codecId: LTREE_CODEC_ID,
-      nativeType: LTREE_NATIVE_TYPE,
+      dataType: ltreeDataType.id,
     });
     expect(space!.contractJson.storage.types?.[LTREE_ARRAY_STORAGE_TYPE]).toMatchObject({
       codecId: LTREE_ARRAY_CODEC_ID,
-      nativeType: LTREE_ARRAY_NATIVE_TYPE,
+      dataType: ltreeArrayDataType.id,
     });
   });
 
@@ -115,13 +115,11 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     const hooks = ltreeExtensionDescriptor.types!.codecTypes!.controlPlaneHooks as Record<
       string,
       {
-        readonly expandNativeType: (arg: { readonly nativeType: string }) => string;
         readonly resolveIdentityValue: () => unknown;
       }
     >;
     for (const codecId of [LTREE_CODEC_ID, LTREE_ARRAY_CODEC_ID]) {
       const hook = hooks[codecId]!;
-      expect(hook.expandNativeType({ nativeType: LTREE_NATIVE_TYPE })).toBe(LTREE_NATIVE_TYPE);
       expect(hook.resolveIdentityValue()).toBeNull();
     }
   });

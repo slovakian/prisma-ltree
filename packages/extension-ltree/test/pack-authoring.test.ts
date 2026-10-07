@@ -7,9 +7,9 @@ describe("prisma-ltree pack authoring contributions", () => {
       ltree: {
         Ltree: {
           kind: "typeConstructor",
+          inferred: true,
           output: {
             codecId: "pg/ltree@1",
-            nativeType: "ltree",
           },
         },
       },
@@ -21,9 +21,9 @@ describe("prisma-ltree pack authoring contributions", () => {
       ltree: {
         LtreeArray: {
           kind: "typeConstructor",
+          inferred: true,
           output: {
             codecId: "pg/ltree-array@1",
-            nativeType: "ltree[]",
           },
         },
       },

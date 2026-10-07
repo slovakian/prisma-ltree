@@ -20,16 +20,16 @@ computation, without dropping to raw SQL.
 ## Install
 
 ```bash
-pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.8
+pnpm add prisma-ltree @prisma/orm-postgres@8.0.0-rc.16
 pnpm add -D prisma
 ```
 
-Requires Node `>=24`. Pin `@prisma/orm-postgres` to **`8.0.0-rc.8`** (exact SPI pin).
-Install `prisma-ltree` with a caret. You do not need `prisma-ltree@8.0.0-rc.8`.
+Requires Node `>=24`. Pin `@prisma/orm-postgres` to **`8.0.0-rc.16`** (exact SPI pin).
+Install `prisma-ltree` with a caret. You do not need `prisma-ltree@8.0.0-rc.16`.
 See [versioning and compatibility](docs/prisma-next/versioning-and-compatibility.md).
 
-The CLI is `prisma` (`npx prisma@latest`). Today that is `8.0.0-rc.12`, which
-depends on `@prisma/orm-toolchain@8.0.0-rc.8`.
+The CLI is `prisma` (`npx prisma@latest`). Today that is `8.0.0-rc.21`, which
+depends on `@prisma/orm-toolchain@8.0.0-rc.16`.
 
 ## Quickstart
 

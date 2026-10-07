@@ -1,7 +1,7 @@
-// use prisma
+// use prisma-8
 
 types {
-  // A single ltree path. Resolves to codec `pg/ltree@1`, native type `ltree`.
+  // A single ltree path. Resolves to codec `pg/ltree@1`, data type `ltree/ltree`.
   // Each `Taxon` row's `path` is its position in the Catarrhini-rooted
   // phylogenetic tree (e.g. `Catarrhini.Hominoidea.Hominidae.Homininae.Hominini.Homo.Homo_sapiens`).
   Path = ltree.Ltree()

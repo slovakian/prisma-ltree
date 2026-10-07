@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import type { Char } from "@prisma/orm-target-postgres/target/codec-types";
 import { db } from "../prisma/db.server";
 import { validateTaxonLabel } from "../lib/taxon-label";
 import type { TaxonRow } from "./taxonomy";
@@ -75,7 +74,7 @@ export async function lineageSliceHandler(
     .where((f, fns) => fns.eq(f.path, path))
     .limit(1)
     .build();
-  const rows = await db.runtime().execute(plan);
+  const rows = await db.runtime().query(plan);
   return (rows[0] as { slice: string | null } | undefined)?.slice ?? null;
 }
 
@@ -89,7 +88,7 @@ export async function lineageSubtreeHandler(
     .where((f, fns) => fns.eq(f.path, path))
     .limit(1)
     .build();
-  const rows = await db.runtime().execute(plan);
+  const rows = await db.runtime().query(plan);
   return (rows[0] as { slice: string | null } | undefined)?.slice ?? null;
 }
 
@@ -101,7 +100,7 @@ export async function indexOfBranchHandler(a: string, b: string, offset?: number
     .where((f, fns) => fns.eq(f.path, a))
     .limit(1)
     .build();
-  const rows = await db.runtime().execute(plan);
+  const rows = await db.runtime().query(plan);
   return (rows[0] as { idx: number } | undefined)?.idx ?? -1;
 }
 
@@ -111,7 +110,7 @@ export async function getMrcaViaLcaHandler(a: string, b: string): Promise<TaxonR
     .where((f, fns) => fns.eq(f.path, a))
     .limit(1)
     .build();
-  const rows = await db.runtime().execute(plan);
+  const rows = await db.runtime().query(plan);
   const mrcaPath = (rows[0] as { mrca: string | null } | undefined)?.mrca;
   if (!mrcaPath) return null;
   return db.orm.public.Taxon.first({ path: mrcaPath });
@@ -138,13 +137,13 @@ export async function graftTaxonHandler(input: GraftInput): Promise<TaxonRow> {
     .where((f, fns) => fns.eq(f.path, input.parentPath))
     .limit(1)
     .build();
-  const pathRows = await db.runtime().execute(pathPlan);
+  const pathRows = await db.runtime().query(pathPlan);
   const newPath = (pathRows[0] as { newPath: string | null } | undefined)?.newPath;
   if (!newPath) {
     throw new Error(`Parent taxon not found: ${input.parentPath}`);
   }
   return db.orm.public.Taxon.create({
-    id: randomUUID() as Char<36>,
+    id: randomUUID(),
     path: newPath,
     scientificName: input.label.replace(/_/g, " "),
     commonName: input.commonName?.trim() || null,

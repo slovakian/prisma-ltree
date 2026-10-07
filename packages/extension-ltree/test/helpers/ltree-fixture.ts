@@ -7,8 +7,8 @@ import { PostgresContractSerializer } from "@prisma/orm-target-postgres/target/r
 
 /**
  * A minimal Postgres contract declaring a `node(id int4, path ltree)` table so
- * the renderer's codec lookup resolves `pg/ltree@1` -> native `ltree`. Shared by
- * the ltree PGlite integration tests.
+ * the renderer's codec lookup resolves `pg/ltree@1` to data type `ltree/ltree`.
+ * Shared by the ltree PGlite integration tests.
  */
 export function createLtreeContract(): PostgresContract {
   // 0.15+: hydrate through the postgres target serializer so unbound namespaces
@@ -31,9 +31,13 @@ export function createLtreeContract(): PostgresContract {
             table: {
               node: {
                 columns: {
-                  id: { codecId: "pg/int4@1", nativeType: "int4", nullable: false },
-                  path: { codecId: "pg/ltree@1", nativeType: "ltree", nullable: false },
-                  paths: { codecId: "pg/ltree-array@1", nativeType: "ltree[]", nullable: false },
+                  id: { codecId: "pg/int4@1", dataType: "pg/int4", nullable: false },
+                  path: { codecId: "pg/ltree@1", dataType: "ltree/ltree", nullable: false },
+                  paths: {
+                    codecId: "pg/ltree-array@1",
+                    dataType: "ltree/ltree-array",
+                    nullable: false,
+                  },
                 },
                 uniques: [],
                 indexes: [],

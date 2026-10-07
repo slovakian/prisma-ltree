@@ -1,5 +1,3 @@
-import type { Char } from "@prisma/orm-target-postgres/target/codec-types";
-
 /**
  * Shared taxonomy types.
  *
@@ -12,7 +10,7 @@ import type { Char } from "@prisma/orm-target-postgres/target/codec-types";
  */
 
 export type TaxonRow = {
-  id: Char<36>;
+  id: string;
   path: string;
   scientificName: string;
   commonName: string | null;

@@ -1,9 +1,9 @@
 {
   "from": null,
-  "to": "81cc0a29674d926c9089886b1941ba66d6ce26ec5644fc8a0b7c92a5e9e9876e",
+  "to": "5842622c2779cd02acd640ab4a5c8979fc94a2af8ed034222391fbd4f7cb3706",
   "providedInvariants": [
     "ltree:install-ltree-v1"
   ],
   "createdAt": "2026-06-19T21:42:51.612Z",
-  "migrationHash": "bfe5d116d0c48c849ba9e2eea2a4be51f0006778bcbb4b5cd53d8b99146712f3"
+  "migrationHash": "b6a76ceffc9e133502c15ed26100f9056aa259a6e330547a2490f765509b38d3"
 }

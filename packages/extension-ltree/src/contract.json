@@ -21,17 +21,17 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ca70941530ea2af306b38e95be66ab1deac79357bcfafb48302d07c8f2c9aa92",
+    "storageHash": "5842622c2779cd02acd640ab4a5c8979fc94a2af8ed034222391fbd4f7cb3706",
     "types": {
       "ltree": {
         "codecId": "pg/ltree@1",
-        "kind": "codec-instance",
-        "nativeType": "ltree"
+        "dataType": "ltree/ltree",
+        "kind": "codec-instance"
       },
       "ltreeArray": {
         "codecId": "pg/ltree-array@1",
-        "kind": "codec-instance",
-        "nativeType": "ltree[]"
+        "dataType": "ltree/ltree-array",
+        "kind": "codec-instance"
       }
     }
   },
@@ -48,6 +48,8 @@
       "checkConstraint": true,
       "defaultInInsert": true,
       "enums": true,
+      "insertOnConflictSkip": true,
+      "insertOnConflictWithoutTarget": true,
       "lateral": true,
       "returning": true,
       "scalarList": true
