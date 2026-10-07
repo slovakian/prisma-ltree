@@ -1,4 +1,4 @@
-// use prisma
+// use prisma-8
 
 types {
   Path = ltree.Ltree()

@@ -27,7 +27,6 @@ export async function emitFixture(
   await executeContractEmit({
     config: loaded.value.config,
     cwd: fixtureDir,
-    configPath,
     outputPath: out,
   });
   return JSON.parse(await readFile(join(out, "contract.json"), "utf-8")) as Record<string, unknown>;

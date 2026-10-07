@@ -1,4 +1,4 @@
-// use prisma
+// use prisma-8
 
 types {
   // Single ltree path. Resolves to codec `pg/ltree@1`, native type `ltree`.

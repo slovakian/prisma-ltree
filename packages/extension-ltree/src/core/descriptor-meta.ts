@@ -10,6 +10,7 @@ import type { CodecTypes } from "../types/codec-types";
 import type { QueryOperationTypes } from "../types/operation-types";
 import { ltreeAuthoringTypes } from "./authoring";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./constants";
+import { ltreeDataTypes } from "./data-types";
 import { LTREE_ARRAY_NATIVE_TYPE, LTREE_NATIVE_TYPE } from "./contract-space-constants";
 import { ltreeCodecRegistry } from "./registry";
 
@@ -49,7 +50,6 @@ function funcOp<C extends string>(
     returns,
     lowering: {
       targetFamily: "sql",
-      strategy: "function",
       template: `${fnName}(${placeholders})`,
     },
   });
@@ -74,7 +74,6 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       returns: BOOL_RETURN,
       lowering: {
         targetFamily: "sql",
-        strategy: "function",
         template: `{{self}} ${operator} {{arg0}}`,
       },
     });
@@ -95,7 +94,6 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       returns: BOOL_RETURN,
       lowering: {
         targetFamily: "sql",
-        strategy: "function",
         template: `{{self}} ${operator} ({{arg0}})::${castType}`,
       },
     });
@@ -116,7 +114,7 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       method,
       args,
       returns: LTREE_RETURN,
-      lowering: { targetFamily: "sql", strategy: "function", template },
+      lowering: { targetFamily: "sql", template },
     });
 
   // Tier 3 — first-match operators on an `ltree[]` receiver (ADR-003).
@@ -136,7 +134,7 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       method,
       args: [toExpr(self, selfCodec), toExpr(arg, { codecId: argCodecId })],
       returns: LTREE_RETURN,
-      lowering: { targetFamily: "sql", strategy: "function", template },
+      lowering: { targetFamily: "sql", template },
     });
   };
 
@@ -313,6 +311,7 @@ const ltreePackMetaBase = {
   authoring: {
     type: ltreeAuthoringTypes,
   },
+  dataTypes: ltreeDataTypes,
   types: {
     codecTypes: {
       codecDescriptors: Array.from(ltreeCodecRegistry.values()),

@@ -85,7 +85,6 @@ describe("prisma-ltree operations", () => {
       expect(ast.method).toBe(method);
       expect(ast.lowering).toEqual({
         targetFamily: "sql",
-        strategy: "function",
         template,
       });
       expect(ast.returns).toEqual({ codecId: "pg/bool@1", nullable: false });
@@ -119,7 +118,7 @@ describe("prisma-ltree operations", () => {
       const ast = expr.buildAst();
       expect(ast).toBeInstanceOf(OperationExpr);
       expect(ast.method).toBe(method);
-      expect(ast.lowering).toEqual({ targetFamily: "sql", strategy: "function", template });
+      expect(ast.lowering).toEqual({ targetFamily: "sql", template });
       expect(ast.returns).toEqual({ codecId: returnCodecId, nullable: false });
     },
   );
@@ -148,7 +147,7 @@ describe("prisma-ltree operations", () => {
       const ast = expr.buildAst();
       expect(ast).toBeInstanceOf(OperationExpr);
       expect(ast.method).toBe(method);
-      expect(ast.lowering).toEqual({ targetFamily: "sql", strategy: "function", template });
+      expect(ast.lowering).toEqual({ targetFamily: "sql", template });
       expect(ast.returns).toEqual({ codecId: returnCodecId, nullable: false });
     },
   );
@@ -176,7 +175,7 @@ describe("prisma-ltree operations", () => {
       const ast = expr.buildAst();
       expect(ast).toBeInstanceOf(OperationExpr);
       expect(ast.method).toBe(method);
-      expect(ast.lowering).toEqual({ targetFamily: "sql", strategy: "function", template });
+      expect(ast.lowering).toEqual({ targetFamily: "sql", template });
       expect(ast.returns).toEqual({ codecId: "pg/ltree@1", nullable: false });
     },
   );
