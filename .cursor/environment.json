@@ -1,0 +1,4 @@
+{
+  "name": "prisma-ltree",
+  "install": "bash .cursor/install.sh"
+}
