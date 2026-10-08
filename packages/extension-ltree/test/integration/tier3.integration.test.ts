@@ -134,7 +134,10 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
 
   it("containsAncestorOf: paths @> rhs is true when an entry is an ancestor", async () => {
     expect(
-      await projectFor(1, opExpr("containsAncestorOf", ltreeArrayColumn("paths"), "Top.Science.Astronomy")),
+      await projectFor(
+        1,
+        opExpr("containsAncestorOf", ltreeArrayColumn("paths"), "Top.Science.Astronomy"),
+      ),
     ).toBe(true);
   });
 
@@ -145,20 +148,23 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
   });
 
   it("containsDescendantOf: paths <@ rhs is true when an entry is a descendant", async () => {
-    expect(await projectFor(1, opExpr("containsDescendantOf", ltreeArrayColumn("paths"), "Top"))).toBe(
-      true,
-    );
+    expect(
+      await projectFor(1, opExpr("containsDescendantOf", ltreeArrayColumn("paths"), "Top")),
+    ).toBe(true);
   });
 
   it("matchesAnyLquery: paths ~ pattern is true when any entry matches", async () => {
-    expect(await projectFor(1, opExpr("matchesAnyLquery", ltreeArrayColumn("paths"), "*.Hobbies"))).toBe(
-      true,
-    );
+    expect(
+      await projectFor(1, opExpr("matchesAnyLquery", ltreeArrayColumn("paths"), "*.Hobbies")),
+    ).toBe(true);
   });
 
   it("matchesAnyLqueryArray: paths ? patterns is true when any entry matches any pattern", async () => {
     expect(
-      await projectFor(1, opExpr("matchesAnyLqueryArray", ltreeArrayColumn("paths"), ["*.Art", "Top.Hobbies"])),
+      await projectFor(
+        1,
+        opExpr("matchesAnyLqueryArray", ltreeArrayColumn("paths"), ["*.Art", "Top.Hobbies"]),
+      ),
     ).toBe(true);
   });
 
@@ -170,13 +176,19 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
 
   it("isAncestorOfAny: path @> paths is true when the path is an ancestor of an entry", async () => {
     expect(
-      await projectFor(1, opExpr("isAncestorOfAny", ltreeColumn("path"), ["Top.Science.Astronomy.Stars"])),
+      await projectFor(
+        1,
+        opExpr("isAncestorOfAny", ltreeColumn("path"), ["Top.Science.Astronomy.Stars"]),
+      ),
     ).toBe(true);
   });
 
   it("isDescendantOfAny: path <@ paths is true when an entry is an ancestor of the path", async () => {
     expect(
-      await projectFor(1, opExpr("isDescendantOfAny", ltreeColumn("path"), ["Top.Science", "Top.Hobbies"])),
+      await projectFor(
+        1,
+        opExpr("isDescendantOfAny", ltreeColumn("path"), ["Top.Science", "Top.Hobbies"]),
+      ),
     ).toBe(true);
   });
 
@@ -184,6 +196,15 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
     expect(
       await projectFor(1, opExpr("isDescendantOfAny", ltreeColumn("path"), ["Top.Hobbies"])),
     ).toBe(false);
+  });
+
+  it("isDescendantOfAny accepts an ltree[] column", async () => {
+    expect(
+      await projectFor(
+        1,
+        opExpr("isDescendantOfAny", ltreeColumn("path"), ltreeArrayColumn("paths")),
+      ),
+    ).toBe(true);
   });
 
   it("scalar ltree column ops remain independent of the array receiver", async () => {

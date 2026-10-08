@@ -181,8 +181,8 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
 
 ### Hierarchy (→ boolean)
 
-| Method                     | SQL              |
-| -------------------------- | ---------------- |
+| Method                          | SQL                |
+| ------------------------------- | ------------------ |
 | `path.isAncestorOf(rhs)`        | `ltree @> ltree`   |
 | `path.isDescendantOf(rhs)`      | `ltree <@ ltree`   |
 | `path.isAncestorOfAny(paths)`   | `ltree @> ltree[]` |
@@ -233,15 +233,15 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
 
 ### Array boolean checks (→ boolean)
 
-| Method                                | SQL                    |
-| ------------------------------------- | ---------------------- |
-| `paths.containsAncestorOf(rhs)`       | `ltree[] @> ltree`     |
-| `paths.containsDescendantOf(rhs)`     | `ltree[] <@ ltree`     |
-| `paths.matchesAnyLquery(pattern)`     | `ltree[] ~ lquery`     |
-| `paths.matchesAnyLqueryArray(patterns)` | `ltree[] ? lquery[]` |
-| `paths.matchesAnyLtxtquery(query)`    | `ltree[] @ ltxtquery`  |
-| `path.isAncestorOfAny(paths)`         | `ltree @> ltree[]`     |
-| `path.isDescendantOfAny(paths)`       | `ltree <@ ltree[]`     |
+| Method                                  | SQL                   |
+| --------------------------------------- | --------------------- |
+| `paths.containsAncestorOf(rhs)`         | `ltree[] @> ltree`    |
+| `paths.containsDescendantOf(rhs)`       | `ltree[] <@ ltree`    |
+| `paths.matchesAnyLquery(pattern)`       | `ltree[] ~ lquery`    |
+| `paths.matchesAnyLqueryArray(patterns)` | `ltree[] ? lquery[]`  |
+| `paths.matchesAnyLtxtquery(query)`      | `ltree[] @ ltxtquery` |
+| `path.isAncestorOfAny(paths)`           | `ltree @> ltree[]`    |
+| `path.isDescendantOfAny(paths)`         | `ltree <@ ltree[]`    |
 
 `containsDescendantOf` and `isAncestorOfAny` are the same predicate with the operands swapped. Call the method whose receiver is the column you filter. A GiST index on an `ltree[]` column serves `containsDescendantOf`, `isAncestorOfAny`, and the three `matchesAny*` methods. It does not serve `containsAncestorOf`.
 

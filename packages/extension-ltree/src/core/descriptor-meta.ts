@@ -100,6 +100,27 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     });
   };
 
+  // Scalar `ltree` compared to `ltree[]`. See `isAncestorOfAny`.
+  const scalarArrayBool = (
+    method: string,
+    operator: string,
+    self: CodecExpression<typeof LTREE_CODEC_ID, boolean, CT>,
+    paths: unknown,
+  ): BoolReturn => {
+    const arg = Array.isArray(paths)
+      ? toExpr(paths, { codecId: TEXT_CODEC_ID, many: true })
+      : toExpr(paths, { codecId: LTREE_ARRAY_CODEC_ID });
+    return buildOperation({
+      method,
+      args: [toExpr(self, codecOf(self)), arg],
+      returns: BOOL_RETURN,
+      lowering: {
+        targetFamily: "sql",
+        template: `{{self}} ${operator} ({{arg0}})::ltree[]`,
+      },
+    });
+  };
+
   // Concatenation operators produce a new ltree. `concat` joins two ltree paths
   // (`{{self}} || {{arg0}}`); `concatText`/`prependText` splice a text label onto
   // the right/left. The text operand binds as `pg/text@1` and is cast in-template
@@ -190,29 +211,17 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     },
     // `ltree @> ltree[]` / `ltree <@ ltree[]` — scalar receiver, array argument
     // (ADR-007). Commutators of `containsDescendantOf` / `containsAncestorOf`.
+    // A raw `string[]` binds as `text[]` and casts to `ltree[]`. Drivers know
+    // `text[]`. They do not know the `ltree[]` OID, so a `::ltree[]` parameter
+    // is not a valid array literal (PGlite joins the elements and drops the
+    // braces). An `ltree[]` expression passes through and the same cast is a no-op.
     isAncestorOfAny: {
       self: { codecId: LTREE_CODEC_ID },
-      impl: (self, paths): BoolReturn => {
-        const selfCodec = codecOf(self);
-        return buildOperation({
-          method: "isAncestorOfAny",
-          args: [toExpr(self, selfCodec), toExpr(paths, { codecId: LTREE_ARRAY_CODEC_ID })],
-          returns: BOOL_RETURN,
-          lowering: { targetFamily: "sql", template: "{{self}} @> {{arg0}}" },
-        });
-      },
+      impl: (self, paths): BoolReturn => scalarArrayBool("isAncestorOfAny", "@>", self, paths),
     },
     isDescendantOfAny: {
       self: { codecId: LTREE_CODEC_ID },
-      impl: (self, paths): BoolReturn => {
-        const selfCodec = codecOf(self);
-        return buildOperation({
-          method: "isDescendantOfAny",
-          args: [toExpr(self, selfCodec), toExpr(paths, { codecId: LTREE_ARRAY_CODEC_ID })],
-          returns: BOOL_RETURN,
-          lowering: { targetFamily: "sql", template: "{{self}} <@ {{arg0}}" },
-        });
-      },
+      impl: (self, paths): BoolReturn => scalarArrayBool("isDescendantOfAny", "<@", self, paths),
     },
     nlevel: {
       self: { codecId: LTREE_CODEC_ID },
@@ -342,8 +351,7 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     },
     containsDescendantOf: {
       self: { codecId: LTREE_ARRAY_CODEC_ID },
-      impl: (self, other) =>
-        arrayBoolOp("containsDescendantOf", "<@", self, other, LTREE_CODEC_ID),
+      impl: (self, other) => arrayBoolOp("containsDescendantOf", "<@", self, other, LTREE_CODEC_ID),
     },
     matchesAnyLquery: {
       self: { codecId: LTREE_ARRAY_CODEC_ID },
@@ -353,15 +361,7 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     matchesAnyLqueryArray: {
       self: { codecId: LTREE_ARRAY_CODEC_ID },
       impl: (self, patterns) =>
-        arrayBoolOp(
-          "matchesAnyLqueryArray",
-          "?",
-          self,
-          patterns,
-          TEXT_CODEC_ID,
-          "lquery[]",
-          true,
-        ),
+        arrayBoolOp("matchesAnyLqueryArray", "?", self, patterns, TEXT_CODEC_ID, "lquery[]", true),
     },
     matchesAnyLtxtquery: {
       self: { codecId: LTREE_ARRAY_CODEC_ID },

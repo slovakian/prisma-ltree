@@ -75,8 +75,8 @@ describe("prisma-ltree operations", () => {
     ["matchesLquery", "{{self}} ~ ({{arg0}})::lquery", "Top.*"],
     ["matchesLqueryArray", "{{self}} ? ({{arg0}})::lquery[]", ["Top.*", "*.Art"]],
     ["matchesLtxtquery", "{{self}} @ ({{arg0}})::ltxtquery", "Science"],
-    ["isAncestorOfAny", "{{self}} @> {{arg0}}", ["Top.Child"]],
-    ["isDescendantOfAny", "{{self}} <@ {{arg0}}", ["Top"]],
+    ["isAncestorOfAny", "{{self}} @> ({{arg0}})::ltree[]", ["Top.Child"]],
+    ["isDescendantOfAny", "{{self}} <@ ({{arg0}})::ltree[]", ["Top"]],
   ];
 
   it.each(operatorCases)(
@@ -185,7 +185,10 @@ describe("prisma-ltree operations", () => {
       const ltreeArrayCodec: CodecRef = { codecId: "pg/ltree-array@1" };
       const op = operations[method];
       expect(op).toBeDefined();
-      const expr = op?.impl(ltreeExpr("Top.Science", ltreeArrayCodec) as never, arg as never) as unknown as {
+      const expr = op?.impl(
+        ltreeExpr("Top.Science", ltreeArrayCodec) as never,
+        arg as never,
+      ) as unknown as {
         buildAst(): OperationExpr;
       };
       const ast = expr.buildAst();
