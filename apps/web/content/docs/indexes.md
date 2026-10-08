@@ -59,7 +59,13 @@ Apply the change with `db update` or `migration plan`. Prisma creates a GiST ind
 CREATE INDEX … ON "page" USING "gist" ("path")
 ```
 
-Use `type: "gist"` on an `ltree[]` column too (`ltree.LtreeArray()` or `ltreeArray()`).
+Use `type: "gist"` on an `ltree[]` column too (`ltree.LtreeArray()` or `ltreeArray()`). PostgreSQL's default operator class for that column is `gist__ltree_ops`. It serves these client methods:
+
+- `paths.containsDescendantOf(path)` (`ltree[] <@ ltree`)
+- `path.isAncestorOfAny(paths)` (`ltree @> ltree[]`)
+- `paths.matchesAnyLquery`, `paths.matchesAnyLtxtquery`, and `paths.matchesAnyLqueryArray`
+
+It does not serve `paths.containsAncestorOf` (`ltree[] @> ltree`). First-match methods (`firstAncestorOf` and the rest) are also outside that operator class.
 
 You can keep `@unique` on the column. That unique constraint is a B-tree, and GiST is a second index.
 

@@ -23,3 +23,4 @@ The PostgreSQL `ltree` type stores dot-separated path labels (e.g. `Top.Science.
 - [Hierarchy operators](/docs/operations/hierarchy): ancestor and descendant checks
 - [Pattern matching operators](/docs/operations/pattern-matching): `lquery` and `ltxtquery` patterns
 - [Lowest common ancestor](/docs/operations/lca): shared ancestor of paths, including `ltree[]` columns
+- [Array boolean checks](/docs/operations/array): whether any path in an `ltree[]` column matches

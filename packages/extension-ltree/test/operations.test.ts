@@ -52,10 +52,17 @@ describe("prisma-ltree operations", () => {
         "prependText",
         "toText",
         "toLtree",
+        "isAncestorOfAny",
+        "isDescendantOfAny",
         "firstAncestorOf",
         "firstDescendantOf",
         "firstMatchLquery",
         "firstMatchLtxtquery",
+        "containsAncestorOf",
+        "containsDescendantOf",
+        "matchesAnyLquery",
+        "matchesAnyLqueryArray",
+        "matchesAnyLtxtquery",
         "lcaAll",
       ].sort(),
     );
@@ -68,6 +75,8 @@ describe("prisma-ltree operations", () => {
     ["matchesLquery", "{{self}} ~ ({{arg0}})::lquery", "Top.*"],
     ["matchesLqueryArray", "{{self}} ? ({{arg0}})::lquery[]", ["Top.*", "*.Art"]],
     ["matchesLtxtquery", "{{self}} @ ({{arg0}})::ltxtquery", "Science"],
+    ["isAncestorOfAny", "{{self}} @> {{arg0}}", ["Top.Child"]],
+    ["isDescendantOfAny", "{{self}} <@ {{arg0}}", ["Top"]],
   ];
 
   it.each(operatorCases)(
@@ -160,6 +169,35 @@ describe("prisma-ltree operations", () => {
     ["firstMatchLtxtquery", "{{self}} ?@ ({{arg0}})::ltxtquery", "Science"],
     ["lcaAll", "lca({{self}})", undefined],
   ];
+
+  const arrayBoolCases: ReadonlyArray<readonly [string, string, unknown]> = [
+    ["containsAncestorOf", "{{self}} @> {{arg0}}", "Top.Science.Astronomy"],
+    ["containsDescendantOf", "{{self}} <@ {{arg0}}", "Top"],
+    ["matchesAnyLquery", "{{self}} ~ ({{arg0}})::lquery", "Top.*"],
+    ["matchesAnyLqueryArray", "{{self}} ? ({{arg0}})::lquery[]", ["Top.*", "*.Art"]],
+    ["matchesAnyLtxtquery", "{{self}} @ ({{arg0}})::ltxtquery", "Science"],
+  ];
+
+  it.each(arrayBoolCases)(
+    "%s builds an OperationExpr with the correct lowering template and bool return",
+    (method, template, arg) => {
+      const operations = ltreeRuntimeDescriptor.queryOperations!();
+      const ltreeArrayCodec: CodecRef = { codecId: "pg/ltree-array@1" };
+      const op = operations[method];
+      expect(op).toBeDefined();
+      const expr = op?.impl(ltreeExpr("Top.Science", ltreeArrayCodec) as never, arg as never) as unknown as {
+        buildAst(): OperationExpr;
+      };
+      const ast = expr.buildAst();
+      expect(ast).toBeInstanceOf(OperationExpr);
+      expect(ast.method).toBe(method);
+      expect(ast.lowering).toEqual({
+        targetFamily: "sql",
+        template,
+      });
+      expect(ast.returns).toEqual({ codecId: "pg/bool@1", nullable: false });
+    },
+  );
 
   it.each(tier3Cases)(
     "%s builds an OperationExpr with the correct lowering template and ltree return",

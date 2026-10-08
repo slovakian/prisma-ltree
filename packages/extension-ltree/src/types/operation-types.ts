@@ -47,6 +47,21 @@ export type QueryOperationTypes<CT extends CodecTypesBase> = SqlQueryOperationTy
         query: CodecExpression<"pg/text@1", boolean, CT>,
       ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
     };
+    // `ltree @> ltree[]` / `ltree <@ ltree[]` (ADR-007).
+    readonly isAncestorOfAny: {
+      readonly self: { readonly codecId: "pg/ltree@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree@1", boolean, CT>,
+        paths: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
+    };
+    readonly isDescendantOfAny: {
+      readonly self: { readonly codecId: "pg/ltree@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree@1", boolean, CT>,
+        paths: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
+    };
     // Scalar functions.
     readonly nlevel: {
       readonly self: { readonly codecId: "pg/ltree@1" };
@@ -154,6 +169,43 @@ export type QueryOperationTypes<CT extends CodecTypesBase> = SqlQueryOperationTy
         self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
         query: CodecExpression<"pg/text@1", boolean, CT>,
       ) => Expression<{ readonly codecId: "pg/ltree@1"; readonly nullable: false }>;
+    };
+    // Boolean array operators (ADR-007). Names differ from the scalar methods
+    // because the operation registry keys by name only.
+    readonly containsAncestorOf: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        other: CodecExpression<"pg/ltree@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
+    };
+    readonly containsDescendantOf: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        other: CodecExpression<"pg/ltree@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
+    };
+    readonly matchesAnyLquery: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        pattern: CodecExpression<"pg/text@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
+    };
+    readonly matchesAnyLqueryArray: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        patterns: CodecExpression<"pg/text-array@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
+    };
+    readonly matchesAnyLtxtquery: {
+      readonly self: { readonly codecId: "pg/ltree-array@1" };
+      readonly impl: (
+        self: CodecExpression<"pg/ltree-array@1", boolean, CT>,
+        query: CodecExpression<"pg/text@1", boolean, CT>,
+      ) => Expression<{ readonly codecId: "pg/bool@1"; readonly nullable: false }>;
     };
     // `lca(ltree[])` — ships as `lcaAll()` (ADR-001, ADR-005); not `lca()`
     // because prisma-next operation names are globally unique across the composed

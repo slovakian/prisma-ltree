@@ -118,6 +118,33 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       lowering: { targetFamily: "sql", template },
     });
 
+  // Boolean operators on an `ltree[]` receiver (ADR-007). Same bind/cast rules as
+  // `firstMatchOp`, but the result is `boolean`. These are the operators
+  // `gist__ltree_ops` indexes (`<@`, `~`, `@`, `?`), plus `@>` which PostgreSQL
+  // ships and the opclass does not index.
+  const arrayBoolOp = (
+    method: string,
+    operator: string,
+    self: CodecExpression<typeof LTREE_ARRAY_CODEC_ID, boolean, CT>,
+    arg: unknown,
+    argCodecId: typeof LTREE_CODEC_ID | typeof TEXT_CODEC_ID,
+    castType?: string,
+    many = false,
+  ): BoolReturn => {
+    const template = castType
+      ? `{{self}} ${operator} ({{arg0}})::${castType}`
+      : `{{self}} ${operator} {{arg0}}`;
+    return buildOperation({
+      method,
+      args: [
+        toExpr(self, codecOf(self)),
+        toExpr(arg, many ? { codecId: argCodecId, many: true } : { codecId: argCodecId }),
+      ],
+      returns: BOOL_RETURN,
+      lowering: { targetFamily: "sql", template },
+    });
+  };
+
   // Tier 3 — first-match operators on an `ltree[]` receiver (ADR-003).
   const firstMatchOp = (
     method: string,
@@ -160,6 +187,32 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     matchesLtxtquery: {
       self: { codecId: LTREE_CODEC_ID },
       impl: (self, query) => patternOp("matchesLtxtquery", "@", "ltxtquery", self, query),
+    },
+    // `ltree @> ltree[]` / `ltree <@ ltree[]` — scalar receiver, array argument
+    // (ADR-007). Commutators of `containsDescendantOf` / `containsAncestorOf`.
+    isAncestorOfAny: {
+      self: { codecId: LTREE_CODEC_ID },
+      impl: (self, paths): BoolReturn => {
+        const selfCodec = codecOf(self);
+        return buildOperation({
+          method: "isAncestorOfAny",
+          args: [toExpr(self, selfCodec), toExpr(paths, { codecId: LTREE_ARRAY_CODEC_ID })],
+          returns: BOOL_RETURN,
+          lowering: { targetFamily: "sql", template: "{{self}} @> {{arg0}}" },
+        });
+      },
+    },
+    isDescendantOfAny: {
+      self: { codecId: LTREE_CODEC_ID },
+      impl: (self, paths): BoolReturn => {
+        const selfCodec = codecOf(self);
+        return buildOperation({
+          method: "isDescendantOfAny",
+          args: [toExpr(self, selfCodec), toExpr(paths, { codecId: LTREE_ARRAY_CODEC_ID })],
+          returns: BOOL_RETURN,
+          lowering: { targetFamily: "sql", template: "{{self}} <@ {{arg0}}" },
+        });
+      },
     },
     nlevel: {
       self: { codecId: LTREE_CODEC_ID },
@@ -280,6 +333,40 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
       self: { codecId: LTREE_ARRAY_CODEC_ID },
       impl: (self, query) =>
         firstMatchOp("firstMatchLtxtquery", "?@", self, query, TEXT_CODEC_ID, "ltxtquery"),
+    },
+    // Boolean array operators (ADR-007). `containsDescendantOf`, `matchesAnyLquery`,
+    // `matchesAnyLtxtquery`, and `matchesAnyLqueryArray` are in `gist__ltree_ops`.
+    containsAncestorOf: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, other) => arrayBoolOp("containsAncestorOf", "@>", self, other, LTREE_CODEC_ID),
+    },
+    containsDescendantOf: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, other) =>
+        arrayBoolOp("containsDescendantOf", "<@", self, other, LTREE_CODEC_ID),
+    },
+    matchesAnyLquery: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, pattern) =>
+        arrayBoolOp("matchesAnyLquery", "~", self, pattern, TEXT_CODEC_ID, "lquery"),
+    },
+    matchesAnyLqueryArray: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, patterns) =>
+        arrayBoolOp(
+          "matchesAnyLqueryArray",
+          "?",
+          self,
+          patterns,
+          TEXT_CODEC_ID,
+          "lquery[]",
+          true,
+        ),
+    },
+    matchesAnyLtxtquery: {
+      self: { codecId: LTREE_ARRAY_CODEC_ID },
+      impl: (self, query) =>
+        arrayBoolOp("matchesAnyLtxtquery", "@", self, query, TEXT_CODEC_ID, "ltxtquery"),
     },
     // `lca(ltree[])` — array-receiver form (ADR-001, ADR-005). Named `lcaAll`
     // because prisma-next keys operations by name only (`createOperationRegistry`

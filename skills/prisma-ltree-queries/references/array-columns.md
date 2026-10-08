@@ -43,18 +43,20 @@ sql
   .build({ params: { prefix: "Top.Science" } });
 ```
 
-## What is NOT on array columns
+## Boolean checks
 
-These boolean/array SQL forms are **out of scope** for prisma-ltree:
+These return `boolean`. `containsDescendantOf`, `matchesAnyLquery`, `matchesAnyLtxtquery`, and `matchesAnyLqueryArray` are the operators `gist__ltree_ops` indexes when the array column is on the left. `containsAncestorOf` is a real PostgreSQL operator. That opclass does not index it.
 
-- `ltree[] @> ltree` (any ancestor in array?)
-- `ltree[] <@ ltree`
-- `ltree[] ~ lquery`
-- `ltree[] ? lquery[]`
-- `ltree[] @ ltxtquery`
+| Method | SQL |
+| --- | --- |
+| `paths.containsAncestorOf(arg)` | `ltree[] @> ltree` |
+| `paths.containsDescendantOf(arg)` | `ltree[] <@ ltree` |
+| `paths.matchesAnyLquery(pat)` | `ltree[] ~ lquery` |
+| `paths.matchesAnyLqueryArray(pats)` | `ltree[] ? lquery[]` |
+| `paths.matchesAnyLtxtquery(q)` | `ltree[] @ ltxtquery` |
 
-Workaround: use first-match ops when you need one path back, or unnest/array logic in SQL builder if PN expressivity allows — otherwise track as a feature request.
+Scalar columns take the commutators. `path.isAncestorOfAny(paths)` is `ltree @> ltree[]` (same predicate as `containsDescendantOf`). `path.isDescendantOfAny(paths)` is `ltree <@ ltree[]` (same predicate as `containsAncestorOf`).
 
-## Planned
+## Lowest common ancestor
 
-- `paths.lcaAll()` — `lca(ltree[])` on array columns (zero-arg)
+`paths.lcaAll()` is `lca(ltree[])`. It is not named `lca` because Prisma keys operations by name only.

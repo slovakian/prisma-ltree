@@ -220,7 +220,8 @@ When inserting rows, build paths in application code (`parentPath.concatText("Ch
 - **Non-Postgres targets** — Mongo, SQLite, etc. Workaround: not supported; use Postgres for ltree.
 - **GiST operator-class `siglen`** — Prisma `options` are `WITH` storage parameters, not `gist_ltree_ops(siglen=…)`. Default GiST is `@@index([path], type: "gist")` (postgres target; do **not** register `gist` on prisma-ltree).
 - **`lquery` / `ltxtquery` as column types** — patterns are **string parameters** to `matchesLquery` / `matchesLtxtquery`, not stored column types.
-- **Boolean `ltree[]` operators** (`ltree[] @> ltree`, etc.) — out of scope; use scalar ops or first-match array ops instead.
+- **`lquery` / `ltxtquery` as stored columns**, and the reversed operators that need them (`lquery ~ ltree`, `lquery ~ ltree[]`, and the same shape for `@` and `?`). Patterns stay string parameters. The left-`ltree` and left-`ltree[]` methods cover the same predicates.
+- **Index-bypass operators** (`^@>`, `^<@`, `^@`, `^~`, `^?`) — PostgreSQL documents these as test-only copies that do not use an index.
 - **`@db.Ltree` native attribute** — out of scope (no extension hook in core); use the `ltree` namespace constructors or TS helpers instead.
 
 ## Reference Files

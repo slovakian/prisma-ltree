@@ -16,6 +16,7 @@ raw SQL.
 - **Scalar functions**: depth, subpaths, label index, lowest common ancestor
 - **Concatenation & conversion**: path building and `ltree` ↔ `text` conversion
 - **Array first-match**: find the first matching path in an `ltree[]` column
+- **Array boolean checks**: ask whether any path in an `ltree[]` column is an ancestor, a descendant, or a pattern match (these are the checks a GiST index on `ltree[]` serves)
 - **Baseline migration**: installs the Postgres extension via
   `CREATE EXTENSION IF NOT EXISTS ltree` when the pack is composed
 - **GiST indexes**: author `@@index([path], type: "gist")` (Prisma 8
@@ -182,8 +183,10 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
 
 | Method                     | SQL              |
 | -------------------------- | ---------------- |
-| `path.isAncestorOf(rhs)`   | `ltree @> ltree` |
-| `path.isDescendantOf(rhs)` | `ltree <@ ltree` |
+| `path.isAncestorOf(rhs)`        | `ltree @> ltree`   |
+| `path.isDescendantOf(rhs)`      | `ltree <@ ltree`   |
+| `path.isAncestorOfAny(paths)`   | `ltree @> ltree[]` |
+| `path.isDescendantOfAny(paths)` | `ltree <@ ltree[]` |
 
 ### Pattern matching (→ boolean)
 
@@ -227,6 +230,20 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
 | `paths.firstMatchLquery(pattern)`  | `ltree[] ?~ lquery`    |
 | `paths.firstMatchLtxtquery(query)` | `ltree[] ?@ ltxtquery` |
 | `paths.lcaAll()`                   | `lca(ltree[])`         |
+
+### Array boolean checks (→ boolean)
+
+| Method                                | SQL                    |
+| ------------------------------------- | ---------------------- |
+| `paths.containsAncestorOf(rhs)`       | `ltree[] @> ltree`     |
+| `paths.containsDescendantOf(rhs)`     | `ltree[] <@ ltree`     |
+| `paths.matchesAnyLquery(pattern)`     | `ltree[] ~ lquery`     |
+| `paths.matchesAnyLqueryArray(patterns)` | `ltree[] ? lquery[]` |
+| `paths.matchesAnyLtxtquery(query)`    | `ltree[] @ ltxtquery`  |
+| `path.isAncestorOfAny(paths)`         | `ltree @> ltree[]`     |
+| `path.isDescendantOfAny(paths)`       | `ltree <@ ltree[]`     |
+
+`containsDescendantOf` and `isAncestorOfAny` are the same predicate with the operands swapped. Call the method whose receiver is the column you filter. A GiST index on an `ltree[]` column serves `containsDescendantOf`, `isAncestorOfAny`, and the three `matchesAny*` methods. It does not serve `containsAncestorOf`.
 
 Use `ltreeArray()` for `ltree[]` columns that expose these methods.
 

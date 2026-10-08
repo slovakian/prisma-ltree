@@ -144,6 +144,7 @@ Per ADR 212 (Contract spaces; historical `prisma/prisma-next` docs), every pack 
 
 - **Array receiver**: dedicated `pg/ltree-array@1` codec (mirrors core `pg/text-array@1` pattern, per [ADR-003](docs/decisions/ADR-003-array-receiver.md))
 - **First-match operators** (→ ltree): `firstAncestorOf` (`?@>`), `firstDescendantOf` (`?<@`), `firstMatchLquery` (`?~`), `firstMatchLtxtquery` (`?@`)
+- **Boolean array operators** (ADR-007): `containsAncestorOf` (`@>`), `containsDescendantOf` (`<@`), `matchesAnyLquery` (`~`), `matchesAnyLqueryArray` (`?`), `matchesAnyLtxtquery` (`@`), plus scalar `isAncestorOfAny` / `isDescendantOfAny`
 
 ### PSL contract lane — ✅ Parity proven
 

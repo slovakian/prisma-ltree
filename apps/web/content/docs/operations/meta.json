@@ -1,4 +1,4 @@
 {
   "title": "Query Operations",
-  "pages": ["hierarchy", "pattern-matching", "lca"]
+  "pages": ["hierarchy", "pattern-matching", "lca", "array"]
 }

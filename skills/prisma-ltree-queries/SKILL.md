@@ -38,7 +38,7 @@ Use this skill after `prisma-ltree-adoption` (or when ltree is already wired). A
   - **ORM** — `db.orm.Category.where((c) => c.path.isDescendantOf(value))`. Default lane; matches the package README.
   - **SQL builder** — `db.sql.category` (storage name) when you need explicit joins / projections the ORM cannot express.
 - **Pattern args** — Plain strings (or `string[]` for `matchesLqueryArray`); the extension casts to `lquery` / `ltxtquery` in SQL.
-- **Scalar vs array receiver** — `ltree()` / `ltree.Ltree()` columns get hierarchy, pattern, scalar, and concat methods. `ltreeArray()` / `ltree.LtreeArray()` columns get **first-match** methods (`firstAncestorOf`, …) plus `lcaAll()`.
+- **Scalar vs array receiver** — `ltree()` / `ltree.Ltree()` columns get hierarchy, pattern, scalar, and concat methods, including `isAncestorOfAny` / `isDescendantOfAny`. `ltreeArray()` / `ltree.LtreeArray()` columns get **first-match** methods (`firstAncestorOf`, …), `lcaAll()`, and boolean checks (`containsDescendantOf`, `matchesAnyLquery`, …).
 
 ## Pick a reference
 
@@ -82,6 +82,8 @@ Predicate helpers (`and`, `or`, ranges) follow the upstream `prisma-8` queries g
 | Append path / label           | `path.concat(rhs)`, `concatText(label)` | `\|\|`            |
 | Text column → ltree           | `textCol.toLtree()`                     | `text2ltree(...)` |
 | Array first-match / LCA       | `paths.firstAncestorOf` / `lcaAll()`    | `?@>` / `lca([])` |
+| Any array entry is a descendant | `paths.containsDescendantOf(arg)`     | `ltree[] <@`      |
+| Path is under any listed root | `path.isDescendantOfAny(paths)`         | `ltree <@ ltree[]` |
 
 Full signatures and edge cases: reference files above.
 

@@ -48,7 +48,7 @@ Otherwise ask **one** disambiguating question:
 
 ## Canonical model (one paragraph)
 
-PostgreSQL `ltree` stores **dot-separated label paths** (e.g. `Top.Science.Astronomy`). The **prisma-ltree** extension pack adds a typed `ltree` column codec, installs the contrib extension via a baseline migration, and registers **methods on ltree columns** in the SQL builder and ORM — `path.isDescendantOf(...)`, `path.matchesLquery(...)`, `path.nlevel()`, and others — so you do not drop to raw SQL for standard tree operations. Array columns use `ltree[]` with a separate codec and **first-match** methods (`paths.firstAncestorOf(...)`).
+PostgreSQL `ltree` stores **dot-separated label paths** (e.g. `Top.Science.Astronomy`). The **prisma-ltree** extension pack adds a typed `ltree` column codec, installs the contrib extension via a baseline migration, and registers **methods on ltree columns** in the SQL builder and ORM — `path.isDescendantOf(...)`, `path.matchesLquery(...)`, `path.nlevel()`, and others — so you do not drop to raw SQL for standard tree operations. Array columns use `ltree[]` with a separate codec, **first-match** methods (`paths.firstAncestorOf(...)`), and boolean checks (`paths.containsDescendantOf(...)`).
 
 Three planes consumers wire once:
 

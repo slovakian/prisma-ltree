@@ -29,8 +29,10 @@ See `packages/extension-ltree/README.md` for usage documentation and `docs/decis
 
 | SQL              | API method                 | Status    | Tier |
 | ---------------- | -------------------------- | --------- | ---- |
-| `ltree @> ltree` | `path.isAncestorOf(rhs)`   | supported | 1    |
-| `ltree <@ ltree` | `path.isDescendantOf(rhs)` | supported | 1    |
+| `ltree @> ltree`   | `path.isAncestorOf(rhs)`        | supported | 1    |
+| `ltree <@ ltree`   | `path.isDescendantOf(rhs)`      | supported | 1    |
+| `ltree @> ltree[]` | `path.isAncestorOfAny(paths)`   | supported | 3    |
+| `ltree <@ ltree[]` | `path.isDescendantOfAny(paths)` | supported | 3    |
 
 ## Pattern-Matching Operators (→ `pg/bool@1`)
 
@@ -87,6 +89,21 @@ Receiver is `ltree[]` via `pg/ltree-array@1` (ADR-003).
 | `ltree[] ?@ ltxtquery` | `paths.firstMatchLtxtquery(query)` | supported | 3    |
 | `lca(ltree[])`         | `paths.lcaAll()`                   | supported | 3    |
 
+## Array Boolean Operators (→ `pg/bool@1`)
+
+`gist__ltree_ops` indexes `containsDescendantOf`, `matchesAnyLquery`,
+`matchesAnyLtxtquery`, and `matchesAnyLqueryArray`, plus the scalar
+`isAncestorOfAny` commutator. `containsAncestorOf` is a PostgreSQL operator
+that this opclass does not index (ADR-007).
+
+| SQL                   | API method                         | Status    | Tier |
+| --------------------- | ---------------------------------- | --------- | ---- |
+| `ltree[] @> ltree`    | `paths.containsAncestorOf(rhs)`    | supported | 3    |
+| `ltree[] <@ ltree`    | `paths.containsDescendantOf(rhs)`  | supported | 3    |
+| `ltree[] ~ lquery`    | `paths.matchesAnyLquery(pattern)`  | supported | 3    |
+| `ltree[] ? lquery[]`  | `paths.matchesAnyLqueryArray(ps)`  | supported | 3    |
+| `ltree[] @ ltxtquery` | `paths.matchesAnyLtxtquery(query)` | supported | 3    |
+
 Named `lcaAll` (not `lca`) because prisma-next keys operations by name only and
 rejects duplicates; `lca` is already the variadic scalar method (ADR-001). See
 ADR-005 for the naming decision and the shared `nullable: false` gap.
@@ -100,20 +117,22 @@ Index access methods are registered by Prisma Next's postgres **target**, not by
 | Feature                                     | SQL / Prisma                          | Status       | Notes                                                                           |
 | ------------------------------------------- | ------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
 | GiST on `ltree`                             | `@@index([path], type: "gist")`       | supported    | Default opclass `gist_ltree_ops`. Accelerates `@>`, `<@`, `~`, `@`, `?`         |
-| GiST on `ltree[]`                           | `@@index([paths], type: "gist")`      | supported    | Default opclass `gist__ltree_ops`                                               |
+| GiST on `ltree[]`                           | `@@index([paths], type: "gist")`      | supported    | Default opclass `gist__ltree_ops`. Serves `ltree[] <@ ltree`, `ltree @> ltree[]`, and array `~` / `@` / `?` (ADR-007). Does not serve `ltree[] @>` |
 | B-tree on `ltree`                           | omit `type`, or `type: "btree"`       | supported    | `<,<=,=,>=,>` only                                                              |
 | Hash on `ltree`                             | `type: "hash"`                        | supported    | Equality only                                                                   |
 | GiST opclass `siglen` / `gist_ltree_ops(…)` | `USING gist (path gist_ltree_ops(…))` | out-of-scope | Prisma `options` map to `WITH` storage parameters, not operator-class arguments |
 
 ## Out-of-Scope (Tracked)
 
-| Feature               | SQL                   | Status       | Reason / Revisit                                                                             |
-| --------------------- | --------------------- | ------------ | -------------------------------------------------------------------------------------------- |
-| Boolean array variant | `ltree[] @> ltree`    | out-of-scope | "Less useful" per scope; low marginal cost once array receiver exists — revisit after Tier 3 |
-| Boolean array variant | `ltree[] <@ ltree`    | out-of-scope | same                                                                                         |
-| Boolean array variant | `ltree[] ~ lquery`    | out-of-scope | same                                                                                         |
-| Boolean array variant | `ltree[] ? lquery[]`  | out-of-scope | same                                                                                         |
-| Boolean array variant | `ltree[] @ ltxtquery` | out-of-scope | same                                                                                         |
+| Feature                         | SQL                      | Status       | Reason / Revisit                                                                                          |
+| ------------------------------- | ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------- |
+| Reversed pattern, pattern left  | `lquery ~ ltree`         | out-of-scope | Same predicate as `matchesLquery`. Needs an `lquery` column. Patterns stay string parameters (ADR-007).   |
+| Reversed pattern, pattern left  | `lquery[] ? ltree`       | out-of-scope | Same predicate as `matchesLqueryArray`.                                                                   |
+| Reversed pattern, pattern left  | `ltxtquery @ ltree`      | out-of-scope | Same predicate as `matchesLtxtquery`.                                                                     |
+| Reversed pattern, array right   | `lquery ~ ltree[]`       | out-of-scope | Same predicate as `matchesAnyLquery`.                                                                     |
+| Reversed pattern, array right   | `lquery[] ? ltree[]`     | out-of-scope | Same predicate as `matchesAnyLqueryArray`.                                                                |
+| Reversed pattern, array right   | `ltxtquery @ ltree[]`    | out-of-scope | Same predicate as `matchesAnyLtxtquery`.                                                                  |
+| Index-bypass copies             | `^@>`, `^<@`, `^@`, `^~`, `^?` | out-of-scope | PostgreSQL documents these as test-only copies that do not use an index.                          |
 
 ---
 
@@ -125,4 +144,5 @@ Index access methods are registered by Prisma Next's postgres **target**, not by
 - 2026-06-19 — Tier 3 complete (Checkpoint 4). Array receiver resolved via dedicated `pg/ltree-array@1` codec + `ltreeArray()` column helper (ADR-003). All four first-match operators → `supported` with golden + PGlite integration + type-level coverage. `lca(ltree[])` deferred pending array-receiver method.
 - 2026-07-06 — `lca(ltree[])` → `paths.lcaAll()` shipped on `pg/ltree-array@1` (ADR-005). Distinct name required: prisma-next's operation registry keys by name only and rejects duplicates; scalar `path.lca(...)` already occupies `lca`. Return stays `nullable: false` for parity with first-match ops despite PG's empty-array NULL (family-wide gap, pinned by an integration test).
 - 2026-08-14 — GiST / hash / btree indexes on `ltree` and `ltree[]` → `supported` via Prisma Next 8.0.0-rc.1's postgres target `indexTypes` (`type: "gist"`). prisma-ltree does **not** register `gist` (would collide with the target). Operator-class `siglen` stays out of scope (ADR-006).
+- 2026-10-08 — Boolean `ltree[]` operators → `supported` (ADR-007): `containsAncestorOf`, `containsDescendantOf`, `matchesAnyLquery`, `matchesAnyLqueryArray`, `matchesAnyLtxtquery`, plus scalar `isAncestorOfAny` / `isDescendantOfAny`. These are the predicates `gist__ltree_ops` serves (except `containsAncestorOf`, which PostgreSQL ships and that opclass does not index). Reversed pattern operators with `lquery` / `ltxtquery` on the left stay out of scope.
 - 2026-06-19 — Phase 6 polish. Coverage threshold set to 95% in `vite.config.ts`; gaps filled to **100%** statements/branches/functions/lines (116 tests). Package `README.md` and per-tier `docs/progress/` logs written. Matrix verified accurate against shipped surface (no status changes). Pending: npm publish over the `0.0.1` stub (Task 6.3, awaiting approval).

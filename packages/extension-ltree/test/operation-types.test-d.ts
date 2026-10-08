@@ -30,6 +30,8 @@ test("the full Tier 1 + Tier 2 + Tier 3 operation set is present", () => {
     | "matchesLquery"
     | "matchesLqueryArray"
     | "matchesLtxtquery"
+    | "isAncestorOfAny"
+    | "isDescendantOfAny"
     | "nlevel"
     | "subltree"
     | "subpath"
@@ -44,6 +46,11 @@ test("the full Tier 1 + Tier 2 + Tier 3 operation set is present", () => {
     | "firstDescendantOf"
     | "firstMatchLquery"
     | "firstMatchLtxtquery"
+    | "containsAncestorOf"
+    | "containsDescendantOf"
+    | "matchesAnyLquery"
+    | "matchesAnyLqueryArray"
+    | "matchesAnyLtxtquery"
     | "lcaAll"
   >();
 });
@@ -98,6 +105,26 @@ test("Tier 3 first-match operators take array receiver and return ltree", () => 
   expectTypeOf<ReturnType<Impl<"firstMatchLtxtquery">>>().toEqualTypeOf<LtreeReturn>();
   expectTypeOf<string>().toExtend<ArgOf<"firstAncestorOf", 1>>();
   expectTypeOf<string>().toExtend<ArgOf<"firstMatchLquery", 1>>();
+});
+
+test("array boolean operators return bool on the array receiver", () => {
+  expectTypeOf<Ops["containsAncestorOf"]["self"]["codecId"]>().toEqualTypeOf<"pg/ltree-array@1">();
+  expectTypeOf<Ops["containsDescendantOf"]["self"]["codecId"]>().toEqualTypeOf<"pg/ltree-array@1">();
+  expectTypeOf<ReturnType<Impl<"containsAncestorOf">>>().toEqualTypeOf<BoolReturn>();
+  expectTypeOf<ReturnType<Impl<"containsDescendantOf">>>().toEqualTypeOf<BoolReturn>();
+  expectTypeOf<ReturnType<Impl<"matchesAnyLquery">>>().toEqualTypeOf<BoolReturn>();
+  expectTypeOf<ReturnType<Impl<"matchesAnyLqueryArray">>>().toEqualTypeOf<BoolReturn>();
+  expectTypeOf<ReturnType<Impl<"matchesAnyLtxtquery">>>().toEqualTypeOf<BoolReturn>();
+  expectTypeOf<string>().toExtend<ArgOf<"containsAncestorOf", 1>>();
+  expectTypeOf<string[]>().toExtend<ArgOf<"matchesAnyLqueryArray", 1>>();
+});
+
+test("scalar array-argument operators take ltree[] and return bool", () => {
+  expectTypeOf<Ops["isAncestorOfAny"]["self"]["codecId"]>().toEqualTypeOf<"pg/ltree@1">();
+  expectTypeOf<Ops["isDescendantOfAny"]["self"]["codecId"]>().toEqualTypeOf<"pg/ltree@1">();
+  expectTypeOf<ReturnType<Impl<"isAncestorOfAny">>>().toEqualTypeOf<BoolReturn>();
+  expectTypeOf<ReturnType<Impl<"isDescendantOfAny">>>().toEqualTypeOf<BoolReturn>();
+  expectTypeOf<readonly string[]>().toExtend<ArgOf<"isAncestorOfAny", 1>>();
 });
 
 test("lcaAll is a zero-arg array-receiver method returning ltree", () => {
