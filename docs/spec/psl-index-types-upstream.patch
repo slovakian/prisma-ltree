@@ -1,0 +1,291 @@
+From 5e07dcc9c598693068fd1b62d1954a04eff7843f Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Tue, 30 Jun 2026 19:31:24 +0000
+Subject: [PATCH] fix(psl): thread extension pack refs for index-type
+ validation
+
+Wire composedExtensionPackRefs through the standard PSL authoring path:
+
+- @prisma-next/postgres defineConfig passes extension descriptors to
+  prismaContract so indexTypes registered on packs are available at config time
+- CLI contract emit passes stack.extensionPacks as composedExtensionPackRefs
+  in ContractSourceContext at runtime
+- PSL provider prefers context refs, falling back to static config options
+- ContractSourceContext gains optional composedExtensionPackRefs
+
+Fixes PSL @@index(..., type: "bm25"|"gist"|...) rejecting registered
+extension index types with "unregistered index type" when using the normal
+defineConfig / contract emit path. TS lane was unaffected.
+
+Closes prisma/prisma-next#895
+---
+ .../config/src/contract-source-types.ts       |  7 ++
+ .../control-api/operations/contract-emit.ts   |  4 +
+ .../2-authoring/contract-psl/src/provider.ts  |  8 +-
+ .../contract-psl/test/provider.test.ts        | 54 +++++++++++
+ .../postgres/src/config/define-config.ts      |  1 +
+ .../test/config/define-config.test.ts         | 93 ++++++++++++++++++-
+ 6 files changed, 163 insertions(+), 4 deletions(-)
+
+diff --git a/packages/1-framework/1-core/config/src/contract-source-types.ts b/packages/1-framework/1-core/config/src/contract-source-types.ts
+index 04d2290..463d085 100644
+--- a/packages/1-framework/1-core/config/src/contract-source-types.ts
++++ b/packages/1-framework/1-core/config/src/contract-source-types.ts
+@@ -1,5 +1,6 @@
+ import type { Contract } from '@prisma-next/contract/types';
+ import type { CodecLookup } from '@prisma-next/framework-components/codec';
++import type { ExtensionPackRef } from '@prisma-next/framework-components/components';
+ import type {
+   AssembledAuthoringContributions,
+   ControlMutationDefaults,
+@@ -38,6 +39,12 @@ export interface ContractSourceDiagnostics {
+ 
+ export interface ContractSourceContext {
+   readonly composedExtensionPacks: readonly string[];
++  /**
++   * Full extension pack refs (including `indexTypes`, authoring metadata, etc.)
++   * for PSL lowering. When absent, the PSL provider may fall back to refs
++   * captured at config construction time.
++   */
++  readonly composedExtensionPackRefs?: readonly ExtensionPackRef<'sql', string>[];
+   /** Extension contracts keyed by space ID, required for cross-space FK resolution. */
+   readonly composedExtensionContracts: ReadonlyMap<string, Contract>;
+   readonly scalarTypeDescriptors: ReadonlyMap<string, string>;
+diff --git a/packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts b/packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts
+index 5a1297a..ea8732b 100644
+--- a/packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts
++++ b/packages/1-framework/3-tooling/cli/src/control-api/operations/contract-emit.ts
+@@ -215,6 +215,10 @@ export async function executeContractEmit(
+     );
+     const sourceContext = {
+       composedExtensionPacks: stack.extensionPacks.map((p) => p.id),
++      ...ifDefined(
++        'composedExtensionPackRefs',
++        stack.extensionPacks.length > 0 ? stack.extensionPacks : undefined,
++      ),
+       composedExtensionContracts,
+       scalarTypeDescriptors: stack.scalarTypeDescriptors,
+       authoringContributions: stack.authoringContributions,
+diff --git a/packages/2-sql/2-authoring/contract-psl/src/provider.ts b/packages/2-sql/2-authoring/contract-psl/src/provider.ts
+index 9080471..b566f43 100644
+--- a/packages/2-sql/2-authoring/contract-psl/src/provider.ts
++++ b/packages/2-sql/2-authoring/contract-psl/src/provider.ts
+@@ -137,9 +137,11 @@ export function prismaContract(schemaPath: string, options: PrismaContractOption
+           composedExtensionContracts: context.composedExtensionContracts,
+           ...ifDefined(
+             'composedExtensionPackRefs',
+-            options.composedExtensionPackRefs?.length
+-              ? options.composedExtensionPackRefs
+-              : undefined,
++            context.composedExtensionPackRefs?.length
++              ? context.composedExtensionPackRefs
++              : options.composedExtensionPackRefs?.length
++                ? options.composedExtensionPackRefs
++                : undefined,
+           ),
+           controlMutationDefaults: context.controlMutationDefaults,
+           createNamespace: options.createNamespace,
+diff --git a/packages/2-sql/2-authoring/contract-psl/test/provider.test.ts b/packages/2-sql/2-authoring/contract-psl/test/provider.test.ts
+index 326daae..0fc4299 100644
+--- a/packages/2-sql/2-authoring/contract-psl/test/provider.test.ts
++++ b/packages/2-sql/2-authoring/contract-psl/test/provider.test.ts
+@@ -2,6 +2,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { applySpecifierDefaultControlPolicy } from '@prisma-next/contract/apply-specifier-default-control-policy';
+ import type { Contract } from '@prisma-next/contract/types';
++import { defineIndexTypes } from '@prisma-next/sql-contract/index-types';
++import { type } from 'arktype';
+ import { join } from 'pathe';
+ import { afterEach, describe, expect, it } from 'vitest';
+ import { createTestSqlNamespace } from '../../../1-core/contract/test/test-support';
+@@ -536,6 +538,58 @@ model Other {
+         },
+       });
+     });
++
++    it('accepts extension index types from ContractSourceContext composedExtensionPackRefs', async () => {
++      const tempDir = await mkdtemp(join(tmpdir(), 'psl-provider-'));
++      tempDirs.push(tempDir);
++      const schemaPath = join(tempDir, 'schema.prisma');
++      await writeFile(
++        schemaPath,
++        `model Doc {
++  id Int @id
++  body String
++  @@index([body], type: "bm25", options: { key_field: "id" })
++}
++`,
++        'utf-8',
++      );
++
++      const indexExtensionPack = {
++        kind: 'extension',
++        id: 'test-index-pack',
++        familyId: 'sql',
++        targetId: 'postgres',
++        version: '0.0.1',
++        indexTypes: defineIndexTypes().add('bm25', {
++          options: type({ key_field: 'string' }),
++        }),
++      } as const;
++
++      process.chdir(tempDir);
++      const contract = prismaContract('./schema.prisma', baseOptions);
++      const result = await contract.source.load(
++        createPostgresTestContext({
++          composedExtensionPacks: [indexExtensionPack.id],
++          composedExtensionPackRefs: [indexExtensionPack],
++          resolvedInputs: [schemaPath],
++        }),
++      );
++
++      expect(result.ok).toBe(true);
++      if (!result.ok) return;
++      const storage = sqlStorageFromSuccessfulSqlInterpretation(result.value);
++      expect(unboundTables(storage)).toMatchObject({
++        doc: {
++          indexes: [
++            {
++              columns: ['body'],
++              type: 'bm25',
++              options: { key_field: 'id' },
++            },
++          ],
++        },
++      });
++    });
+   });
+ 
+   describe('given unsupported legacy extension attributes in schema', () => {
+diff --git a/packages/3-extensions/postgres/src/config/define-config.ts b/packages/3-extensions/postgres/src/config/define-config.ts
+index c209649..1f0b8a4 100644
+--- a/packages/3-extensions/postgres/src/config/define-config.ts
++++ b/packages/3-extensions/postgres/src/config/define-config.ts
+@@ -47,6 +47,7 @@ export function defineConfig(options: PostgresConfigOptions): PrismaNextConfig<'
+           output,
+           target: postgresPackRef,
+           createNamespace: postgresCreateNamespace,
++          ...ifDefined('composedExtensionPackRefs', extensions.length > 0 ? extensions : undefined),
+         });
+ 
+   return coreDefineConfig({
+diff --git a/packages/3-extensions/postgres/test/config/define-config.test.ts b/packages/3-extensions/postgres/test/config/define-config.test.ts
+index 4fdefe9..44eea4e 100644
+--- a/packages/3-extensions/postgres/test/config/define-config.test.ts
++++ b/packages/3-extensions/postgres/test/config/define-config.test.ts
+@@ -1,15 +1,30 @@
++import { mkdtemp, rm, writeFile } from 'node:fs/promises';
++import { tmpdir } from 'node:os';
+ import postgresAdapter from '@prisma-next/adapter-postgres/control';
+ import { defineConfig as coreDefineConfig } from '@prisma-next/config/config-types';
+ import postgresDriver from '@prisma-next/driver-postgres/control';
+ import sql from '@prisma-next/family-sql/control';
++import { createControlStack } from '@prisma-next/framework-components/control';
++import { defineIndexTypes } from '@prisma-next/sql-contract/index-types';
+ import { prismaContract } from '@prisma-next/sql-contract-psl/provider';
+ import postgres from '@prisma-next/target-postgres/control';
+ import postgresPackRef from '@prisma-next/target-postgres/pack';
+ import { postgresCreateNamespace } from '@prisma-next/target-postgres/types';
+-import { describe, expect, it } from 'vitest';
++import { type } from 'arktype';
++import { join } from 'pathe';
++import { afterEach, describe, expect, it } from 'vitest';
+ import { defineConfig } from '../../src/config/define-config';
+ 
+ describe('defineConfig facade', () => {
++  const tempDirs: string[] = [];
++
++  afterEach(async () => {
++    for (const dir of tempDirs) {
++      await rm(dir, { recursive: true, force: true });
++    }
++    tempDirs.length = 0;
++  });
++
+   it('produces config equivalent to manual wiring for .prisma contracts', () => {
+     const contractPath = './prisma/contract.prisma';
+ 
+@@ -152,4 +167,80 @@ describe('defineConfig facade', () => {
+ 
+     expect(config.extensionPacks).toContain(mockExtension);
+   });
++
++  it('threads extension pack refs into the PSL provider for index-type validation', async () => {
++    const tempDir = await mkdtemp(join(tmpdir(), 'postgres-define-config-'));
++    tempDirs.push(tempDir);
++    const schemaPath = join(tempDir, 'contract.prisma');
++    await writeFile(
++      schemaPath,
++      `model Doc {
++  id Int @id
++  body String
++  @@index([body], type: "bm25", options: { key_field: "id" })
++}
++`,
++      'utf-8',
++    );
++
++    const indexExtension = {
++      kind: 'extension' as const,
++      familyId: 'sql' as const,
++      targetId: 'postgres' as const,
++      id: 'test-index-pack',
++      version: '1.0.0',
++      indexTypes: defineIndexTypes().add('bm25', {
++        options: type({ key_field: 'string' }),
++      }),
++      create: () => ({
++        familyId: 'sql' as const,
++        targetId: 'postgres' as const,
++      }),
++    };
++
++    const config = defineConfig({
++      contract: schemaPath,
++      extensions: [indexExtension],
++    });
++
++    const stack = createControlStack({
++      family: config.family,
++      target: config.target,
++      adapter: config.adapter,
++      extensionPacks: config.extensionPacks ?? [],
++    });
++
++    const result = await config.contract!.source.load({
++      composedExtensionPacks: [indexExtension.id],
++      composedExtensionPackRefs: stack.extensionPacks,
++      composedExtensionContracts: new Map(),
++      scalarTypeDescriptors: stack.scalarTypeDescriptors,
++      authoringContributions: stack.authoringContributions,
++      codecLookup: stack.codecLookup,
++      controlMutationDefaults: stack.controlMutationDefaults,
++      resolvedInputs: [schemaPath],
++    });
++
++    expect(result.ok).toBe(true);
++    if (!result.ok) return;
++    expect(result.value.storage).toMatchObject({
++      namespaces: {
++        public: {
++          entries: {
++            table: {
++              doc: {
++                indexes: [
++                  {
++                    columns: ['body'],
++                    type: 'bm25',
++                    options: { key_field: 'id' },
++                  },
++                ],
++              },
++            },
++          },
++        },
++      },
++    });
++  });
+ });
+-- 
+2.43.0
+
