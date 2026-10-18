@@ -170,15 +170,15 @@ function Home() {
           .
         </p>
 
-        <div className="mt-8 grid gap-8 md:grid-cols-2">
-          <div>
+        <div className="mt-8 grid min-w-0 gap-8 md:grid-cols-2">
+          <div className="min-w-0">
             <h3 className="mb-2 text-sm font-medium">1. Register the pack</h3>
             <p className="mb-3 text-sm text-muted-foreground">
               Add <code>prisma-ltree/control</code> to your config.
             </p>
             <CodeBlock code={homeBlocksById.config.code} lang={homeBlocksById.config.lang} />
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="mb-2 text-sm font-medium">2. Declare ltree columns</h3>
             <p className="mb-3 text-sm text-muted-foreground">
               Use <code>ltree()</code> in TypeScript or <code>ltree.Ltree()</code> in PSL.{" "}
@@ -191,7 +191,7 @@ function Home() {
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8 min-w-0">
           <h3 className="mb-2 text-sm font-medium">3. Query the tree</h3>
           <p className="mb-3 text-sm text-muted-foreground">
             Operators attach to ltree column references in the query builder.

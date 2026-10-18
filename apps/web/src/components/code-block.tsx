@@ -22,7 +22,9 @@ export function CodeBlock({ code, lang = "ts", title, className }: CodeBlockProp
   return (
     <div
       className={cn(
-        "th-codeblock group relative overflow-hidden border border-border bg-card text-card-foreground",
+        // min-w-0: shrink inside CSS grid/flex so long lines scroll in-place
+        // instead of expanding past the viewport (home SETUP is a 2-col grid).
+        "th-codeblock group relative min-w-0 max-w-full overflow-hidden border border-border bg-card text-card-foreground",
         className,
       )}
     >
@@ -30,7 +32,7 @@ export function CodeBlock({ code, lang = "ts", title, className }: CodeBlockProp
         <span className="text-xs text-muted-foreground select-none">{label}</span>
       </div>
       <div
-        className="overflow-x-auto p-4 text-xs leading-relaxed [&_pre]:m-0 [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
+        className="min-w-0 overflow-x-auto p-4 text-xs leading-relaxed [&_pre]:m-0 [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
         dangerouslySetInnerHTML={{ __html: rendered.htmlMarkup }}
       />
     </div>
