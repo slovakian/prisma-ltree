@@ -31,8 +31,12 @@ export function CodeBlock({ code, lang = "ts", title, className }: CodeBlockProp
       <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-1.5">
         <span className="text-xs text-muted-foreground select-none">{label}</span>
       </div>
+      {/*
+        Scroll on this body (same idea as docs `tm-code-frame` / InstallCommand):
+        size the inner <pre> to its content (`w-max`) so overflow lands here.
+      */}
       <div
-        className="min-w-0 overflow-x-auto p-4 text-xs leading-relaxed [&_pre]:m-0 [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
+        className="th-codeblock-body min-w-0 overflow-x-auto overscroll-x-contain text-xs leading-relaxed [&_pre.th-code]:m-0 [&_pre.th-code]:w-max [&_pre.th-code]:min-w-full [&_pre.th-code]:overflow-x-visible [&_pre.th-code]:bg-transparent [&_pre.th-code]:p-4 [&_pre.th-code]:font-mono [&_pre.th-code]:text-xs [&_pre.th-code]:leading-relaxed"
         dangerouslySetInnerHTML={{ __html: rendered.htmlMarkup }}
       />
     </div>

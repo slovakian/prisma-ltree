@@ -190,11 +190,31 @@
   --th-variable: #ffa657;
 }
 
+/*
+ * Landing CodeBlock scrolls `.th-codeblock-body`; the <pre> sizes to content
+ * (`w-max`) so long lines overflow the body, not expand the page. Keep pre
+ * overflow visible here — the body owns overflow-x: auto.
+ */
 .th-codeblock pre.th-code {
-  overflow-x: auto;
+  overflow-x: visible;
   padding: 1rem;
   background: var(--th-background);
   color: var(--th-token);
+}
+
+.th-codeblock .th-codeblock-body {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 45%, transparent) transparent;
+}
+
+.th-codeblock .th-codeblock-body::-webkit-scrollbar {
+  height: 8px;
+}
+
+.th-codeblock .th-codeblock-body::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--muted-foreground) 45%, transparent);
+  border-radius: 4px;
 }
 
 .th-token {
