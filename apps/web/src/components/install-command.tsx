@@ -71,7 +71,7 @@ export function InstallCommand({ className }: { className?: string }) {
       </div>
 
       {MANAGERS.map((m) => (
-        <TabsContent key={m.id} value={m.id} className="overflow-x-auto p-4">
+        <TabsContent key={m.id} value={m.id} className="scroll-fade-x overflow-x-auto p-4">
           <pre className="m-0 font-mono text-xs leading-relaxed">
             <code>
               <span className="text-primary">{m.command.split(" ")[0]}</span>{" "}

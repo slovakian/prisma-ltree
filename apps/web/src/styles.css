@@ -139,6 +139,28 @@
 }
 
 @layer components {
+  /*
+   * Docs fenced blocks: highlighter emits `pre.tm-code` (no React className hook).
+   * Put scroll-fade on the horizontal scrollport, matching CodeBlock / InstallCommand.
+   */
+  .markdown-renderer pre.tm-code {
+    @apply scroll-fade-x;
+  }
+
+  /*
+   * Fumadocs sidebar + TOC already use static edge masks. Swap those for the
+   * scroll-aware shadcn scroll-fade utility (higher specificity clears the mask).
+   */
+  #nd-sidebar [data-radix-scroll-area-viewport],
+  #nd-sidebar-mobile [data-radix-scroll-area-viewport] {
+    @apply scroll-fade;
+  }
+
+  [class*="[grid-area:toc]"] > .min-h-0,
+  [class*="[grid-area:toc-popover]"] .min-h-0 {
+    @apply scroll-fade;
+  }
+
   .author-shimmer {
     background-image: linear-gradient(
       90deg,

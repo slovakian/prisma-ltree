@@ -36,7 +36,7 @@ export function CodeBlock({ code, lang = "ts", title, className }: CodeBlockProp
         size the inner <pre> to its content (`w-max`) so overflow lands here.
       */}
       <div
-        className="th-codeblock-body min-w-0 overflow-x-auto overscroll-x-contain text-xs leading-relaxed [&_pre.th-code]:m-0 [&_pre.th-code]:w-max [&_pre.th-code]:min-w-full [&_pre.th-code]:overflow-x-visible [&_pre.th-code]:bg-transparent [&_pre.th-code]:p-4 [&_pre.th-code]:font-mono [&_pre.th-code]:text-xs [&_pre.th-code]:leading-relaxed"
+        className="th-codeblock-body min-w-0 scroll-fade-x overflow-x-auto overscroll-x-contain text-xs leading-relaxed [&_pre.th-code]:m-0 [&_pre.th-code]:w-max [&_pre.th-code]:min-w-full [&_pre.th-code]:overflow-x-visible [&_pre.th-code]:bg-transparent [&_pre.th-code]:p-4 [&_pre.th-code]:font-mono [&_pre.th-code]:text-xs [&_pre.th-code]:leading-relaxed"
         dangerouslySetInnerHTML={{ __html: rendered.htmlMarkup }}
       />
     </div>

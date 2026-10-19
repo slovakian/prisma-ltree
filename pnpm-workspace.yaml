@@ -22,6 +22,7 @@ catalog:
   "@changesets/cli": ^3.0.0
   "@tanstack/markdown": ^0.0.13
   "@tanstack/highlight": ^0.0.10
+  shadcn: ^4.22.1
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
@@ -72,3 +73,4 @@ minimumReleaseAgeExclude:
   - "@changesets/write@1.0.0"
   - "@prisma/composer-cli@0.28.0"
   - "@prisma/composer@0.28.0"
+  - shadcn@4.22.1

@@ -219,7 +219,7 @@ function Home() {
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                 {feature.blurb}
               </p>
-              <div className="mt-4 overflow-hidden border border-border">
+              <div className="mt-4 scroll-fade-x overflow-x-auto border border-border">
                 <table className="w-full text-xs">
                   <tbody>
                     {feature.ops.map((op) => (

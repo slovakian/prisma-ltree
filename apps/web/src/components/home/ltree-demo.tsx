@@ -58,7 +58,7 @@ export function LtreeDemo({ codeBlocks }: LtreeDemoProps) {
           <div
             role="tablist"
             aria-label="ltree operations"
-            className="flex gap-1 overflow-x-auto px-2 pb-3 md:flex-col md:overflow-visible md:pb-4"
+            className="flex scroll-fade-x gap-1 overflow-x-auto px-2 pb-3 md:scroll-fade-none md:flex-col md:overflow-visible md:pb-4"
           >
             {demoOps.map((op, i) => {
               const active = i === activeIndex;
