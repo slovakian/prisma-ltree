@@ -41,7 +41,7 @@ export function LtreeDemo({ codeBlocks }: LtreeDemoProps) {
     <div className="min-w-0 max-w-full overflow-hidden border border-border">
       <div className="grid min-w-0 gap-px bg-border md:grid-cols-[210px_minmax(0,1fr)]">
         {/* Operations rail (desktop) / pills (mobile) */}
-        <div className="order-2 flex flex-col bg-background md:order-none md:col-start-1 md:row-start-1">
+        <div className="order-2 flex min-w-0 flex-col bg-background md:order-none md:col-start-1 md:row-start-1">
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <span className="text-[11px] tracking-widest text-muted-foreground uppercase">
               Operations
@@ -58,7 +58,7 @@ export function LtreeDemo({ codeBlocks }: LtreeDemoProps) {
           <div
             role="tablist"
             aria-label="ltree operations"
-            className="flex scroll-fade-x gap-1 overflow-x-auto px-2 pb-3 md:scroll-fade-none md:flex-col md:overflow-visible md:pb-4"
+            className="flex min-w-0 max-w-full scroll-fade-x gap-1 overflow-x-auto px-2 pb-3 md:scroll-fade-none md:flex-col md:overflow-visible md:pb-4"
           >
             {demoOps.map((op, i) => {
               const active = i === activeIndex;
