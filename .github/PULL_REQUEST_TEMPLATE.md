@@ -7,8 +7,8 @@ Closes #
 ## Checklist
 
 - [ ] **Changeset:** added via `pnpm run changeset` for user-facing changes to the
-      `prisma-ltree` package — _or_ this is doc/repo-only and the commit uses
-      `[skip-version]` (see [`docs/CHANGESETS.md`](../docs/CHANGESETS.md))
+      `prisma-ltree` package — _or_ this is doc/repo-only (no package release impact)
+      (see [`docs/CHANGESETS.md`](../docs/CHANGESETS.md))
 - [ ] **Validation:** `pnpm run ready` passes locally (check-pins + build + check + test)
 - [ ] **Tests:** added/updated for the change
 - [ ] **Docs:** README / package README / docs site / `docs/` updated where relevant
