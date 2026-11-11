@@ -1,5 +1,5 @@
 import { assembleDataTypes } from "@prisma/orm-framework/components/codec";
-import { defineContract } from "@prisma/orm-postgres/contract-builder";
+import { defineContract, extension } from "@prisma/orm-postgres/contract-builder";
 import { assemblePostgresCodecRegistryWithBuiltins } from "@prisma/orm-target-postgres/target/codecs";
 import { postgresDataTypes } from "@prisma/orm-target-postgres/target/data-types";
 import type { Temporal } from "temporal-spec";
@@ -33,6 +33,7 @@ export const contract = defineContract({ codecLookup, dataTypeLookup }, () => ({
     },
   },
   models: {},
+  entities: [extension("ltree")],
 }));
 
 export default contract;

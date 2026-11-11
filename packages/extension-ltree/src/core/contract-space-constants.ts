@@ -7,6 +7,12 @@ export const LTREE_ARRAY_STORAGE_TYPE = "ltreeArray" as const;
 
 export const LTREE_BASELINE_MIGRATION_NAME = "20260619T2142_install_ltree" as const;
 
+export const LTREE_DECLARE_EXTENSION_MIGRATION_NAME =
+  "20261111T1905_declare_ltree_extension" as const;
+
+export const LTREE_CREATE_EXTENSION_MIGRATION_NAME =
+  "20261111T1904_create_ltree_extension" as const;
+
 export const LTREE_INVARIANTS = {
   installLtree: "ltree:install-ltree-v1",
 } as const;

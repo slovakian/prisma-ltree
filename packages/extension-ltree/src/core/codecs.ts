@@ -50,6 +50,7 @@ export class LtreeCodec extends CodecImpl<
 }
 
 export class LtreeDescriptor extends PostgresCodecDescriptor<void> {
+  override readonly jsonType = "string" as const;
   protected override jsonProjection(expression: ProjectionExpr): ProjectionExpr {
     // JSON projections read through fromWire; cast so the wire value is text.
     return CastExpr.as(expression, "text");
@@ -112,6 +113,7 @@ export class LtreeArrayCodec extends CodecImpl<
 }
 
 export class LtreeArrayDescriptor extends PostgresCodecDescriptor<void> {
+  override readonly jsonType = "array" as const;
   protected override jsonProjection(expression: ProjectionExpr): ProjectionExpr {
     // ltree[] already projects as a JSON string array for fromWire.
     return expression;
