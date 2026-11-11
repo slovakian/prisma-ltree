@@ -19,7 +19,7 @@ jobs:
     outputs:
       comment-body: ${{ steps.pr-status.outputs.comment-body }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Generate PR status
         id: pr-status
