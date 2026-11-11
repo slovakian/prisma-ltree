@@ -13,7 +13,7 @@
   },
   "storage": {
     "namespaces": {
-      "public": {
+      "__unbound__": {
         "entries": {
           "extension": {
             "ltree": {
@@ -23,11 +23,18 @@
           },
           "table": {}
         },
+        "id": "__unbound__",
+        "kind": "postgres-unbound-schema"
+      },
+      "public": {
+        "entries": {
+          "table": {}
+        },
         "id": "public",
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "150f76958e7b1802cb3fb17b2792759d19e6aedf01f5fffa5f77565a2afe4582",
+    "storageHash": "6db18d99f118ef4e7fd359cf8bc472b9335bf3edeeefa8a15ee11eaf7742f9fb",
     "types": {
       "ltree": {
         "codecId": "pg/ltree@1",
@@ -59,6 +66,7 @@
       "forShare": true,
       "forUpdate": true,
       "insertOnConflictSkip": true,
+      "insertOnConflictTarget": true,
       "insertOnConflictWithoutTarget": true,
       "lateral": true,
       "lockNowait": true,

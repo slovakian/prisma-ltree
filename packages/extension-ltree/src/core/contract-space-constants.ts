@@ -13,6 +13,11 @@ export const LTREE_DECLARE_EXTENSION_MIGRATION_NAME =
 export const LTREE_CREATE_EXTENSION_MIGRATION_NAME =
   "20261111T1904_create_ltree_extension" as const;
 
+export const LTREE_SEARCH_PATH_MIGRATION_NAME = "20261111T1908_find_ltree_on_search_path" as const;
+
+export const LTREE_SEARCH_PATH_INSTALL_MIGRATION_NAME =
+  "20261111T1908_install_ltree_on_search_path" as const;
+
 export const LTREE_INVARIANTS = {
   installLtree: "ltree:install-ltree-v1",
 } as const;

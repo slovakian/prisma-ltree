@@ -1,0 +1,63 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "extension.ltree",
+    "label": "Create extension \"ltree\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "objectType": "dependency",
+        "name": "ltree"
+      }
+    },
+    "precheck": [
+      {
+        "description": "verify extension \"ltree\" is not installed",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_extension\" WHERE \"extname\" = $1) AS \"result\"",
+        "params": [
+          "ltree"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "extension \"ltree\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create extension \"ltree\"",
+        "sql": "CREATE EXTENSION IF NOT EXISTS \"ltree\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "confirm extension \"ltree\" is installed",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_extension\" WHERE \"extname\" = $1) AS \"result\"",
+        "params": [
+          "ltree"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "extension \"ltree\""
+        }
+      }
+    ]
+  }
+]

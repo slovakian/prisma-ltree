@@ -5,8 +5,10 @@ import {
   reconstructGraph,
 } from "@prisma/orm-toolchain/migration-tools/migration-graph";
 import { assertDescriptorSelfConsistency } from "@prisma/orm-toolchain/migration-tools/spaces";
+import { UNBOUND_NAMESPACE_ID } from "@prisma/orm-framework/components/ir";
 import { sqlContractCanonicalizationHooks } from "@prisma/orm-family-sql/contract/canonicalization-hooks";
 import { describe, expect, it } from "vite-plus/test";
+import searchPathInstallOps from "../migrations/20261111T1908_install_ltree_on_search_path/ops.json" with { type: "json" };
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "../src/core/constants";
 import {
   LTREE_ARRAY_STORAGE_TYPE,
@@ -15,6 +17,8 @@ import {
   LTREE_DECLARE_EXTENSION_MIGRATION_NAME,
   LTREE_INVARIANTS,
   LTREE_NATIVE_TYPE,
+  LTREE_SEARCH_PATH_INSTALL_MIGRATION_NAME,
+  LTREE_SEARCH_PATH_MIGRATION_NAME,
   LTREE_SPACE_ID,
 } from "../src/core/contract-space-constants";
 import { ltreeArrayDataType, ltreeDataType } from "../src/core/data-types";
@@ -22,6 +26,7 @@ import ltreeExtensionDescriptor from "../src/exports/control";
 
 const space = ltreeExtensionDescriptor.contractSpace!;
 const headHash = space.contractJson.storage.storageHash;
+const publicHeadHash = migration(LTREE_SEARCH_PATH_MIGRATION_NAME).metadata.from;
 
 function migration(dirName: string) {
   const found = space.migrations.find((m) => m.dirName === dirName);
@@ -39,16 +44,14 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     });
   });
 
-  it("exposes a contractSpace declaring the ltree data types", () => {
-    expect(space).toBeDefined();
-    const namespaces = space.contractJson.storage.namespaces as Record<
-      string,
-      { readonly entries: Record<string, Record<string, unknown>> }
-    >;
-    expect(namespaces["public"]?.entries["extension"]).toEqual({
-      ltree: { kind: "extension", name: "ltree" },
+  it("declares the ltree extension unbound and the ltree data types", () => {
+    const unboundNamespace = space.contractJson.storage.namespaces[UNBOUND_NAMESPACE_ID] as {
+      readonly entries: Record<string, Record<string, unknown>>;
+    };
+    expect(unboundNamespace.entries).toEqual({
+      extension: { ltree: { kind: "extension", name: "ltree" } },
+      table: {},
     });
-    expect(space.contractJson.storage.types).toBeDefined();
     expect(space.contractJson.storage.types?.[LTREE_NATIVE_TYPE]).toMatchObject({
       codecId: LTREE_CODEC_ID,
       dataType: ltreeDataType.id,
@@ -106,11 +109,11 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     expect(installOp!.precheck?.[0]?.params).toEqual(["ltree"]);
   });
 
-  it("moves the first head to the current head by creating the extension if missing", () => {
+  it("moves the first head to the public head by creating the extension if missing", () => {
     const upgrade = migration(LTREE_DECLARE_EXTENSION_MIGRATION_NAME);
     expect(upgrade.metadata).toMatchObject({
       from: migration(LTREE_BASELINE_MIGRATION_NAME).metadata.to,
-      to: headHash,
+      to: publicHeadHash,
       providedInvariants: [],
     });
     expect(upgrade.ops.map((op) => [op.id, op.invariantId])).toEqual([
@@ -118,14 +121,30 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     ]);
   });
 
-  it("builds a new database in one migration that records no invariant", () => {
+  it("builds a new database at the public head in one migration that records no invariant", () => {
     const install = migration(LTREE_CREATE_EXTENSION_MIGRATION_NAME);
     expect(install.metadata).toMatchObject({
       from: null,
-      to: headHash,
+      to: publicHeadHash,
       providedInvariants: [],
     });
     expect(install.ops.map((op) => op.id)).toEqual(["schema.public", "extension.ltree"]);
+  });
+
+  it("moves the public head to the head with no operation, since the search path finds the extension", () => {
+    const searchPath = migration(LTREE_SEARCH_PATH_MIGRATION_NAME);
+    expect(searchPath.metadata).toMatchObject({ to: headHash, providedInvariants: [] });
+    expect(searchPath.ops).toEqual([]);
+  });
+
+  it("builds a new database at the head in one migration that names no schema for the extension", () => {
+    const install = migration(LTREE_SEARCH_PATH_INSTALL_MIGRATION_NAME);
+    expect(install.metadata).toMatchObject({ from: null, to: headHash, providedInvariants: [] });
+    expect(install.ops.map((op) => op.id)).toEqual(["schema.public", "extension.ltree"]);
+    expect(searchPathInstallOps.map((op) => [op.id, op.execute.map((step) => step.sql)])).toEqual([
+      ["schema.public", ['CREATE SCHEMA IF NOT EXISTS "public"']],
+      ["extension.ltree", ['CREATE EXTENSION IF NOT EXISTS "ltree"']],
+    ]);
   });
 
   it("takes an empty database to the head through the one-step migration", () => {
@@ -135,7 +154,7 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
     });
     expect(
       outcome.kind === "ok" ? outcome.decision.selectedPath.map((edge) => edge.dirName) : outcome,
-    ).toEqual([LTREE_CREATE_EXTENSION_MIGRATION_NAME]);
+    ).toEqual([LTREE_SEARCH_PATH_INSTALL_MIGRATION_NAME]);
   });
 
   it("points the head ref at the contract and requires no invariant", () => {
@@ -145,7 +164,7 @@ describe("prisma-ltree extension descriptor (contract-space package layout)", ()
   it("records each migration's hash of its contents", () => {
     const hashes = (hash: (m: (typeof space.migrations)[number]) => string) =>
       Object.fromEntries(space.migrations.map((m) => [m.dirName, hash(m)]));
-    expect(space.migrations).toHaveLength(3);
+    expect(space.migrations).toHaveLength(5);
     expect(hashes((m) => computeMigrationHash(m.metadata, m.ops))).toEqual(
       hashes((m) => m.metadata.migrationHash),
     );

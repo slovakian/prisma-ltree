@@ -30,16 +30,16 @@ for what is supported, planned, or out of scope.
 pnpm add prisma-ltree
 ```
 
-Requires Node `>=24`. This pack exact-pins `@prisma/orm-*` to **`8.0.0-rc.16`**.
+Requires Node `>=24`. This pack exact-pins `@prisma/orm-*` to **`8.0.0-rc.23`**.
 `prisma-ltree` itself stays on independent `0.x` semver: install it with a caret.
-You do not need `prisma-ltree@8.0.0-rc.16`. See
+You do not need `prisma-ltree@8.0.0-rc.23`. See
 [versioning and compatibility](https://github.com/slovakian/prisma-ltree/blob/main/docs/prisma-next/versioning-and-compatibility.md).
 
 Consumer apps also depend on the Postgres facade at the same SPI version, plus the
 `prisma` CLI:
 
 ```bash
-pnpm add @prisma/orm-postgres@8.0.0-rc.16 prisma-ltree
+pnpm add @prisma/orm-postgres@8.0.0-rc.23 prisma-ltree
 pnpm add -D prisma
 ```
 
