@@ -3,7 +3,6 @@
 /// A page in a hierarchy. `path` is its position in the tree; `breadcrumbs`
 /// is the array of ancestor paths.
 model Page {
-  // Char(36) keeps uuid storage aligned with field.id.uuidv4String().
   id          Char(36) @id @onCreate(uuid())
   path        ltree.Ltree()
   breadcrumbs ltree.LtreeArray()

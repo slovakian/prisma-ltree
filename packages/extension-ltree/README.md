@@ -134,12 +134,12 @@ export const contract = defineContract(
   {
     extensions: { ltree: ltreePack },
   },
-  ({ field, model }) => ({
+  ({ field, model, type }) => ({
     models: {
       Category: model("Category", {
         fields: {
-          id: field.id.int(),
-          name: field.string(),
+          id: field.column(type.Int()).id(),
+          name: field.column(type.String()),
           path: field.column(ltree()),
         },
       }).sql({ table: "category" }),

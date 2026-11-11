@@ -2,10 +2,13 @@ import { assembleDataTypes } from "@prisma/orm-framework/components/codec";
 import { defineContract } from "@prisma/orm-postgres/contract-builder";
 import { assemblePostgresCodecRegistryWithBuiltins } from "@prisma/orm-target-postgres/target/codecs";
 import { postgresDataTypes } from "@prisma/orm-target-postgres/target/data-types";
+import type { Temporal } from "temporal-spec";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./core/constants";
 import { LTREE_ARRAY_STORAGE_TYPE, LTREE_NATIVE_TYPE } from "./core/contract-space-constants";
 import { codecDescriptors } from "./core/codecs";
 import { ltreeDataTypes } from "./core/data-types";
+
+export type { Temporal };
 
 const dataTypeLookup = assembleDataTypes([
   { id: "postgres", dataTypes: postgresDataTypes },
