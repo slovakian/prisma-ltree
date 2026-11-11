@@ -98,7 +98,7 @@ types {
 }
 
 model Page {
-  id          String @id @default(uuid())
+  id          String @id @onCreate(uuid())
   path        Path
   breadcrumbs Paths
 
@@ -110,7 +110,7 @@ model Page {
 
 ```prisma
 model Page {
-  id   String @id @default(uuid())
+  id   String @id @onCreate(uuid())
   path Path
 
   @@index([path], type: "gist")

@@ -6,7 +6,7 @@ types {
 }
 
 model Page {
-  id          Char(36) @id @default(uuid())
+  id          Char(36) @id @onCreate(uuid())
   path        Path
   breadcrumbs Paths
 

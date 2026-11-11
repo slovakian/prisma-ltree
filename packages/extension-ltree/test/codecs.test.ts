@@ -18,8 +18,8 @@ import { renderSqlCatalogText, renderSqlTypeName } from "@prisma/orm-family-sql/
 import { ltreeArrayDataType, ltreeDataType } from "../src/core/data-types";
 
 type AsyncLtreeCodec = {
-  readonly encode: (value: string) => Promise<string>;
-  readonly decode: (wire: string) => Promise<string>;
+  readonly toWire: (value: string) => Promise<string>;
+  readonly fromWire: (wire: string) => Promise<string>;
 };
 
 function asAsyncCodec(): AsyncLtreeCodec {
@@ -27,8 +27,8 @@ function asAsyncCodec(): AsyncLtreeCodec {
 }
 
 type AsyncLtreeArrayCodec = {
-  readonly encode: (value: readonly string[]) => Promise<readonly string[]>;
-  readonly decode: (wire: readonly string[]) => Promise<readonly string[]>;
+  readonly toWire: (value: readonly string[]) => Promise<readonly string[]>;
+  readonly fromWire: (wire: readonly string[]) => Promise<readonly string[]>;
 };
 
 function asAsyncArrayCodec(): AsyncLtreeArrayCodec {
@@ -42,38 +42,38 @@ describe("prisma-ltree codecs", () => {
     expect(ltreeDescriptor.traits).toEqual(["equality", "order"]);
   });
 
-  it("encodes a valid label path unchanged", async () => {
+  it("writes a valid label path unchanged", async () => {
     const codec = asAsyncCodec();
     const value = "Top.Science.Astronomy";
-    const encoded = await codec.encode(value);
+    const encoded = await codec.toWire(value);
     expect(encoded).toBe(value);
   });
 
-  it("decodes a wire string unchanged", async () => {
+  it("reads a wire string unchanged", async () => {
     const codec = asAsyncCodec();
     const wire = "Top.Countries.Europe.Russia";
-    const decoded = await codec.decode(wire);
+    const decoded = await codec.fromWire(wire);
     expect(decoded).toBe(wire);
   });
 
-  it("round-trips encode/decode preserving the value", async () => {
+  it("round-trips toWire/fromWire preserving the value", async () => {
     const codec = asAsyncCodec();
     const original = "Top.Science.Astronomy.Cosmology";
-    const encoded = await codec.encode(original);
+    const encoded = await codec.toWire(original);
     expect(encoded).toBe(original);
-    const decoded = await codec.decode(encoded);
+    const decoded = await codec.fromWire(encoded);
     expect(decoded).toEqual(original);
   });
 
-  it("encodes a single-label path", async () => {
+  it("writes a single-label path", async () => {
     const codec = asAsyncCodec();
-    const encoded = await codec.encode("Top");
+    const encoded = await codec.toWire("Top");
     expect(encoded).toBe("Top");
   });
 
-  it("encodes labels with underscores and hyphens", async () => {
+  it("writes labels with underscores and hyphens", async () => {
     const codec = asAsyncCodec();
-    const encoded = await codec.encode("my_label.hyphen-label.123");
+    const encoded = await codec.toWire("my_label.hyphen-label.123");
     expect(encoded).toBe("my_label.hyphen-label.123");
   });
 
@@ -85,56 +85,52 @@ describe("prisma-ltree codecs", () => {
     expect(ltreeArrayDescriptor.traits).toEqual(["equality"]);
   });
 
-  it("encodes a valid ltree[] unchanged with per-element validation", async () => {
+  it("writes a valid ltree[] unchanged with per-element validation", async () => {
     const codec = asAsyncArrayCodec();
     const value = ["Top.Science", "Top.Hobbies"] as const;
-    const encoded = await codec.encode(value);
+    const encoded = await codec.toWire(value);
     expect(encoded).toEqual(value);
   });
 
-  it("rejects invalid paths inside an ltree[] on encode", async () => {
+  it("rejects invalid paths inside an ltree[] on toWire", async () => {
     const codec = asAsyncArrayCodec();
-    await expect(codec.encode(["Top.Science", "bad path"])).rejects.toThrow("invalid characters");
+    await expect(codec.toWire(["Top.Science", "bad path"])).rejects.toThrow("invalid characters");
   });
 
-  it("decodes an ltree[] wire array unchanged", async () => {
+  it("reads an ltree[] wire array unchanged", async () => {
     const codec = asAsyncArrayCodec();
     const wire = ["Top.Science", "Top.Hobbies.Amateurs_Astronomy"] as const;
-    expect(await codec.decode(wire)).toEqual(wire);
+    expect(await codec.fromWire(wire)).toEqual(wire);
   });
 });
 
-describe("prisma-ltree codec JSON serialization", () => {
-  it("round-trips a single path through encodeJson/decodeJson", () => {
+describe("prisma-ltree codec data-type values", () => {
+  it("round-trips a single path through toDataTypeValue/fromDataTypeValue", () => {
     const value = "Top.Science.Astronomy";
-    const json = new LtreeCodec(ltreeDescriptor).encodeJson(value);
-    expect(json).toBe(value);
-    expect(new LtreeCodec(ltreeDescriptor).decodeJson(json)).toBe(value);
-  });
-
-  it("rejects invalid paths in encodeJson/decodeJson", () => {
     const codec = new LtreeCodec(ltreeDescriptor);
-    expect(() => codec.encodeJson("bad path")).toThrow("invalid characters");
-    expect(() => codec.decodeJson("bad path")).toThrow("invalid characters");
+    const stored = codec.toDataTypeValue(value);
+    expect(stored.value).toBe(value);
+    expect(codec.fromDataTypeValue(stored)).toBe(value);
   });
 
-  it("round-trips an ltree[] through encodeJson/decodeJson", () => {
+  it("rejects invalid paths in toDataTypeValue and data-type read", () => {
+    const codec = new LtreeCodec(ltreeDescriptor);
+    expect(() => codec.toDataTypeValue("bad path")).toThrow("invalid characters");
+    expect(() => ltreeDataType.valueFrom("bad path", {})).toThrow();
+  });
+
+  it("round-trips an ltree[] through toDataTypeValue/fromDataTypeValue", () => {
     const codec = new LtreeArrayCodec(ltreeArrayDescriptor);
     const value = ["Top.Science", "Top.Hobbies"] as const;
-    const json = codec.encodeJson(value);
-    expect(json).toEqual([...value]);
-    expect(codec.decodeJson(json)).toEqual([...value]);
+    const stored = codec.toDataTypeValue(value);
+    expect(stored.value).toEqual([...value]);
+    expect(codec.fromDataTypeValue(stored)).toEqual([...value]);
   });
 
-  it("rejects invalid entries in array encodeJson/decodeJson", () => {
+  it("rejects invalid entries in array toDataTypeValue and data-type read", () => {
     const codec = new LtreeArrayCodec(ltreeArrayDescriptor);
-    expect(() => codec.encodeJson(["ok", "bad path"])).toThrow("invalid characters");
-    expect(() => codec.decodeJson(["bad path"])).toThrow("invalid characters");
-  });
-
-  it("decodeJson returns an empty array for non-array JSON", () => {
-    const codec = new LtreeArrayCodec(ltreeArrayDescriptor);
-    expect(codec.decodeJson("not-an-array")).toEqual([]);
+    expect(() => codec.toDataTypeValue(["ok", "bad path"])).toThrow("invalid characters");
+    expect(() => ltreeArrayDataType.valueFrom(["bad path"], {})).toThrow();
   });
 });
 
@@ -151,34 +147,34 @@ describe("prisma-ltree codec descriptors render output types", () => {
 describe("prisma-ltree codec validation", () => {
   it("rejects non-string values", async () => {
     const codec = asAsyncCodec();
-    await expect(codec.encode(123 as unknown as string)).rejects.toThrow(
+    await expect(codec.toWire(123 as unknown as string)).rejects.toThrow(
       "ltree value must be a string",
     );
   });
 
   it("rejects empty strings", async () => {
     const codec = asAsyncCodec();
-    await expect(codec.encode("")).rejects.toThrow("ltree value must not be empty");
+    await expect(codec.toWire("")).rejects.toThrow("ltree value must not be empty");
   });
 
   it("rejects labels with dots resulting in empty segments", async () => {
     const codec = asAsyncCodec();
-    await expect(codec.encode("Top..Science")).rejects.toThrow("ltree label must not be empty");
-    await expect(codec.encode(".Top")).rejects.toThrow("ltree label must not be empty");
-    await expect(codec.encode("Top.")).rejects.toThrow("ltree label must not be empty");
+    await expect(codec.toWire("Top..Science")).rejects.toThrow("ltree label must not be empty");
+    await expect(codec.toWire(".Top")).rejects.toThrow("ltree label must not be empty");
+    await expect(codec.toWire("Top.")).rejects.toThrow("ltree label must not be empty");
   });
 
   it("rejects labels with invalid characters", async () => {
     const codec = asAsyncCodec();
-    await expect(codec.encode("Top.Sc ience")).rejects.toThrow("invalid characters");
-    await expect(codec.encode("Top.Science!")).rejects.toThrow("invalid characters");
-    await expect(codec.encode("Top.Sc/ience")).rejects.toThrow("invalid characters");
+    await expect(codec.toWire("Top.Sc ience")).rejects.toThrow("invalid characters");
+    await expect(codec.toWire("Top.Science!")).rejects.toThrow("invalid characters");
+    await expect(codec.toWire("Top.Sc/ience")).rejects.toThrow("invalid characters");
   });
 
   it("rejects labels exceeding the max length", async () => {
     const codec = asAsyncCodec();
     const longLabel = "a".repeat(LTREE_MAX_LABEL_LENGTH + 1);
-    await expect(codec.encode(longLabel)).rejects.toThrow("exceeds max length");
+    await expect(codec.toWire(longLabel)).rejects.toThrow("exceeds max length");
   });
 
   it("rejects a path exceeding the max number of labels", () => {
@@ -189,7 +185,7 @@ describe("prisma-ltree codec validation", () => {
   it("accepts a label at exactly the max length", async () => {
     const codec = asAsyncCodec();
     const maxLabel = "a".repeat(LTREE_MAX_LABEL_LENGTH);
-    const encoded = await codec.encode(maxLabel);
+    const encoded = await codec.toWire(maxLabel);
     expect(encoded).toBe(maxLabel);
   });
 
@@ -211,7 +207,7 @@ describe("ltree column helper", () => {
   it("produces a codec factory that materializes a working LtreeCodec", async () => {
     const spec = ltree();
     const codec = spec.codecFactory({ name: "path" }) as unknown as AsyncLtreeCodec;
-    expect(await codec.encode("Top.Child")).toBe("Top.Child");
+    expect(await codec.toWire("Top.Child")).toBe("Top.Child");
   });
 });
 
