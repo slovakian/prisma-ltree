@@ -62,9 +62,12 @@ pnpm run changeset    # select prisma-ltree, pick bump type, write a summary
 ```
 
 Commit the generated `.changeset/*.md` alongside your change. Doc-only or repo-meta changes
-that do not affect the package don't need one — add `[skip-version]` to the commit message
-instead. Full details (bump types, the Version PR → pack → publish flow, OIDC trusted
-publishing) live in [`docs/CHANGESETS.md`](docs/CHANGESETS.md).
+that do not affect the package don't need one.
+
+Merging to `main` does **not** publish to npm. Stable releases are cut manually by an
+agent via `gh workflow run publish.yml` (Version Packages PR → merge → run again to
+publish with Trusted Publishing). PR previews still publish automatically via pkg.pr.new.
+Full playbook: [`docs/CHANGESETS.md`](docs/CHANGESETS.md).
 
 ## Dependency pins
 

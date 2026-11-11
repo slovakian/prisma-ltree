@@ -10,7 +10,10 @@ Changesets:
 - Tracks what changed between releases
 - Calculates version bumps (major / minor / patch)
 - Generates changelogs
-- Publishes to npm when the Version PR merges
+- Publishes to npm only when an agent **manually** runs the Version workflow
+
+`main` holds the current code and any pending `.changeset/*.md` files. Merging to
+`main` does **not** open a Version PR and does **not** publish to npm.
 
 ## For Contributors
 
@@ -56,37 +59,44 @@ dependent as major in the same changeset when the peer usage is actually breakin
 
 ### On Main (After Merge)
 
-1. The Version workflow (`publish.yml`) runs `select-mode`
-2. If there are unreleased changesets, it opens/updates a "Version Packages" PR
-3. When that Version PR merges:
-   - **pack** builds `prisma-ltree` and creates publish tarballs (no npm OIDC)
-   - **publish** uploads those tarballs with Trusted Publishing / provenance
+Merging to `main` only lands code + changesets. Nothing publishes.
 
-### Skipping Version Updates
+Stable npm releases are **manual** (see [Agent release playbook](#agent-release-playbook)
+below): trigger `publish.yml` via `workflow_dispatch` twice in the usual case — once to
+open/update the Version Packages PR, again after that PR merges to pack + publish.
 
-Doc-only or repo-meta commits that should not open a Version PR can use `[skip-version]`:
+### Preview packages (automatic)
 
-```bash
-git commit -m "docs: update readme [skip-version]"
-```
+Every PR gets a pkg.pr.new preview from `ci.yml`. There is **no** rolling “latest from
+main” npm or preview publish — use PR previews until someone cuts a stable release.
 
 ## GitHub Actions Workflows
 
-### `publish.yml` (Main → Version PR → Pack → Publish)
+### `publish.yml` (Manual Version PR → Pack → Publish)
 
-Runs on every push to `main` (unless the commit message contains `[skip-version]`).
+Runs **only** on `workflow_dispatch` (Actions UI or `gh workflow run publish.yml`).
+
+Optional input:
+
+| Input     | Default | Effect                                              |
+| --------- | ------- | --------------------------------------------------- |
+| `dry_run` | `false` | When mode is `publish`, pack but skip npm publish   |
 
 Jobs (least-privilege permissions per job):
 
-| Job           | When                         | Role                                                                 |
-| ------------- | ---------------------------- | -------------------------------------------------------------------- |
-| `select-mode` | always (unless skipped)      | Decide `version` / `publish` / `none`                                |
-| `version`     | mode = `version`             | `changeset version` + open/update Version PR                         |
-| `pack`        | mode = `publish`             | Build + `changeset pack` (no `id-token`)                             |
-| `publish`     | after successful `pack`      | Publish packed tarballs with OIDC (`id-token: write` only here)      |
+| Job              | When                                      | Role                                                            |
+| ---------------- | ----------------------------------------- | --------------------------------------------------------------- |
+| `select-mode`    | always                                    | Decide `version` / `publish` / `none`                           |
+| `version`        | mode = `version`                          | `changeset version` + open/update Version PR                    |
+| `pack`           | mode = `publish`                          | Build + `changeset pack` (no `id-token`)                        |
+| `publish`        | mode = `publish` and not `dry_run`        | Publish packed tarballs with OIDC (`id-token: write` only here) |
+| `dry-run-notice` | mode = `publish` and `dry_run`            | Confirm pack succeeded; remind to re-run without `dry_run`      |
 
 This follows the Changesets v3 / e18e **build → pack → publish** flow so install/build never
 share Trusted Publishing credentials with the publish step.
+
+**Do not rename** `publish.yml` without updating the npm Trusted Publisher entry — OIDC is
+bound to this workflow filename.
 
 ### `changesets-pr-status.yml` (PR comments)
 
@@ -97,7 +107,7 @@ On same-repo pull requests, comments whether the PR includes a changeset (non-bl
 Runs on every PR and push:
 
 - Validates the extension (lint, type-check, test, build)
-- Publishes a preview package via pkg.pr.new
+- Publishes a preview package via pkg.pr.new (**pull requests only**)
 
 ### pkg.pr.new Integration
 
@@ -107,7 +117,40 @@ Preview packages are published automatically for every PR:
 - Use for testing in your own projects before official release
 - Cleaned up after the PR is closed
 
-## For Agents
+## Agent release playbook
+
+When Jason (or anyone) asks an agent to cut a stable npm release:
+
+```bash
+# 1) Open or refresh the Version Packages PR (needs pending .changeset files on main)
+gh workflow run publish.yml --repo slovakian/prisma-ltree
+gh run list --repo slovakian/prisma-ltree --workflow=publish.yml --limit 3
+
+# 2) Review bumps/CHANGELOG, then merge the Version PR
+gh pr list --repo slovakian/prisma-ltree --search "version packages" --state open
+gh pr view <number> --repo slovakian/prisma-ltree
+gh pr merge <number> --repo slovakian/prisma-ltree --merge
+
+# 3) Pack + publish with Trusted Publishing / provenance
+gh workflow run publish.yml --repo slovakian/prisma-ltree
+gh run list --repo slovakian/prisma-ltree --workflow=publish.yml --limit 1
+# Optional: gh run watch --repo slovakian/prisma-ltree
+
+# Rehearsal only (no npm publish):
+gh workflow run publish.yml --repo slovakian/prisma-ltree -f dry_run=true
+```
+
+Notes:
+
+1. Prefer this GHA path — do **not** run `npm publish` / `changeset publish` from a Cloud
+   Agent for production cuts (no long-lived npm token; OIDC stays in Actions).
+2. If the first dispatch already sees unpublished version bumps on `main` (Version PR
+   already merged), it goes straight to pack/publish — skip step 2.
+3. If mode is `none`, there is nothing to version or publish; land a changeset on a PR first.
+4. **Don't modify package.json versions manually** — Changesets handles this.
+5. **Don't rely on `prepublishOnly`** — release builds happen in the pack job.
+
+## For Agents (feature work)
 
 When implementing features or fixes:
 
@@ -118,33 +161,36 @@ When implementing features or fixes:
    - Bug fix → patch
    - Breaking API change → major
 4. **Don't modify package.json versions manually** — Changesets handles this
-5. **Don't merge release commits yourself** — the Version workflow handles publishing
+5. **Don't publish to npm** unless Jason asked for a release — then follow the
+   [Agent release playbook](#agent-release-playbook)
 6. **Don't rely on `prepublishOnly`** — release builds happen in the pack job
 
 ## Local / Manual Release Notes
 
-Automated releases build in CI before packing. If you publish manually:
+Automated releases build in CI before packing. Prefer the GitHub Actions path for Trusted
+Publishing and provenance. Local publish is only for exceptional recovery when Jason
+explicitly asks:
 
 ```bash
 pnpm --filter prisma-ltree run build
 pnpm exec changeset publish
 ```
 
-Prefer the GitHub Actions path for Trusted Publishing and provenance.
-
 ## Troubleshooting
 
-### "No changesets found"
+### "No changesets found" / mode `none`
 
-If `publish.yml` runs but doesn't create a PR, check:
+If `publish.yml` runs but doesn't create a PR or publish, check:
 
 - Did you run `pnpm exec changeset` to create the `.changeset/*.md` file?
-- Did you commit and push that file?
+- Did you commit and push that file to `main` (via a merged PR)?
 - Is the file in the `.changeset/` directory?
+- Was the Version Packages PR already merged and the version already on npm?
 
 ### Preview package not published
 
-The `ci.yml` publishes preview packages via pkg.pr.new. If it's not showing up:
+The `ci.yml` publishes preview packages via pkg.pr.new on **pull_request** only. If it's
+not showing up:
 
 - Check the "Publish preview package" step in the CI logs
 - Verify the package builds correctly with `vp run build`
@@ -162,9 +208,10 @@ The `publish` job uses npm Trusted Publishing (OIDC) — no long-lived npm token
 
 If you still see errors, check the publish.yml workflow logs in GitHub Actions.
 
-### Version PR not created automatically
+### Version PR not created
 
-If versioning succeeds but GitHub fails with:
+Trigger the workflow manually first (`gh workflow run publish.yml`). If versioning
+succeeds but GitHub fails with:
 
 ```
 GitHub Actions is not permitted to create or approve pull requests
@@ -175,7 +222,7 @@ manually from that branch. To fix automation:
 
 1. Repo **Settings → Actions → General → Workflow permissions** → **Read and write permissions**
 2. Enable **Allow GitHub Actions to create and approve pull requests**
-3. Re-run the failed Version workflow (or push an empty commit to `main` with a new changeset)
+3. Re-run the Version workflow (`gh workflow run publish.yml` or Re-run jobs in the UI)
 
 The `version` job requests `pull-requests: write`; the repo/org setting above must also allow it.
 

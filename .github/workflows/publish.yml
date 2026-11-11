@@ -1,8 +1,20 @@
 name: Version
 
+# Manual releases only. Merges to main do not open Version PRs or publish to npm.
+# Agents cut a release with:
+#   gh workflow run publish.yml
+# Pending changesets → version job opens/updates the Version Packages PR.
+# After that PR merges → run the workflow again → pack + Trusted Publishing.
+#
+# npm Trusted Publishing (OIDC) is bound to this filename — do not rename
+# without updating https://www.npmjs.com/package/prisma-ltree settings.
 on:
-  push:
-    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Pack (and open Version PR if needed) but skip npm publish"
+        type: boolean
+        default: false
 
 concurrency:
   group: version-${{ github.ref }}
@@ -13,7 +25,6 @@ permissions: {}
 
 jobs:
   select-mode:
-    if: ${{ !contains(github.event.head_commit.message, '[skip-version]') }}
     runs-on: ubuntu-latest
     outputs:
       mode: ${{ steps.select-mode.outputs.mode }}
@@ -42,6 +53,11 @@ jobs:
       - name: Select Changesets mode
         id: select-mode
         uses: changesets/action/select-mode@v2
+
+      - name: Summarize mode
+        run: |
+          echo "mode=${{ steps.select-mode.outputs.mode }}"
+          echo "dry_run=${{ inputs.dry_run }}"
 
   version:
     if: needs.select-mode.outputs.mode == 'version'
@@ -115,7 +131,8 @@ jobs:
           publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
 
   publish:
-    needs: pack
+    if: ${{ needs.select-mode.outputs.mode == 'publish' && inputs.dry_run != true }}
+    needs: [select-mode, pack]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -145,3 +162,15 @@ jobs:
           pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
         env:
           NPM_CONFIG_PROVENANCE: true
+
+  dry-run-notice:
+    if: ${{ needs.select-mode.outputs.mode == 'publish' && inputs.dry_run == true }}
+    needs: [select-mode, pack]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Skip npm publish (dry_run)
+        run: |
+          echo "dry_run=true — packed successfully; skipped Trusted Publishing."
+          echo "Re-run without dry_run to publish to npm."
