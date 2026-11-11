@@ -12,10 +12,12 @@ catalog:
   vitest: npm:@voidzero-dev/vite-plus-test@0.1.24
   vite-plus: 0.1.24
   "@electric-sql/pglite": ^0.5.3
-  alchemy: 2.0.0-beta.57
-  effect: 4.0.0-beta.84
-  "@effect/platform-bun": 4.0.0-beta.84
-  "@effect/platform-node": 4.0.0-beta.84
+  alchemy: 2.0.0-beta.85
+  "@alchemy.run/cloudflare": 2.0.0-beta.85
+  "@alchemy.run/github": 2.0.0-beta.85
+  effect: 4.1.4
+  "@effect/platform-bun": 4.1.4
+  "@effect/platform-node": 4.1.4
   tslib: ^2.8.1
   "@vitest/coverage-v8": 4.1.9
   pkg-pr-new: ^0.0.75
@@ -48,7 +50,12 @@ minimumReleaseAgeExclude:
   - "@distilled.cloud/core@0.26.1"
   - "@distilled.cloud/neon@0.26.1"
   - "@distilled.cloud/planetscale@0.26.1"
-  - "alchemy@2.0.0-beta.57"
+  - "alchemy@2.0.0-beta.85"
+  - "@alchemy.run/cloudflare@2.0.0-beta.85"
+  - "@alchemy.run/github@2.0.0-beta.85"
+  - "effect@4.1.4"
+  - "@effect/platform-bun@4.1.4"
+  - "@effect/platform-node@4.1.4"
   - "@prisma/orm-family-sql@8.0.0-rc.1 || 8.0.0-rc.2 || 8.0.0-rc.3 || 8.0.0-rc.4 || 8.0.0-rc.5 || 8.0.0-rc.6 || 8.0.0-rc.7 || 8.0.0-rc.8 || 8.0.0-rc.15 || 8.0.0-rc.16"
   - "@prisma/orm-framework@8.0.0-rc.1 || 8.0.0-rc.2 || 8.0.0-rc.3 || 8.0.0-rc.4 || 8.0.0-rc.5 || 8.0.0-rc.6 || 8.0.0-rc.7 || 8.0.0-rc.8 || 8.0.0-rc.15 || 8.0.0-rc.16"
   - "@prisma/orm-postgres@8.0.0-rc.1 || 8.0.0-rc.2 || 8.0.0-rc.3 || 8.0.0-rc.4 || 8.0.0-rc.5 || 8.0.0-rc.6 || 8.0.0-rc.7 || 8.0.0-rc.8 || 8.0.0-rc.15 || 8.0.0-rc.16"
@@ -74,3 +81,4 @@ minimumReleaseAgeExclude:
   - "@prisma/composer-cli@0.28.0"
   - "@prisma/composer@0.28.0"
   - shadcn@4.22.1
+  - "@effect/platform-node-shared@4.1.4"

@@ -18,10 +18,9 @@
 // still configured for OAuth in ~/.alchemy/profiles.json. Re-run step 1 or
 // switch the admin Cloudflare method to stored API key credentials.
 
+import * as Cloudflare from "@alchemy.run/cloudflare";
+import * as GitHub from "@alchemy.run/github";
 import * as Alchemy from "alchemy";
-import * as Cloudflare from "alchemy/Cloudflare";
-import { CloudflareEnvironment } from "alchemy/Cloudflare";
-import * as GitHub from "alchemy/GitHub";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
@@ -36,10 +35,10 @@ export default Alchemy.Stack(
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
-    const env = yield* CloudflareEnvironment;
+    const env = yield* Cloudflare.CloudflareEnvironment;
     const { accountId } = yield* env;
 
-    const apiToken = yield* Cloudflare.AccountApiToken("CIToken", {
+    const apiToken = yield* Cloudflare.ApiToken.AccountApiToken("CIToken", {
       name: "prisma-ltree-ci-token",
       accountId,
       policies: [

@@ -1,8 +1,8 @@
 // alchemy.run.ts
+import * as Cloudflare from "@alchemy.run/cloudflare";
+import * as GitHub from "@alchemy.run/github";
 import * as Alchemy from "alchemy";
 import { Stage } from "alchemy";
-import * as Cloudflare from "alchemy/Cloudflare";
-import * as GitHub from "alchemy/GitHub";
 import * as Output from "alchemy/Output";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -20,7 +20,7 @@ export default Alchemy.Stack(
     const path = yield* Path;
     const stage = yield* Stage;
 
-    const docs = yield* Cloudflare.Vite("Docs", {
+    const docs = yield* Cloudflare.Website.Vite("Docs", {
       rootDir: path.resolve(import.meta.dirname, "apps/web"),
       domain: stage === "prod" ? DOCS_DOMAIN : undefined,
       compatibility: {
