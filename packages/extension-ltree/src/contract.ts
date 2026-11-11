@@ -1,9 +1,26 @@
-import { defineContract } from "@prisma/orm-postgres/contract-builder";
+import { assembleDataTypes } from "@prisma/orm-framework/components/codec";
+import { defineContract, extension, unbound } from "@prisma/orm-postgres/contract-builder";
+import { assemblePostgresCodecRegistryWithBuiltins } from "@prisma/orm-target-postgres/target/codecs";
+import { postgresDataTypes } from "@prisma/orm-target-postgres/target/data-types";
+import type { Temporal } from "temporal-spec";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./core/constants";
 import { LTREE_ARRAY_STORAGE_TYPE, LTREE_NATIVE_TYPE } from "./core/contract-space-constants";
+import { codecDescriptors } from "./core/codecs";
+import { ltreeDataTypes } from "./core/data-types";
 
-export const contract = defineContract({}, () => ({
-  types: {
+export type { Temporal };
+
+const dataTypeLookup = assembleDataTypes([
+  { id: "postgres", dataTypes: postgresDataTypes },
+  { id: "ltree", dataTypes: ltreeDataTypes },
+]).lookup;
+const codecLookup = assemblePostgresCodecRegistryWithBuiltins(
+  [{ types: { codecTypes: { codecDescriptors: [...codecDescriptors] } } }],
+  dataTypeLookup,
+);
+
+export const contract = defineContract({ codecLookup, dataTypeLookup }, () => ({
+  databaseTypes: {
     [LTREE_NATIVE_TYPE]: {
       kind: "codec-instance",
       codecId: LTREE_CODEC_ID,
@@ -16,6 +33,7 @@ export const contract = defineContract({}, () => ({
     },
   },
   models: {},
+  entities: [extension("ltree", { namespace: unbound })],
 }));
 
 export default contract;

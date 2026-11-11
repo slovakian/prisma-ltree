@@ -39,16 +39,25 @@ describe("PSL lane parity", () => {
   it("resolves ltree.Ltree / ltree.LtreeArray to the right codec and data type", async () => {
     const contract = await emit("prisma.config.ts");
     const storage = contract["storage"] as {
-      types: Record<string, { codecId: string; dataType: string; kind: string }>;
+      namespaces: {
+        public: {
+          entries: {
+            table: {
+              page: {
+                columns: Record<string, { codecId: string; dataType: string }>;
+              };
+            };
+          };
+        };
+      };
     };
+    const page = storage.namespaces.public.entries.table.page;
 
-    expect(storage.types["Path"]).toEqual({
-      kind: "codec-instance",
+    expect(page.columns["path"]).toMatchObject({
       codecId: "pg/ltree@1",
       dataType: "ltree/ltree",
     });
-    expect(storage.types["Paths"]).toEqual({
-      kind: "codec-instance",
+    expect(page.columns["breadcrumbs"]).toMatchObject({
       codecId: "pg/ltree-array@1",
       dataType: "ltree/ltree-array",
     });
@@ -62,7 +71,7 @@ describe("PSL lane parity", () => {
           entries: {
             table: {
               page: {
-                columns: Record<string, { codecId: string; dataType: string; typeRef?: string }>;
+                columns: Record<string, { codecId: string; dataType: string }>;
               };
             };
           };
@@ -74,16 +83,14 @@ describe("PSL lane parity", () => {
     expect(page.columns["path"]).toMatchObject({
       codecId: "pg/ltree@1",
       dataType: "ltree/ltree",
-      typeRef: "Path",
     });
     expect(page.columns["breadcrumbs"]).toMatchObject({
       codecId: "pg/ltree-array@1",
       dataType: "ltree/ltree-array",
-      typeRef: "Paths",
     });
   });
 
-  it("reports PSL_UNSUPPORTED_NAMED_TYPE_CONSTRUCTOR naming ltree when the extension is not composed", async () => {
+  it("reports PSL_UNRESOLVED_REFERENCE naming ltree when the extension is not composed", async () => {
     await expect(emit("no-ext.config.ts")).rejects.toMatchObject({
       code: "CONTRACT.SOURCE_LOAD_FAILED",
     });
@@ -95,11 +102,9 @@ describe("PSL lane parity", () => {
       caught = error;
     }
 
-    const unsupported = diagnosticsOf(caught).filter(
-      (d) => d.code === "PSL_UNSUPPORTED_NAMED_TYPE_CONSTRUCTOR",
-    );
-    expect(unsupported.length).toBeGreaterThan(0);
-    for (const diagnostic of unsupported) {
+    const unresolved = diagnosticsOf(caught).filter((d) => d.code === "PSL_UNRESOLVED_REFERENCE");
+    expect(unresolved.length).toBeGreaterThan(0);
+    for (const diagnostic of unresolved) {
       expect(diagnostic.message).toContain("ltree");
     }
   });

@@ -13,6 +13,19 @@
   },
   "storage": {
     "namespaces": {
+      "__unbound__": {
+        "entries": {
+          "extension": {
+            "ltree": {
+              "kind": "extension",
+              "name": "ltree"
+            }
+          },
+          "table": {}
+        },
+        "id": "__unbound__",
+        "kind": "postgres-unbound-schema"
+      },
       "public": {
         "entries": {
           "table": {}
@@ -21,7 +34,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5842622c2779cd02acd640ab4a5c8979fc94a2af8ed034222391fbd4f7cb3706",
+    "storageHash": "6db18d99f118ef4e7fd359cf8bc472b9335bf3edeeefa8a15ee11eaf7742f9fb",
     "types": {
       "ltree": {
         "codecId": "pg/ltree@1",
@@ -38,6 +51,8 @@
   "capabilities": {
     "postgres": {
       "distinctOn": true,
+      "forKeyShare": true,
+      "forNoKeyUpdate": true,
       "jsonAgg": true,
       "lateral": true,
       "limit": true,
@@ -48,9 +63,15 @@
       "checkConstraint": true,
       "defaultInInsert": true,
       "enums": true,
+      "forShare": true,
+      "forUpdate": true,
       "insertOnConflictSkip": true,
+      "insertOnConflictTarget": true,
       "insertOnConflictWithoutTarget": true,
       "lateral": true,
+      "lockNowait": true,
+      "lockOf": true,
+      "lockSkipLocked": true,
       "returning": true,
       "scalarList": true
     }
