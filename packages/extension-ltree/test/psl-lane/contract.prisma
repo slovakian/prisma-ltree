@@ -1,19 +1,12 @@
 // use prisma-8
 
-types {
-  // Single ltree path. Resolves to codec `pg/ltree@1`, data type `ltree/ltree`.
-  Path = ltree.Ltree()
-  // ltree[] array. Resolves to codec `pg/ltree-array@1`, data type `ltree/ltree-array`.
-  Paths = ltree.LtreeArray()
-}
-
 /// A page in a hierarchy. `path` is its position in the tree; `breadcrumbs`
 /// is the array of ancestor paths.
 model Page {
   // Char(36) keeps uuid storage aligned with field.id.uuidv4String().
   id          Char(36) @id @onCreate(uuid())
-  path        Path
-  breadcrumbs Paths
+  path        ltree.Ltree()
+  breadcrumbs ltree.LtreeArray()
 
   @@map("page")
 }

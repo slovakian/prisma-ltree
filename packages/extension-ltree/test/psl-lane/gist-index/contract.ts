@@ -6,21 +6,18 @@ export const contract = defineContract(
     extensions: { ltree },
   },
   ({ field, model, type }) => {
-    const types = {
-      Path: type.ltree.Ltree(),
-      Paths: type.ltree.LtreeArray(),
-    } as const;
+    const Path = field.column(type.ltree.Ltree());
+    const Paths = field.column(type.ltree.LtreeArray());
 
     const Page = model("Page", {
       fields: {
         id: field.id.uuidv4String(),
-        path: field.namedType(types.Path),
-        breadcrumbs: field.namedType(types.Paths),
+        path: Path,
+        breadcrumbs: Paths,
       },
     });
 
     return {
-      types,
       models: {
         Page: Page.sql(({ cols, constraints }) => ({
           table: "page",

@@ -9,23 +9,20 @@ export const contract = defineContract(
     extensions: { ltree },
   },
   ({ field, model, type }) => {
-    const types = {
-      // Single ltree path. Resolves to codec `pg/ltree@1`, data type `ltree/ltree`.
-      Path: type.ltree.Ltree(),
-      // ltree[] array. Resolves to codec `pg/ltree-array@1`, data type `ltree/ltree-array`.
-      Paths: type.ltree.LtreeArray(),
-    } as const;
+    // Single ltree path. Resolves to codec `pg/ltree@1`, data type `ltree/ltree`.
+    const Path = field.column(type.ltree.Ltree());
+    // ltree[] array. Resolves to codec `pg/ltree-array@1`, data type `ltree/ltree-array`.
+    const Paths = field.column(type.ltree.LtreeArray());
 
     const Page = model("Page", {
       fields: {
         id: field.id.uuidv4String(),
-        path: field.namedType(types.Path),
-        breadcrumbs: field.namedType(types.Paths),
+        path: Path,
+        breadcrumbs: Paths,
       },
     });
 
     return {
-      types,
       models: {
         Page: Page.sql({
           table: "page",

@@ -1,14 +1,9 @@
 // use prisma-8
 
-types {
-  Path = ltree.Ltree()
-  Paths = ltree.LtreeArray()
-}
-
 model Page {
   id          Char(36) @id @onCreate(uuid())
-  path        Path
-  breadcrumbs Paths
+  path        ltree.Ltree()
+  breadcrumbs ltree.LtreeArray()
 
   @@index([path], type: "gist", map: "page_path_gist_idx")
   @@index([breadcrumbs], type: "gist", map: "page_breadcrumbs_gist_idx")
