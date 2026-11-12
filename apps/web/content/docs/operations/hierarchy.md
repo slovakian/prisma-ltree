@@ -76,6 +76,33 @@ const ancestors = await db.orm.Category.where((c) =>
   .all();
 ```
 
+## ORM `using` helpers
+
+Each scalar `ltree` field also gets two collection methods under `using`, named
+after the field. They filter the same way as the operators above and chain with
+`where` / `orderBy` / `limit` / `include`:
+
+```typescript
+const underElectronics = await db.orm.Category.using
+  .path_descendants("electronics")
+  .select("id", "path")
+  .all();
+
+const aboveLaptops = await db.orm.Category.using
+  .path_ancestors("electronics.computers.laptops")
+  .select("id", "path")
+  .all();
+```
+
+| Method                         | Same as                                      |
+| ------------------------------ | -------------------------------------------- |
+| `using.path_descendants(root)` | `.where((c) => c.path.isDescendantOf(root))` |
+| `using.path_ancestors(leaf)`   | `.where((c) => c.path.isAncestorOf(leaf))`   |
+
+There is no separate `path_subtree` helper: under ltree, the subtree of a root
+is exactly `path_descendants(root)`. List (`ltree[]`) fields do not get these
+methods.
+
 **GiST required** for index use: add `@@index([path], type: "gist")` so PostgreSQL can avoid a sequential scan. Without GiST, these filters still run and read every row. See [Add a GiST index](/docs/indexes).
 
 For sorting paths or equality filters (not hierarchy), use framework comparison via codec traits: [Sort and compare paths](/docs/comparison).

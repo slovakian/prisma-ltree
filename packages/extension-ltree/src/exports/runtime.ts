@@ -1,5 +1,6 @@
 import type { SqlRuntimeExtensionDescriptor } from "@prisma/orm-family-sql/runtime";
 import { ltreePackMeta, ltreeQueryOperations } from "../core/descriptor-meta";
+import { ltreeHierarchyMethods } from "../core/hierarchy-collection-methods";
 import { ltreeCodecRegistry } from "../core/registry";
 
 const ltreeRuntimeDescriptor: SqlRuntimeExtensionDescriptor<"postgres"> = {
@@ -16,6 +17,7 @@ const ltreeRuntimeDescriptor: SqlRuntimeExtensionDescriptor<"postgres"> = {
   },
   codecs: () => Array.from(ltreeCodecRegistry.values()),
   queryOperations: () => ltreeQueryOperations(),
+  collectionMethods: () => [ltreeHierarchyMethods],
   create() {
     return {
       familyId: "sql" as const,
@@ -24,5 +26,6 @@ const ltreeRuntimeDescriptor: SqlRuntimeExtensionDescriptor<"postgres"> = {
   },
 };
 
+export type { LtreeHierarchyMethods } from "../core/hierarchy-collection-methods";
 export { ltreeCodecRegistry };
 export default ltreeRuntimeDescriptor;

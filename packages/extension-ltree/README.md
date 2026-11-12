@@ -12,6 +12,7 @@ raw SQL.
 
 - **`ltree` and `ltree[]` columns**: `ltree()` / `ltreeArray()` column helpers
 - **Hierarchy operators**: ancestor and descendant checks
+- **ORM collection helpers**: `using.{field}_descendants` / `using.{field}_ancestors` (pgvector-style)
 - **Pattern matching**: `lquery`, `lquery[]`, and `ltxtquery`
 - **Scalar functions**: depth, subpaths, label index, lowest common ancestor
 - **Concatenation & conversion**: path building and `ltree` ↔ `text` conversion
@@ -175,6 +176,12 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
     depth: (c) => c.path.nlevel(),
   })
   .all();
+
+// Same filter via the ORM collection helper (pgvector-style `using`)
+const underScience = await db.orm.Category.using
+  .path_descendants("Top.Science")
+  .select("id", "path")
+  .all();
 ```
 
 ## Operations
@@ -185,6 +192,16 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
 | -------------------------- | ---------------- |
 | `path.isAncestorOf(rhs)`   | `ltree @> ltree` |
 | `path.isDescendantOf(rhs)` | `ltree <@ ltree` |
+
+### ORM collection helpers (`using`)
+
+| Method                         | Same as                                      |
+| ------------------------------ | -------------------------------------------- |
+| `using.path_descendants(root)` | `.where((r) => r.path.isDescendantOf(root))` |
+| `using.path_ancestors(leaf)`   | `.where((r) => r.path.isAncestorOf(leaf))`   |
+
+One pair per scalar `ltree` field. Not emitted for `ltree[]`. No `_subtree`
+alias (that is `_descendants`).
 
 ### Pattern matching (→ boolean)
 

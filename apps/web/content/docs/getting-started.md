@@ -136,9 +136,15 @@ import { db } from "./prisma/db";
 const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("electronics"))
   .select("id", "path")
   .all();
+
+// Same filter via the ORM collection helper
+const underElectronics = await db.orm.Category.using
+  .path_descendants("electronics")
+  .select("id", "path")
+  .all();
 ```
 
-See the [docs home](/docs) for the full operator set (hierarchy, patterns, scalars, concat, array first-match, and array boolean).
+See the [docs home](/docs) for the full operator set (hierarchy, patterns, scalars, concat, array first-match, and array boolean), including the `using` helpers on [Hierarchy](/docs/operations/hierarchy).
 
 ## Index path columns
 
