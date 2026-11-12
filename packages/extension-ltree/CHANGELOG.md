@@ -1,5 +1,16 @@
 # prisma-ltree
 
+## 0.7.0
+
+### Minor Changes
+
+- 3550322: Add boolean `ltree[]` operators: `containsAncestorOf`, `containsDescendantOf`, `matchesAnyLquery`, `matchesAnyLqueryArray`, and `matchesAnyLtxtquery` (ADR-007).
+- a495b67: Add ORM collection helpers `using.{field}_descendants` / `using.{field}_ancestors` for scalar `ltree` fields (ADR-008), mirroring pgvector’s `{field}_nearest` SPI.
+
+### Patch Changes
+
+- 6c7afa6: Validate literal `lquery` / `ltxtquery` pattern args at query-build time with clearer errors (empty patterns, empty segments, unbalanced operators) while leaving Expression binds to Postgres.
+
 ## 0.6.0
 
 ### Minor Changes
