@@ -11,6 +11,7 @@ import type { QueryOperationTypes } from "../types/operation-types";
 import { ltreeAuthoringTypes } from "./authoring";
 import { LTREE_ARRAY_CODEC_ID, LTREE_CODEC_ID } from "./constants";
 import { ltreeDataTypes } from "./data-types";
+import { assertPatternArg } from "./pattern-validation";
 import { ltreeCodecRegistry } from "./registry";
 
 type CodecTypesBase = Record<string, { readonly input: unknown; readonly output: unknown }>;
@@ -57,8 +58,10 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
   // Hierarchy operators compare two `ltree` values; the user argument shares the
   // column's `pg/ltree@1` codec. Pattern-match operators take a query/pattern
   // string (or `string[]`) that is NOT an ltree — it is bound as text and cast
-  // in-template to `lquery` / `lquery[]` / `ltxtquery` (the validated-string-param
-  // approach; verified executable under PGlite).
+  // in-template to `lquery` / `lquery[]` / `ltxtquery`. Literal string args get a
+  // lightweight structural check first (see `pattern-validation.ts`) so empty /
+  // obviously illegal patterns fail with a clear pack error instead of an opaque
+  // Postgres cast failure; Expression / ParamRef binds still defer to Postgres.
   const hierarchyOp = (
     method: string,
     operator: string,
@@ -80,11 +83,12 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
   const patternOp = (
     method: string,
     operator: string,
-    castType: string,
+    castType: "lquery" | "ltxtquery" | "lquery[]",
     self: CodecExpression<typeof LTREE_CODEC_ID, boolean, CT>,
     arg: unknown,
     many = false,
   ): BoolReturn => {
+    assertPatternArg(castType, arg);
     const selfCodec = codecOf(self);
     return buildOperation({
       method,
@@ -128,9 +132,10 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     self: CodecExpression<typeof LTREE_ARRAY_CODEC_ID, boolean, CT>,
     arg: unknown,
     argCodecId: typeof LTREE_CODEC_ID | typeof TEXT_CODEC_ID,
-    castType?: string,
+    castType?: "lquery" | "ltxtquery" | "lquery[]",
     many = false,
   ): BoolReturn => {
+    if (castType) assertPatternArg(castType, arg);
     const template = castType
       ? `{{self}} ${operator} ({{arg0}})::${castType}`
       : `{{self}} ${operator} {{arg0}}`;
@@ -152,8 +157,9 @@ export function ltreeQueryOperations<CT extends CodecTypesBase>(): QueryOperatio
     self: CodecExpression<typeof LTREE_ARRAY_CODEC_ID, boolean, CT>,
     arg: unknown,
     argCodecId: typeof LTREE_CODEC_ID | typeof TEXT_CODEC_ID,
-    castType?: string,
+    castType?: "lquery" | "ltxtquery",
   ): LtreeReturn => {
+    if (castType) assertPatternArg(castType, arg);
     const selfCodec = codecOf(self);
     const template = castType
       ? `{{self}} ${operator} ({{arg0}})::${castType}`
