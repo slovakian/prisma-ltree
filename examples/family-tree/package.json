@@ -11,6 +11,7 @@
     "db:drop": "tsx scripts/drop-db.ts",
     "seed": "tsx scripts/seed.ts",
     "setup": "pnpm db:up && pnpm emit && pnpm db:plan && pnpm db:init && pnpm seed",
+    "setup:db": "pnpm emit && pnpm db:plan && pnpm db:init && pnpm seed",
     "dev": "vite dev",
     "build": "vite build && tsc --noEmit",
     "start": "node .output/server/index.mjs",

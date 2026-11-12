@@ -1,19 +1,25 @@
 # Standalone project root. This file exists so pnpm treats examples/family-tree
 # as its own workspace instead of joining the prisma-ltree monorepo above it.
-# prisma-ltree is a file: dependency on the local pack until the rc.16 release
-# is on npm. After that release, install prisma-ltree from npm.
+#
+# Monorepo showcase path (default): prisma-ltree is a `file:` dependency on
+# ../../packages/extension-ltree. Build the pack first
+# (`cd packages/extension-ltree && vp pack`), then `pnpm install` here.
+# Prefer `file:` over `link:` so the example does not inherit the pack's
+# nested monorepo `node_modules` (dual @prisma/orm-* copies).
+#
+# Publish-pin path (copy-anywhere): replace the file: dep with
+# `"prisma-ltree": "^0.6.0"` (or the latest npm release that matches your
+# `@prisma/orm-*` pins) and install from the registry. See README.md.
 packages: []
 allowBuilds:
   esbuild: true
   workerd: set this to true or false
 minimumReleaseAgeExclude:
-  - prisma-ltree@0.2.1
-  - "@prisma/cli-engine@0.6.3"
-  - "@prisma/composer-cli@0.28.0"
-  - "@prisma/composer@0.28.0"
-  - "@prisma/orm-family-sql@8.0.0-rc.16"
-  - "@prisma/orm-framework@8.0.0-rc.16"
-  - "@prisma/orm-postgres@8.0.0-rc.16"
-  - "@prisma/orm-target-postgres@8.0.0-rc.16"
-  - "@prisma/orm-toolchain@8.0.0-rc.16"
-  - prisma@8.0.0-rc.21
+  - prisma-ltree@0.6.0
+  - "@prisma/cli-engine@0.9.0"
+  - "@prisma/orm-family-sql@8.0.0-rc.23"
+  - "@prisma/orm-framework@8.0.0-rc.23"
+  - "@prisma/orm-postgres@8.0.0-rc.23"
+  - "@prisma/orm-target-postgres@8.0.0-rc.23"
+  - "@prisma/orm-toolchain@8.0.0-rc.23"
+  - prisma@8.0.0-rc.33

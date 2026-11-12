@@ -71,7 +71,7 @@ This is a [Vite+](https://viteplus.dev) (`vp`) + pnpm workspace monorepo.
 | `packages/extension-ltree/` | The published `prisma-ltree` extension pack ([README](packages/extension-ltree/README.md)) |
 | `apps/web/`                 | Documentation site (Fumadocs + TanStack Start)                                             |
 | `vendor/prisma-next/`       | Historical prisma-next git subtree (agent / contributor reference)                         |
-| `examples/family-tree/`     | Tree-of-Life demo app exercising the extension                                             |
+| `examples/family-tree/`     | Tree-of-Life demo (standalone; see its README — build pack, then `pnpm setup` / `setup:db`) |
 | `skills/`, `.agents/`       | Agent skills for adoption and query patterns                                               |
 | `docs/`                     | Prisma 8 architecture notes, ltree reference, specs, and ADRs                              |
 

@@ -12,10 +12,11 @@ most-recent-common-ancestor (`lca`), `lquery` / `ltxtquery` searches, generation
 depth, lineage slices, and graft-a-taxon are all dispatched to Postgres. No
 tree math happens in the client.
 
-This example is not part of the prisma-ltree monorepo build. It depends on the
-local `prisma-ltree` pack with a `file:` dependency until the `8.0.0-rc.23`
-release is on npm. After that release, install `prisma-ltree` from npm and copy
-the folder anywhere.
+This example is **not** a monorepo workspace member: install it separately under
+`examples/family-tree`. By default it uses a `file:` dependency on the local
+`packages/extension-ltree` pack (the monorepo showcase path). To run the folder
+elsewhere, switch that dependency to a published `prisma-ltree` pin — see
+[Publish-pin consumers](#publish-pin-consumers).
 
 ---
 
@@ -102,8 +103,8 @@ assertion guards the 46-taxon count and rejects duplicate / malformed paths.
 
 | Piece    | Choice                                                         |
 | -------- | -------------------------------------------------------------- |
-| Database | Postgres 17 (Docker) — `ltree` ships in the stock image        |
-| ORM      | Prisma 8 (`@prisma/orm-postgres@8.0.0-rc.23`) + `prisma-ltree` |
+| Database | Postgres 16+ with `ltree` (Docker 17 on :5434, or local)       |
+| ORM      | Prisma 8 (`@prisma/orm-postgres@8.0.0-rc.23`) + local `prisma-ltree` (`file:`) |
 | App      | TanStack Start (React 19, server functions, Vite)              |
 | Layout   | `d3-hierarchy` (dendrogram) + `@xyflow/react` (canvas)         |
 | UI       | shadcn / radix-ui primitives, Tailwind v4                      |
@@ -111,46 +112,62 @@ assertion guards the 46-taxon count and rejects duplicate / malformed paths.
 
 ---
 
-## Quickstart
+## Quickstart (monorepo clone)
 
-This example pins `@prisma/orm-postgres` to `8.0.0-rc.23` and `prisma` to `8.0.0-rc.33`.
-It depends on the local `prisma-ltree` pack with `file:../../packages/extension-ltree`. Install `prisma-ltree` from npm with a caret after the `8.0.0-rc.23` release is published. You do not need `prisma-ltree@8.0.0-rc.23`.
+Requires **Node ≥ 24** and **pnpm** (this folder pins `pnpm@11.8.0` via
+`packageManager`). Pins: `@prisma/orm-postgres@8.0.0-rc.23`,
+`prisma@8.0.0-rc.33`, local `prisma-ltree` via `file:../../packages/extension-ltree`.
 
 ```bash
+# 1. Build the local pack (from the monorepo root)
+cd packages/extension-ltree && vp pack && cd -
+
+# 2. Install the standalone example
+cd examples/family-tree
 pnpm install
 cp .env.example .env
 
-# One shot: start Postgres, emit the contract, apply migrations, seed.
-pnpm setup
+# 3. Start Postgres on host port 5434, then emit / plan / init / seed
+pnpm setup          # Docker Compose + emit/plan/init/seed
+# Or, with Postgres already listening on :5434:
+pnpm setup:db       # emit/plan/init/seed only
 
-pnpm dev          # http://localhost:3000
+pnpm dev            # http://localhost:3000
 ```
 
-`pnpm setup` runs these five steps:
+`pnpm setup` = `db:up` then `setup:db`. `setup:db` is:
 
 ```bash
-pnpm db:up        # docker compose up (Postgres on :5434)
-pnpm emit         # prisma contract emit  (contract.prisma → contract.json/.d.ts)
-pnpm db:plan      # prisma migration plan (materializes the ltree + app migrations)
-pnpm db:init      # apply migrations: CREATE EXTENSION ltree + create the taxon table
-pnpm seed         # insert the phylogeny (and resolve Wikipedia thumbnails)
+pnpm emit         # contract.prisma → contract.json / .d.ts (+ sync pack migrations)
+pnpm db:plan      # no-op when committed migrations match the emitted contract
+pnpm db:init      # CREATE EXTENSION ltree + create the taxon table
+pnpm seed         # insert the 46 taxa (resolves Wikipedia thumbnails)
 ```
 
-### Gotchas (still real on a fresh machine)
+Committed under `migrations/` are the pack’s ltree space migrations, the app
+`taxon` migration, snapshots, and `migrations/app/refs/db.json` so
+`pnpm db:plan` knows the plan origin on a fresh clone.
 
-1. **`pnpm db:plan` is mandatory before the first `pnpm db:init`.** It copies
-   the extension's baseline `CREATE EXTENSION ltree` migration out of the
-   `prisma-ltree` package into `migrations/ltree/` and plans the `taxon` table.
-   Without it, `db:init` fails with `PN-MIG-5001 declaredButUnmigrated`.
-2. **The Postgres Docker image pull may need a mirror.** On hosts where
-   `docker pull postgres:17-alpine` is blocked or rate-limited (corporate
-   networks, air-gapped CI), point Docker at an internal registry / ECR mirror
-   before running `pnpm db:up`. The compose file uses the bare `postgres:17-alpine`
-   tag; a registry mirror configured in Docker's daemon settings is the
-   lowest-churn fix.
+### Postgres options
 
-To start over: `pnpm db:drop && pnpm db:init && pnpm seed`. To tear down the DB
-entirely: `pnpm db:down`.
+| Option | How |
+| ------ | --- |
+| **Docker** (default) | `pnpm db:up` — `postgres:17-alpine` on host **5434**, user/password `postgres`/`postgres`, DB `family_tree` |
+| **Local Postgres** | Any 16+ with `ltree`, same URL as `.env.example`. Skip `db:up`. Example: `sudo pg_ctlcluster 16 main start` when the cluster listens on 5434 |
+
+If `docker pull postgres:17-alpine` is blocked, configure a registry mirror or use the local Postgres path.
+
+### Publish-pin consumers
+
+To run this folder outside the monorepo (or against a released pack):
+
+1. In `package.json`, replace `"prisma-ltree": "file:../../packages/extension-ltree"` with `"prisma-ltree": "^0.6.0"` (or the release that matches your `@prisma/orm-*` pins).
+2. `pnpm install` — no local `vp pack` step.
+3. Copy `.env.example` → `.env`, start Postgres on `:5434`, then `pnpm emit && pnpm db:plan && pnpm db:init && pnpm seed && pnpm dev`.
+
+If emit fails with a pack/hash mismatch against an older published tarball, you need a newer `prisma-ltree` on npm (or the monorepo `file:` path above). Do **not** use `link:` to the monorepo pack from this standalone install — it inherits the pack’s nested `@prisma/orm-*` copies and breaks runtime.
+
+To start over: `pnpm db:drop && pnpm db:init && pnpm seed`. To tear down Docker: `pnpm db:down`.
 
 ---
 
@@ -164,8 +181,9 @@ examples/family-tree/
 ├── package.json                  # scripts: db:up / emit / db:plan / db:init / seed / setup / dev / build
 │
 ├── migrations/
-│   ├── ltree/                    # extension baseline: CREATE EXTENSION ltree (generated by db:plan)
-│   └── app/                      # the taxon table migration (generated by db:plan)
+│   ├── ltree/                    # pack space: CREATE EXTENSION ltree + unbound declare/search-path
+│   ├── app/                      # taxon table migration + refs/db.json (plan origin)
+│   └── snapshots/                # contract snapshots referenced by migration edges
 │
 ├── scripts/
 │   ├── seed.ts                   # inserts the 46 taxa + resolves Wikipedia thumbnails

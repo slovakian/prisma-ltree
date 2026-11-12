@@ -281,29 +281,27 @@ still doesn't serve it. Until that's resolved, run/verify the docs site with
 `cd apps/web && vp build && vp preview --port 3000` (SSR renders correctly there). Port 3000,
 `strictPort`.
 
-### `examples/family-tree`: standalone, needs Postgres, and needs the local build
+### `examples/family-tree`: standalone showcase (local pack + Postgres)
 
-This example is **not a workspace member** — `cd examples/family-tree && pnpm install`
-separately (it pins `pnpm@11.8.0` via `packageManager`; corepack switches automatically).
-Two pre-existing version-drift gotchas make the committed setup fail with the pinned
-`prisma` CLI until you point the example at this repo’s local pack:
+This example is **not a workspace member** — build the pack, then install the
+example separately (it pins `pnpm@11.8.0` via `packageManager`; corepack switches
+automatically):
 
-1. It depends on the npm-published `prisma-ltree`, whose baked contract can be
-   incompatible with the current CLI (`prisma contract emit` →
-   `headRef.hash does not match its contractJson`). Point it at the local build:
-   `pnpm add prisma-ltree@link:../../packages/extension-ltree` (after `vp build` in the
-   package).
-2. Its committed migrations reference a `migrations/snapshots/` dir that isn't present, so
-   `pnpm db:plan` fails with `CLI.FILE_NOT_FOUND`. Regenerate fresh:
-   `rm -rf migrations/app migrations/ltree migrations/snapshots` then re-run `db:plan`.
+```bash
+cd packages/extension-ltree && vp pack && cd -
+cd examples/family-tree && pnpm install && cp -n .env.example .env
+```
 
-Both of the above are working-tree changes — revert them (`git checkout -- examples/family-tree`
-plus removing regenerated `migrations/**`) if you don't intend to commit an example fix.
+It depends on the local pack via `file:../../packages/extension-ltree` (not
+`link:` — linking inherits the pack’s nested `@prisma/orm-*` and breaks
+runtime). Migrations, snapshots, and `migrations/app/refs/db.json` are
+committed so `pnpm emit` / `pnpm db:plan` / `pnpm db:init` work on a fresh
+clone. Full path: `examples/family-tree/README.md`.
 
 ### Postgres for the example (Docker is not preinstalled)
 
 `pnpm db:up` uses `docker compose` (postgres:17 on host port 5434), but Docker is **not**
-installed. Equivalent substitute used during setup: a local PostgreSQL 16 (has `ltree 1.2`)
+installed. Equivalent substitute: a local PostgreSQL 16 (has `ltree 1.2`)
 listening on **5434**, role/password `postgres`/`postgres`, database `family_tree` — matching
 `.env.example`'s `DATABASE_URL`. systemd is unavailable, so start it with
 `sudo pg_ctlcluster 16 main start` (the cluster's `postgresql.conf` port is set to 5434).
