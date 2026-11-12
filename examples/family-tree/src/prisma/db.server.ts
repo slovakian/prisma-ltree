@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { contractFromJson } from "@prisma/orm-postgres/static";
 import postgres from "@prisma/orm-postgres/runtime";
 import ltree from "prisma-ltree/runtime";
 import contractJson from "./contract.json" with { type: "json" };
@@ -25,8 +26,10 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL is not set — copy .env.example to .env");
 }
 
-export const db = postgres<Contract>({
-  contractJson,
+const contract = contractFromJson<Contract>(contractJson);
+
+export const db = postgres({
+  contract,
   extensions: [ltree],
   url: databaseUrl,
 });

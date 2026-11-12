@@ -35,7 +35,11 @@
         "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
         "params": [
           "\"public\".\"taxon\""
-        ]
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"taxon\""
+        }
       }
     ],
     "execute": [
@@ -48,10 +52,16 @@
     "postcheck": [
       {
         "description": "verify table \"taxon\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
         "params": [
-          "\"public\".\"taxon\""
-        ]
+          "\"public\".\"taxon\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"taxon\""
+        }
       }
     ]
   },
@@ -76,7 +86,11 @@
           "taxon_path_key",
           "public",
           "\"public\".\"taxon\""
-        ]
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"taxon_path_key\" on \"taxon\""
+        }
       }
     ],
     "execute": [
@@ -87,12 +101,14 @@
     ],
     "postcheck": [
       {
-        "description": "verify constraint \"taxon_path_key\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "description": "verify unique constraint \"taxon_path_key\" exists on (path)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
         "params": [
           "taxon_path_key",
           "public",
-          "\"public\".\"taxon\""
+          "\"public\".\"taxon\"",
+          "u",
+          "[\"path\"]"
         ]
       }
     ]

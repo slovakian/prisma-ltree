@@ -25,7 +25,7 @@ types {
 /// the Wikipedia `pageimages` REST API (nullable when Wikipedia has no page
 /// image for the article).
 model Taxon {
-  id             String   @id @default(uuid())
+  id             String   @id @onCreate(uuid())
   path           Path     @unique
   scientificName String   @map("scientific_name")
   commonName     String?  @map("common_name")

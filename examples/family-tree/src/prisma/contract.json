@@ -163,8 +163,7 @@
                 "path": {
                   "codecId": "pg/ltree@1",
                   "dataType": "ltree/ltree",
-                  "nullable": false,
-                  "typeRef": "Path"
+                  "nullable": false
                 },
                 "rank": {
                   "codecId": "pg/text@1",
@@ -190,11 +189,15 @@
               "foreignKeys": [],
               "indexes": [],
               "primaryKey": {
-                "columns": ["id"]
+                "columns": [
+                  "id"
+                ]
               },
               "uniques": [
                 {
-                  "columns": ["path"]
+                  "columns": [
+                    "path"
+                  ]
                 }
               ]
             }
@@ -204,14 +207,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "fae0c94c760d88923664ac8fd0fb3730bc6402f7703718c8daa707b2f123b788",
-    "types": {
-      "Path": {
-        "codecId": "pg/ltree@1",
-        "dataType": "ltree/ltree",
-        "kind": "codec-instance"
-      }
-    }
+    "storageHash": "fdc2b560d5074fbe4bf9b64520754d5cd0c42095cfaed234013fbe50f5f102d9"
   },
   "execution": {
     "executionHash": "21ae50faa9b7f351acd36d70398e24ff6d5c92eb08cfda85753524a43fa74f75",
@@ -250,6 +246,7 @@
       "forShare": true,
       "forUpdate": true,
       "insertOnConflictSkip": true,
+      "insertOnConflictTarget": true,
       "insertOnConflictWithoutTarget": true,
       "lateral": true,
       "lockNowait": true,
