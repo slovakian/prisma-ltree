@@ -32,6 +32,18 @@ See `packages/extension-ltree/README.md` for usage documentation and `docs/decis
 | `ltree @> ltree` | `path.isAncestorOf(rhs)`   | supported | 1    |
 | `ltree <@ ltree` | `path.isDescendantOf(rhs)` | supported | 1    |
 
+## ORM Collection Helpers (`db.orm.*.using`)
+
+Contributed via the public collection-method SPI (`collectionMethods` on the
+runtime descriptor). One pair per scalar `ltree` field; not emitted for
+`ltree[]`. See [ADR-008](decisions/ADR-008-orm-hierarchy-collection-methods.md).
+
+| API method                     | Lowers to                   | Status       | Notes                                              |
+| ------------------------------ | --------------------------- | ------------ | -------------------------------------------------- |
+| `using.path_descendants(root)` | `path.isDescendantOf(root)` | supported    | Inclusive of `root` itself (`<@`)                  |
+| `using.path_ancestors(leaf)`   | `path.isAncestorOf(leaf)`   | supported    | Inclusive of `leaf` itself (`@>`)                  |
+| `using.path_subtree(...)`      | —                           | out-of-scope | Synonym of `_descendants`; not shipped (ADR-008)   |
+
 ## Pattern-Matching Operators (→ `pg/bool@1`)
 
 | SQL                 | API method                          | Arg      | Status    | Tier |
@@ -144,4 +156,5 @@ Index access methods are registered by Prisma Next's postgres **target**, not by
 - 2026-07-06 — `lca(ltree[])` → `paths.lcaAll()` shipped on `pg/ltree-array@1` (ADR-005). Distinct name required: prisma-next's operation registry keys by name only and rejects duplicates; scalar `path.lca(...)` already occupies `lca`. Return stays `nullable: false` for parity with first-match ops despite PG's empty-array NULL (family-wide gap, pinned by an integration test).
 - 2026-08-14 — GiST / hash / btree indexes on `ltree` and `ltree[]` → `supported` via Prisma Next 8.0.0-rc.1's postgres target `indexTypes` (`type: "gist"`). prisma-ltree does **not** register `gist` (would collide with the target). Operator-class `siglen` stays out of scope (ADR-006).
 - 2026-11-12 — Boolean `ltree[]` operators → `supported` (ADR-007): `containsAncestorOf`, `containsDescendantOf`, `matchesAnyLquery`, `matchesAnyLqueryArray`, `matchesAnyLtxtquery`. These are the array-left predicates; `gist__ltree_ops` serves all but `containsAncestorOf`. Scalar commutators and reversed pattern-left forms stay out of scope.
+- 2026-11-12 — ORM collection helpers → `supported` (ADR-008): `using.{field}_descendants(root)` / `using.{field}_ancestors(leaf)` on scalar `ltree` fields via the public `collectionMethods` SPI. No `_subtree` alias.
 - 2026-06-19 — Phase 6 polish. Coverage threshold set to 95% in `vite.config.ts`; gaps filled to **100%** statements/branches/functions/lines (116 tests). Package `README.md` and per-tier `docs/progress/` logs written. Matrix verified accurate against shipped surface (no status changes). Pending: npm publish over the `0.0.1` stub (Task 6.3, awaiting approval).
