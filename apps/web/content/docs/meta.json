@@ -1,4 +1,4 @@
 {
   "title": "prisma-ltree",
-  "pages": ["index", "getting-started", "authoring", "indexes", "operations"]
+  "pages": ["index", "getting-started", "authoring", "indexes", "comparison", "operations"]
 }

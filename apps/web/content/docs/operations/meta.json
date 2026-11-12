@@ -1,4 +1,12 @@
 {
   "title": "Query Operations",
-  "pages": ["hierarchy", "pattern-matching", "lca"]
+  "pages": [
+    "hierarchy",
+    "pattern-matching",
+    "scalars",
+    "concatenation",
+    "lca",
+    "array-first-match",
+    "array-boolean"
+  ]
 }
