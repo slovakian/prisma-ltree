@@ -38,7 +38,7 @@ Use this skill after `prisma-ltree-adoption` (or when ltree is already wired). A
   - **ORM** — `db.orm.Category.where((c) => c.path.isDescendantOf(value))`. Default lane; matches the package README.
   - **SQL builder** — `db.sql.category` (storage name) when you need explicit joins / projections the ORM cannot express.
 - **Pattern args** — Plain strings (or `string[]` for `matchesLqueryArray`); the extension casts to `lquery` / `ltxtquery` in SQL.
-- **Scalar vs array receiver** — `ltree()` / `ltree.Ltree()` columns get hierarchy, pattern, scalar, and concat methods. `ltreeArray()` / `ltree.LtreeArray()` columns get **first-match** methods (`firstAncestorOf`, …) plus `lcaAll()`.
+- **Scalar vs array receiver** — `ltree()` / `ltree.Ltree()` columns get hierarchy, pattern, scalar, and concat methods. `ltreeArray()` / `ltree.LtreeArray()` columns get **first-match** methods (`firstAncestorOf`, …), **array-boolean** methods (`containsAncestorOf`, `matchesAnyLquery`, …), plus `lcaAll()`.
 
 ## Pick a reference
 
@@ -69,19 +69,20 @@ Predicate helpers (`and`, `or`, ranges) follow the upstream `prisma-8` queries g
 
 ### Operator quick map
 
-| Goal                          | Method                                  | SQL-ish           |
-| ----------------------------- | --------------------------------------- | ----------------- |
-| Row path is ancestor of arg   | `path.isAncestorOf(arg)`                | `@>`              |
-| Row path is descendant of arg | `path.isDescendantOf(arg)`              | `<@`              |
-| Row path matches pattern      | `path.matchesLquery(pat)`               | `~`               |
-| Row path matches any pattern  | `path.matchesLqueryArray(pats)`         | `?`               |
-| Row path matches ltxtquery    | `path.matchesLtxtquery(q)`              | `@`               |
-| Label depth                   | `path.nlevel()`                         | `nlevel(path)`    |
-| Slice path                    | `path.subpath(off, len?)`               | `subpath(...)`    |
-| LCA with other paths          | `path.lca(other, ...rest)`              | `lca(...)`        |
-| Append path / label           | `path.concat(rhs)`, `concatText(label)` | `\|\|`            |
-| Text column → ltree           | `textCol.toLtree()`                     | `text2ltree(...)` |
-| Array first-match / LCA       | `paths.firstAncestorOf` / `lcaAll()`    | `?@>` / `lca([])` |
+| Goal                          | Method                                          | SQL-ish           |
+| ----------------------------- | ----------------------------------------------- | ----------------- |
+| Row path is ancestor of arg   | `path.isAncestorOf(arg)`                        | `@>`              |
+| Row path is descendant of arg | `path.isDescendantOf(arg)`                      | `<@`              |
+| Row path matches pattern      | `path.matchesLquery(pat)`                       | `~`               |
+| Row path matches any pattern  | `path.matchesLqueryArray(pats)`                 | `?`               |
+| Row path matches ltxtquery    | `path.matchesLtxtquery(q)`                      | `@`               |
+| Label depth                   | `path.nlevel()`                                 | `nlevel(path)`    |
+| Slice path                    | `path.subpath(off, len?)`                       | `subpath(...)`    |
+| LCA with other paths          | `path.lca(other, ...rest)`                      | `lca(...)`        |
+| Append path / label           | `path.concat(rhs)`, `concatText(label)`         | `\|\|`            |
+| Text column → ltree           | `textCol.toLtree()`                             | `text2ltree(...)` |
+| Array first-match / LCA       | `paths.firstAncestorOf` / `lcaAll()`            | `?@>` / `lca([])` |
+| Array boolean                 | `paths.containsAncestorOf` / `matchesAnyLquery` | `@>` / `~`        |
 
 Full signatures and edge cases: reference files above.
 

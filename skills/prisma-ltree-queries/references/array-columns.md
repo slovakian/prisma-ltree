@@ -43,18 +43,20 @@ sql
   .build({ params: { prefix: "Top.Science" } });
 ```
 
-## What is NOT on array columns
+## Array boolean checks
 
-These boolean/array SQL forms are **out of scope** for prisma-ltree:
+Existence predicates (→ boolean), distinct names from scalar methods (ADR-007):
 
-- `ltree[] @> ltree` (any ancestor in array?)
-- `ltree[] <@ ltree`
-- `ltree[] ~ lquery`
-- `ltree[] ? lquery[]`
-- `ltree[] @ ltxtquery`
+| Method                                  | SQL                   | Meaning                            |
+| --------------------------------------- | --------------------- | ---------------------------------- |
+| `paths.containsAncestorOf(arg)`         | `ltree[] @> ltree`    | Array contains an ancestor of arg  |
+| `paths.containsDescendantOf(arg)`       | `ltree[] <@ ltree`    | Array contains a descendant of arg |
+| `paths.matchesAnyLquery(pat)`           | `ltree[] ~ lquery`    | Any entry matches pattern          |
+| `paths.matchesAnyLqueryArray(patterns)` | `ltree[] ? lquery[]`  | Any entry matches any pattern      |
+| `paths.matchesAnyLtxtquery(q)`          | `ltree[] @ ltxtquery` | Any entry matches ltxtquery        |
 
-Workaround: use first-match ops when you need one path back, or unnest/array logic in SQL builder if PN expressivity allows — otherwise track as a feature request.
+Use first-match when you need the matching path back; use these when you only need a boolean filter. A GiST index on `ltree[]` serves `containsDescendantOf` and the three `matchesAny*` methods (not `containsAncestorOf`).
 
-## Planned
+## Also on array columns
 
-- `paths.lcaAll()` — `lca(ltree[])` on array columns (zero-arg)
+- `paths.lcaAll()` — `lca(ltree[])` (zero-arg; returns NULL for an empty array)

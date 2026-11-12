@@ -20,10 +20,9 @@ import {
 } from "../helpers/ltree-fixture";
 
 /**
- * Tier 3 end-to-end coverage: first-match operators on an `ltree[]` receiver
- * (`firstAncestorOf`/`firstDescendantOf`/`firstMatchLquery`/`firstMatchLtxtquery`)
- * built via their runtime impls, lowered through the composed Postgres adapter,
- * and executed against PGlite.
+ * Tier 3 end-to-end coverage: first-match and array-boolean operators on an
+ * `ltree[]` receiver, built via their runtime impls, lowered through the
+ * composed Postgres adapter, and executed against PGlite.
  */
 
 const contract = createLtreeContract();
@@ -130,6 +129,48 @@ describe("ltree Tier 3 operations — PGlite end-to-end", () => {
     expect(
       await projectFor(1, opExpr("firstAncestorOf", ltreeArrayColumn("paths"), "Other.Branch")),
     ).toBeNull();
+  });
+
+  it("containsAncestorOf: paths @> rhs is true when an entry is an ancestor", async () => {
+    expect(
+      await projectFor(
+        1,
+        opExpr("containsAncestorOf", ltreeArrayColumn("paths"), "Top.Science.Astronomy"),
+      ),
+    ).toBe(true);
+  });
+
+  it("containsAncestorOf: paths @> rhs is false when no entry is an ancestor", async () => {
+    expect(
+      await projectFor(1, opExpr("containsAncestorOf", ltreeArrayColumn("paths"), "Other.Branch")),
+    ).toBe(false);
+  });
+
+  it("containsDescendantOf: paths <@ rhs is true when an entry is a descendant", async () => {
+    expect(
+      await projectFor(1, opExpr("containsDescendantOf", ltreeArrayColumn("paths"), "Top")),
+    ).toBe(true);
+  });
+
+  it("matchesAnyLquery: paths ~ pattern is true when any entry matches", async () => {
+    expect(
+      await projectFor(1, opExpr("matchesAnyLquery", ltreeArrayColumn("paths"), "*.Hobbies")),
+    ).toBe(true);
+  });
+
+  it("matchesAnyLqueryArray: paths ? patterns is true when any entry matches any pattern", async () => {
+    expect(
+      await projectFor(
+        1,
+        opExpr("matchesAnyLqueryArray", ltreeArrayColumn("paths"), ["*.Art", "Top.Hobbies"]),
+      ),
+    ).toBe(true);
+  });
+
+  it("matchesAnyLtxtquery: paths @ query is true when any entry matches", async () => {
+    expect(
+      await projectFor(1, opExpr("matchesAnyLtxtquery", ltreeArrayColumn("paths"), "Hobbies")),
+    ).toBe(true);
   });
 
   it("scalar ltree column ops remain independent of the array receiver", async () => {
