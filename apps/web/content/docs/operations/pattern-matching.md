@@ -5,6 +5,8 @@ description: Query paths using lquery and ltxtquery patterns
 
 Pattern matching operators filter `ltree` paths using PostgreSQL `lquery` and `ltxtquery` syntax. Pattern arguments are **strings** (or `string[]` for array matching). They are not separate column types.
 
+Literal pattern strings are checked in the pack before SQL runs: empty values, empty path segments, unbalanced `ltxtquery` operators/parentheses, and other obviously illegal syntax throw a clear JavaScript error instead of an opaque Postgres cast failure. Unusual but legal Postgres patterns (Unicode labels, open quantifiers like `*{,}`, stacked `!!` in `ltxtquery`) are accepted. Expression / ParamRef binds are not pre-checked and still defer to Postgres.
+
 ```typescript
 import { db } from "../prisma/db";
 ```
