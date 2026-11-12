@@ -92,4 +92,6 @@ const rows = await db.orm.Category.where((c) => c.path.matchesLtxtquery("compute
 
 Refer to the [PostgreSQL ltree documentation](https://www.postgresql.org/docs/current/ltree.html) for full pattern syntax.
 
-Pattern operators use a Generalized Search Tree (GiST) index. See [Add a GiST index](/docs/indexes).
+**GiST required** for index use: declare `@@index([path], type: "gist")` on the `ltree` column. Without GiST, pattern filters still run as sequential scans. See [Add a GiST index](/docs/indexes).
+
+For existence checks against an `ltree[]` column, see [Array boolean operators](/docs/operations/array-boolean).

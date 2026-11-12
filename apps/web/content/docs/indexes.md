@@ -3,11 +3,19 @@ title: Add a GiST index
 description: Index path columns so ancestor, descendant, and pattern queries can use an index
 ---
 
-Ancestor, descendant, and pattern queries on `ltree` need a Generalized Search Tree (GiST) index. Prisma’s default B-tree index only helps comparisons (`<`, `=`, `>`). Declare GiST in your contract, then emit and migrate.
+**GiST required:** ancestor, descendant, and pattern queries on `ltree` (and most of the `ltree[]` boolean checks) need a Generalized Search Tree (GiST) index. Prisma’s default B-tree only helps equality and ordered comparisons (`<`, `=`, `>`). Without GiST, those hierarchy and pattern queries still run, and PostgreSQL reads every row.
 
-## Why you need GiST
+Declare GiST in your contract, then emit and migrate. For sort and equality via codec traits, see [Sort and compare paths](/docs/comparison).
 
-`isAncestorOf`, `isDescendantOf`, `matchesLquery`, and `matchesLtxtquery` use PostgreSQL operators that a B-tree doesn’t cover. Without GiST, those queries still run, and PostgreSQL reads every row.
+## Which operators need GiST
+
+| Receiver  | Methods that use GiST when indexed                                                          | Notes                                |
+| --------- | ------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `ltree`   | `isAncestorOf`, `isDescendantOf`, `matchesLquery`, `matchesLqueryArray`, `matchesLtxtquery` | Opclass `gist_ltree_ops`             |
+| `ltree[]` | `containsDescendantOf`, `matchesAnyLquery`, `matchesAnyLqueryArray`, `matchesAnyLtxtquery`  | Opclass `gist__ltree_ops`            |
+| `ltree[]` | `containsAncestorOf`                                                                        | **Not** indexed by `gist__ltree_ops` |
+
+First-match operators (`firstAncestorOf`, …) return a path value; they are not the same as the boolean predicates above. Scalar concat and conversion methods do not use GiST.
 
 ## Declare GiST on the path column
 
@@ -59,9 +67,15 @@ Apply the change with `db update` or `migration plan`. Prisma creates a GiST ind
 CREATE INDEX … ON "page" USING "gist" ("path")
 ```
 
-Use `type: "gist"` on an `ltree[]` column too (`ltree.LtreeArray()` or `ltreeArray()`).
+Use `type: "gist"` on an `ltree[]` column too (`ltree.LtreeArray()` or `ltreeArray()`). That index serves `containsDescendantOf` and the three `matchesAny*` methods. It does not serve `containsAncestorOf`. See [Array boolean operators](/docs/operations/array-boolean).
 
 You can keep `@unique` on the column. That unique constraint is a B-tree, and GiST is a second index.
+
+## Cross-links from operators
+
+- [Hierarchy operators](/docs/operations/hierarchy) (`isAncestorOf`, `isDescendantOf`)
+- [Pattern matching operators](/docs/operations/pattern-matching)
+- [Array boolean operators](/docs/operations/array-boolean)
 
 ## Prisma doesn’t support `siglen` yet
 

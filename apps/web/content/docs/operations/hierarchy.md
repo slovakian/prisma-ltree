@@ -76,4 +76,6 @@ const ancestors = await db.orm.Category.where((c) =>
   .all();
 ```
 
-These operators use a Generalized Search Tree (GiST) index. Add `@@index([path], type: "gist")` so PostgreSQL can avoid a sequential scan. See [Add a GiST index](/docs/indexes).
+**GiST required** for index use: add `@@index([path], type: "gist")` so PostgreSQL can avoid a sequential scan. Without GiST, these filters still run and read every row. See [Add a GiST index](/docs/indexes).
+
+For sorting paths or equality filters (not hierarchy), use framework comparison via codec traits: [Sort and compare paths](/docs/comparison).

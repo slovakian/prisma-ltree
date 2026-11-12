@@ -97,10 +97,18 @@ apps/web/
     docs/                   # Hand-written Markdown docs
       index.md
       getting-started.md
+      authoring.md
+      indexes.md
+      comparison.md         # Codec traits equality+order (framework sort/compare)
       meta.json             # Sidebar structure
       operations/
         hierarchy.md
         pattern-matching.md
+        scalars.md
+        concatenation.md
+        lca.md
+        array-first-match.md
+        array-boolean.md
         meta.json
   vite.config.ts
 ```
@@ -212,9 +220,15 @@ Register handlers in `src/components/markdown/md-components.tsx`.
 - `/docs` — Docs root (renders `content/docs/index.md`)
 - `/docs/getting-started` — Get started guide
 - `/docs/authoring` — PSL and TypeScript contract authoring
-- `/docs/indexes` — GiST indexes on ltree columns
+- `/docs/indexes` — GiST indexes on ltree columns (call out “GiST required”)
+- `/docs/comparison` — Sort/compare via codec traits (`equality`+`order`); no pack `<`/`>` methods
 - `/docs/operations/hierarchy` — Hierarchy operators
 - `/docs/operations/pattern-matching` — Pattern matching operators
+- `/docs/operations/scalars` — `nlevel`, `subltree`, `subpath`, `indexOf`
+- `/docs/operations/concatenation` — concat / conversion
+- `/docs/operations/lca` — Lowest common ancestor
+- `/docs/operations/array-first-match` — first-match on `ltree[]`
+- `/docs/operations/array-boolean` — boolean existence checks on `ltree[]`
 - `/docs/<any>` — Auto-404 if file doesn't exist
 - `/docs/<path>.md`, `/llms.txt`, `/llms-full.txt` — raw markdown for agents
 
