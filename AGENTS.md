@@ -78,14 +78,14 @@ See [`vendor/README.md`](vendor/README.md) for re-add / pull details.
 
 ### Reference path map
 
-| What                                  | Path                                                   |
-| ------------------------------------- | ------------------------------------------------------ |
-| pgvector reference (closest to ltree) | `vendor/prisma-next/packages/3-extensions/pgvector/`   |
-| postgis reference (multi-operator)    | `vendor/prisma-next/packages/3-extensions/postgis/`    |
-| paradedb reference                    | `vendor/prisma-next/packages/3-extensions/paradedb/`   |
-| Extension architecture docs (source)  | `vendor/prisma-next/docs/`                             |
+| What                                  | Path                                                                                                                        |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| pgvector reference (closest to ltree) | `vendor/prisma-next/packages/3-extensions/pgvector/`                                                                        |
+| postgis reference (multi-operator)    | `vendor/prisma-next/packages/3-extensions/postgis/`                                                                         |
+| paradedb reference                    | `vendor/prisma-next/packages/3-extensions/paradedb/`                                                                        |
+| Extension architecture docs (source)  | `vendor/prisma-next/docs/`                                                                                                  |
 | Extension author skills (live)        | [`prisma/orm/skills/prisma-8`](https://github.com/prisma/orm/tree/main/skills/prisma-8) (`references/upgrade-extension.md`) |
-| Historical skill cluster (subtree)    | `vendor/prisma-next/skills/` (stale — do not install from here) |
+| Historical skill cluster (subtree)    | `vendor/prisma-next/skills/` (stale — do not install from here)                                                             |
 
 ## Key Documentation (consult these before coding)
 
@@ -140,10 +140,11 @@ Per ADR 212 (Contract spaces; historical `prisma/prisma-next` docs), every pack 
 - **Concatenation** (→ ltree): `concat` (`||`), `concatText` (`|| text`), `prependText` (`text ||`)
 - **Conversion**: `toText` (`ltree2text` → text), `toLtree` (`text2ltree` → ltree, rooted on text receiver per [ADR-002](docs/decisions/ADR-002-free-function-lowering.md))
 
-### Tier 3 (Array First-Match Operators) — ✅ Complete
+### Tier 3 (Array First-Match + Boolean Operators) — ✅ Complete
 
 - **Array receiver**: dedicated `pg/ltree-array@1` codec (mirrors core `pg/text-array@1` pattern, per [ADR-003](docs/decisions/ADR-003-array-receiver.md))
 - **First-match operators** (→ ltree): `firstAncestorOf` (`?@>`), `firstDescendantOf` (`?<@`), `firstMatchLquery` (`?~`), `firstMatchLtxtquery` (`?@`)
+- **Array-boolean operators** (→ bool): `containsAncestorOf` (`@>`), `containsDescendantOf` (`<@`), `matchesAnyLquery` (`~`), `matchesAnyLqueryArray` (`?`), `matchesAnyLtxtquery` (`@`) — [ADR-007](docs/decisions/ADR-007-array-boolean-operators.md)
 
 ### PSL contract lane — ✅ Parity proven
 

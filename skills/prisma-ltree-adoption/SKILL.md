@@ -131,9 +131,7 @@ export const contract = defineContract(
         },
       }).sql(({ cols, constraints }) => ({
         table: "category",
-        indexes: [
-          constraints.index([cols.path], { type: "gist", options: {} }),
-        ],
+        indexes: [constraints.index([cols.path], { type: "gist", options: {} })],
       })),
     },
   }),
@@ -220,7 +218,7 @@ When inserting rows, build paths in application code (`parentPath.concatText("Ch
 - **Non-Postgres targets** — Mongo, SQLite, etc. Workaround: not supported; use Postgres for ltree.
 - **GiST operator-class `siglen`** — Prisma `options` are `WITH` storage parameters, not `gist_ltree_ops(siglen=…)`. Default GiST is `@@index([path], type: "gist")` (postgres target; do **not** register `gist` on prisma-ltree).
 - **`lquery` / `ltxtquery` as column types** — patterns are **string parameters** to `matchesLquery` / `matchesLtxtquery`, not stored column types.
-- **Boolean `ltree[]` operators** (`ltree[] @> ltree`, etc.) — out of scope; use scalar ops or first-match array ops instead.
+- **Scalar commutators** (`ltree @> ltree[]`, `ltree <@ ltree[]`) — not shipped; use `containsDescendantOf` / `containsAncestorOf` on the array column instead (ADR-007).
 - **`@db.Ltree` native attribute** — out of scope (no extension hook in core); use the `ltree` namespace constructors or TS helpers instead.
 
 ## Reference Files

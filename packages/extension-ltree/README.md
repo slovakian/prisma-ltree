@@ -16,6 +16,7 @@ raw SQL.
 - **Scalar functions**: depth, subpaths, label index, lowest common ancestor
 - **Concatenation & conversion**: path building and `ltree` ↔ `text` conversion
 - **Array first-match**: find the first matching path in an `ltree[]` column
+- **Array boolean checks**: existence predicates on `ltree[]` (`containsAncestorOf`, `matchesAnyLquery`, …)
 - **Baseline migration**: installs the Postgres extension via
   `CREATE EXTENSION IF NOT EXISTS ltree` when the pack is composed
 - **GiST indexes**: author `@@index([path], type: "gist")` (Prisma 8
@@ -227,6 +228,21 @@ const rows = await db.orm.Category.where((c) => c.path.isDescendantOf("Top.Scien
 | `paths.firstMatchLquery(pattern)`  | `ltree[] ?~ lquery`    |
 | `paths.firstMatchLtxtquery(query)` | `ltree[] ?@ ltxtquery` |
 | `paths.lcaAll()`                   | `lca(ltree[])`         |
+
+### Array boolean checks (→ boolean, receiver `ltree[]`)
+
+| Method                                  | SQL                   |
+| --------------------------------------- | --------------------- |
+| `paths.containsAncestorOf(rhs)`         | `ltree[] @> ltree`    |
+| `paths.containsDescendantOf(rhs)`       | `ltree[] <@ ltree`    |
+| `paths.matchesAnyLquery(pattern)`       | `ltree[] ~ lquery`    |
+| `paths.matchesAnyLqueryArray(patterns)` | `ltree[] ? lquery[]`  |
+| `paths.matchesAnyLtxtquery(query)`      | `ltree[] @ ltxtquery` |
+
+Names differ from the scalar methods (`isAncestorOf`, `matchesLquery`, …) because
+Prisma 8 keys operations by name only. A GiST index on an `ltree[]` column serves
+`containsDescendantOf` and the three `matchesAny*` methods; it does not serve
+`containsAncestorOf` (see ADR-007).
 
 Use `ltreeArray()` for `ltree[]` columns that expose these methods.
 

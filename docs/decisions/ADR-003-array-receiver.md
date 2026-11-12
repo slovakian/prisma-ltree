@@ -120,8 +120,9 @@ emits `::ltree`). Pattern args bind as text and cast in-template, identical to T
   control-plane hooks (`expandNativeType`, `resolveIdentityValue`) cover both ids.
 - Golden tests assert `self` binds with `pg/ltree-array@1`; PGlite integration tests
   declare an `ltree[]` column and execute lowered SQL end-to-end.
-- Boolean array variants (`ltree[] @> ltree`, etc.) stay **out-of-scope** per the spec;
-  the same codec would make them low-cost follow-ups if revisited.
+- Boolean array variants (`ltree[] @> ltree`, etc.) were originally **out-of-scope**;
+  they later shipped on this codec as `containsAncestorOf` / `containsDescendantOf` /
+  `matchesAny*` (ADR-007).
 
 ## Alternatives rejected
 
