@@ -104,7 +104,7 @@ assertion guards the 46-taxon count and rejects duplicate / malformed paths.
 | Piece    | Choice                                                         |
 | -------- | -------------------------------------------------------------- |
 | Database | Postgres 16+ with `ltree` (Docker 17 on :5434, or local)       |
-| ORM      | Prisma 8 (`@prisma/orm-postgres@8.0.0-rc.23`) + local `prisma-ltree` (`file:`) |
+| ORM      | Prisma 8 (`@prisma/orm-postgres@8.0.0-rc.24`) + local `prisma-ltree` (`file:`) |
 | App      | TanStack Start (React 19, server functions, Vite)              |
 | Layout   | `d3-hierarchy` (dendrogram) + `@xyflow/react` (canvas)         |
 | UI       | shadcn / radix-ui primitives, Tailwind v4                      |
@@ -115,8 +115,8 @@ assertion guards the 46-taxon count and rejects duplicate / malformed paths.
 ## Quickstart (monorepo clone)
 
 Requires **Node ≥ 24** and **pnpm** (this folder pins `pnpm@11.8.0` via
-`packageManager`). Pins: `@prisma/orm-postgres@8.0.0-rc.23`,
-`prisma@8.0.0-rc.33`, local `prisma-ltree` via `file:../../packages/extension-ltree`.
+`packageManager`). Pins: `@prisma/orm-postgres@8.0.0-rc.24`,
+`prisma@8.0.0-rc.34`, local `prisma-ltree` via `file:../../packages/extension-ltree`.
 
 ```bash
 # 1. Build the local pack (from the monorepo root)
