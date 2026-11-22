@@ -16,10 +16,10 @@ allowBuilds:
   workerd: set this to true or false
 minimumReleaseAgeExclude:
   - prisma-ltree@0.6.0
-  - "@prisma/cli-engine@0.9.0"
-  - "@prisma/orm-family-sql@8.0.0-rc.23"
-  - "@prisma/orm-framework@8.0.0-rc.23"
-  - "@prisma/orm-postgres@8.0.0-rc.23"
-  - "@prisma/orm-target-postgres@8.0.0-rc.23"
-  - "@prisma/orm-toolchain@8.0.0-rc.23"
-  - prisma@8.0.0-rc.33
+  - "@prisma/cli-engine@0.10.0"
+  - "@prisma/orm-family-sql@8.0.0-rc.24"
+  - "@prisma/orm-framework@8.0.0-rc.24"
+  - "@prisma/orm-postgres@8.0.0-rc.24"
+  - "@prisma/orm-target-postgres@8.0.0-rc.24"
+  - "@prisma/orm-toolchain@8.0.0-rc.24"
+  - prisma@8.0.0-rc.34
